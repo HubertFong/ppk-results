@@ -31,6 +31,7 @@ header { background: var(--navy); color: #fff; }
   font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 30px; letter-spacing: .04em; color: #fff;
 }
+.brand:hover { text-decoration: none; }
 .brand span { color: var(--mustard); }
 nav { margin-left: auto; display: flex; gap: 18px; }
 nav a {
@@ -110,6 +111,42 @@ tr.podium-1 td.rk { color: var(--orange); }
 .chart { background: #fff; border-radius: 10px; padding: 16px;
           box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 10px 0 24px; }
 
+.home-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; }
+.btn {
+  display: inline-block; background: var(--navy); color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+  letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px;
+}
+.btn:hover { background: #1a2f80; text-decoration: none; }
+.highlight-list { list-style: none; background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
+.highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
+.highlight-list li:first-child { border-top: none; }
+
+.search-wrap { position: relative; margin-left: 18px; }
+#athlete-search {
+  font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 8px;
+  border: none; width: 190px; background: rgba(255,255,255,.14); color: #fff;
+}
+#athlete-search::placeholder { color: #c7cce3; }
+#athlete-search:focus { outline: 2px solid var(--mustard); background: #fff; color: #1c1c28; }
+.search-results {
+  position: absolute; top: calc(100% + 6px); right: 0; width: 260px;
+  background: #fff; border-radius: 8px; list-style: none;
+  box-shadow: 0 4px 16px rgba(16,32,96,.25); z-index: 10; overflow: hidden;
+}
+.search-results li { border-top: 1px solid #ececf2; }
+.search-results li:first-child { border-top: none; }
+.search-results a { display: block; padding: 9px 14px; color: #1c1c28; }
+.search-results a:hover, .search-results a:focus { background: #f2f2f7; text-decoration: none; }
+.search-empty { padding: 9px 14px; color: #5a5a6b; font-size: 14px; }
+@media (max-width: 620px) {
+  .search-wrap { margin-left: 0; width: 100%; }
+  #athlete-search { width: 100%; box-sizing: border-box; }
+  .search-results { width: 100%; }
+}
+
 footer { background: var(--navy); color: #cfd3ea; }
 .foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
                font-size: 14px; }
@@ -126,8 +163,12 @@ footer { background: var(--navy); color: #cfd3ea; }
 <body>
 <header>
   <div class="head-inner">
-    <div class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </div>
-    <nav><a href="../events.html">Events</a><a href="../index.html">Leaderboard</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a></nav>
+    <a href="../index.html" class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </a>
+    <nav><a href="../index.html">Home</a><a href="../events.html">Events</a><a href="../leaderboard.html">Leaderboard</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a></nav>
+    <div class="search-wrap">
+      <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
+      <ul id="search-results" class="search-results" hidden></ul>
+    </div>
   </div>
 </header>
 <main>
@@ -148,6 +189,63 @@ footer { background: var(--navy); color: #cfd3ea; }
 <h2>Race history</h2>
 <div class="tablewrap"><table><tr><th>Event</th><th>Date</th><th>Course</th><th>Run 1</th><th>Bike</th><th>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-120">#120</a></td><td class='t'>2026-08-09</td><td><span class="chip" style="background:#E64D24">Long</span></td><td class='t'>24:22<span class="split-note">4:04/km</span></td><td class='t'>54:41<span class="split-note">32.9 km/h</span></td><td class='t'>25:34<span class="split-note">4:16/km</span></td><td class='t pb'>1:44:37 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>1</td></tr></table></div>
 </main>
+<script>
+(function() {
+  var ATHLETES = [{"name": "Aaron Wong", "href": "../athletes/aaron-wong.html"}, {"name": "Abby Rahn", "href": "../athletes/abby-rahn.html"}, {"name": "Adrian Kang", "href": "../athletes/adrian-kang.html"}, {"name": "Adrian Koay Hun Yi", "href": "../athletes/adrian-koay-hun-yi.html"}, {"name": "Adriana Álvarez", "href": "../athletes/adriana-alvarez.html"}, {"name": "Ahmad Adli", "href": "../athletes/ahmad-adli.html"}, {"name": "Ahmad Luthfi bin Ahmad Azhari", "href": "../athletes/ahmad-luthfi-bin-ahmad-azhari.html"}, {"name": "Aidan Chan", "href": "../athletes/aidan-chan.html"}, {"name": "Alice Cheah", "href": "../athletes/alice-cheah.html"}, {"name": "Alishia Lim", "href": "../athletes/alishia-lim.html"}, {"name": "Barry", "href": "../athletes/barry.html"}, {"name": "Cadmon Ho", "href": "../athletes/cadmon-ho.html"}, {"name": "Calvin Lee", "href": "../athletes/calvin-lee.html"}, {"name": "Chan Hock Yin", "href": "../athletes/chan-hock-yin.html"}, {"name": "Clarabelle Yii Jia Tong", "href": "../athletes/clarabelle-yii-jia-tong.html"}, {"name": "Dominic Loke", "href": "../athletes/dominic-loke.html"}, {"name": "Dr. K", "href": "../athletes/dr-k.html"}, {"name": "Dysen Leong Chat Shen", "href": "../athletes/dysen-leong-chat-shen.html"}, {"name": "Edison", "href": "../athletes/edison.html"}, {"name": "Eric Ooi", "href": "../athletes/eric-ooi.html"}, {"name": "Fish Lim", "href": "../athletes/fish-lim.html"}, {"name": "Gabrielle", "href": "../athletes/gabrielle.html"}, {"name": "Henry Cheang", "href": "../athletes/henry-cheang.html"}, {"name": "Hubert Fong", "href": "../athletes/hubert-fong.html"}, {"name": "Jack Ng", "href": "../athletes/jack-ng.html"}, {"name": "Jacky Fong", "href": "../athletes/jacky-fong.html"}, {"name": "Jian Shen", "href": "../athletes/jian-shen.html"}, {"name": "Jorge Chaves", "href": "../athletes/jorge-chaves.html"}, {"name": "Joy Cheong", "href": "../athletes/joy-cheong.html"}, {"name": "Kan Khai Wei", "href": "../athletes/kan-khai-wei.html"}, {"name": "Khaw Lek Ming", "href": "../athletes/khaw-lek-ming.html"}, {"name": "Kiron Reyon", "href": "../athletes/kiron-reyon.html"}, {"name": "Ko Khye Chun", "href": "../athletes/ko-khye-chun.html"}, {"name": "Lee Ke Wynn", "href": "../athletes/lee-ke-wynn.html"}, {"name": "Lee Xin Lam", "href": "../athletes/lee-xin-lam.html"}, {"name": "Lee Xin Yong", "href": "../athletes/lee-xin-yong.html"}, {"name": "Leo Ng", "href": "../athletes/leo-ng.html"}, {"name": "Lim Shin Tzen, Jonathan", "href": "../athletes/lim-shin-tzen-jonathan.html"}, {"name": "Louis A. Saramuthu", "href": "../athletes/louis-a-saramuthu.html"}, {"name": "Lu Ee Chen", "href": "../athletes/lu-ee-chen.html"}, {"name": "Marcus Sherwood", "href": "../athletes/marcus-sherwood.html"}, {"name": "Marlon", "href": "../athletes/marlon.html"}, {"name": "Michelle Ding Sook Xin", "href": "../athletes/michelle-ding-sook-xin.html"}, {"name": "Mitchell Glodowski", "href": "../athletes/mitchell-glodowski.html"}, {"name": "Muhammad Syawal bin Naseer Khan", "href": "../athletes/muhammad-syawal-bin-naseer-khan.html"}, {"name": "Ng Kok Chee", "href": "../athletes/ng-kok-chee.html"}, {"name": "Ng Wei Liang", "href": "../athletes/ng-wei-liang.html"}, {"name": "Omar", "href": "../athletes/omar.html"}, {"name": "Paul Hinchliffe", "href": "../athletes/paul-hinchliffe.html"}, {"name": "Penny Ooi", "href": "../athletes/penny-ooi.html"}, {"name": "Poh Zhen-E", "href": "../athletes/poh-zhen-e.html"}, {"name": "Rasyidi Bakar", "href": "../athletes/rasyidi-bakar.html"}, {"name": "Rebecca", "href": "../athletes/rebecca.html"}, {"name": "Richard Khor", "href": "../athletes/richard-khor.html"}, {"name": "Ryan Ganose", "href": "../athletes/ryan-ganose.html"}, {"name": "Ryan Hoa", "href": "../athletes/ryan-hoa.html"}, {"name": "Saw Jia Wei", "href": "../athletes/saw-jia-wei.html"}, {"name": "Syafiq Monaer", "href": "../athletes/syafiq-monaer.html"}, {"name": "Syed Faisal", "href": "../athletes/syed-faisal.html"}, {"name": "Tan Chern Wuay", "href": "../athletes/tan-chern-wuay.html"}, {"name": "Tan Hoay Thing", "href": "../athletes/tan-hoay-thing.html"}, {"name": "Tan Huay Vern", "href": "../athletes/tan-huay-vern.html"}, {"name": "Tan Joo Ong", "href": "../athletes/tan-joo-ong.html"}, {"name": "Tan Tze Taq", "href": "../athletes/tan-tze-taq.html"}, {"name": "Tao", "href": "../athletes/tao.html"}, {"name": "Teh Kai Li", "href": "../athletes/teh-kai-li.html"}, {"name": "Theo Hurford", "href": "../athletes/theo-hurford.html"}, {"name": "Tio Shi Jie", "href": "../athletes/tio-shi-jie.html"}, {"name": "Winson Khoo", "href": "../athletes/winson-khoo.html"}, {"name": "Wong Yit Hao", "href": "../athletes/wong-yit-hao.html"}, {"name": "Zaki", "href": "../athletes/zaki.html"}, {"name": "Zulkiflee Ibrahim", "href": "../athletes/zulkiflee-ibrahim.html"}];
+  var input = document.getElementById('athlete-search');
+  var list = document.getElementById('search-results');
+
+  function render(matches, query) {
+    list.innerHTML = '';
+    if (!query) { list.hidden = true; return; }
+    if (matches.length === 0) {
+      var empty = document.createElement('li');
+      empty.className = 'search-empty';
+      empty.textContent = 'No athlete found matching "' + query + '"';
+      list.appendChild(empty);
+    } else {
+      matches.slice(0, 8).forEach(function(a) {
+        var li = document.createElement('li');
+        var link = document.createElement('a');
+        link.href = a.href;
+        link.textContent = a.name;
+        li.appendChild(link);
+        list.appendChild(li);
+      });
+    }
+    list.hidden = false;
+  }
+
+  input.addEventListener('input', function() {
+    var q = input.value.trim().toLowerCase();
+    var matches = q ? ATHLETES.filter(function(a) {
+      return a.name.toLowerCase().indexOf(q) !== -1;
+    }) : [];
+    render(matches, q);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      var first = list.querySelector('a');
+      if (first) { e.preventDefault(); first.focus(); }
+    } else if (e.key === 'Escape') {
+      list.hidden = true;
+    }
+  });
+
+  list.addEventListener('keydown', function(e) {
+    var items = Array.prototype.slice.call(list.querySelectorAll('a'));
+    var i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' && i < items.length - 1) { e.preventDefault(); items[i + 1].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); i > 0 ? items[i - 1].focus() : input.focus(); }
+    else if (e.key === 'Escape') { list.hidden = true; input.focus(); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!list.contains(e.target) && e.target !== input) list.hidden = true;
+  });
+})();
+</script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
 Straits Quay Duathlon Time Trial series · Timing by Pedal Penangkia · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
 <p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
