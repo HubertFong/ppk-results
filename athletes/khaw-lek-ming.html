@@ -305,14 +305,14 @@ footer { background: var(--navy); color: #cfd3ea; }
     }
     if (e.target.classList.contains('highlights-toggle')) {
       var btn = e.target;
-      var list = btn.nextElementSibling;
-      var nowHidden = !list.hasAttribute('hidden');
+      var moreList = btn.nextElementSibling;
+      var nowHidden = !moreList.hasAttribute('hidden');
       if (nowHidden) {
-        list.setAttribute('hidden', '');
+        moreList.setAttribute('hidden', '');
         btn.textContent = 'Show ' + btn.dataset.count + ' more';
         btn.setAttribute('aria-expanded', 'false');
       } else {
-        list.removeAttribute('hidden');
+        moreList.removeAttribute('hidden');
         btn.textContent = 'Show fewer';
         btn.setAttribute('aria-expanded', 'true');
       }
