@@ -78,7 +78,9 @@ td.t { font-variant-numeric: tabular-nums; }
 tr:nth-child(even) td { background: #fafaf7; }
 td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
          font-size: 18px; color: var(--navy); width: 40px; }
-tr.podium-1 td.rk { color: var(--orange); }
+tr.podium-1 td.rk { color: #D4A017; }
+tr.podium-2 td.rk { color: #9AA5B1; }
+tr.podium-3 td.rk { color: #B0672B; }
 .pb { font-weight: 600; }
 .tablewrap { overflow-x: auto; }
 
@@ -87,6 +89,8 @@ tr.podium-1 td.rk { color: var(--orange); }
   font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
   color: #fff; border-radius: 20px; padding: 1px 10px 2px;
 }
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.chip.badge { background: var(--navy); font-size: 13px; padding: 5px 12px 6px; cursor: help; }
 .record-badge {
   display: inline-flex; align-items: center; justify-content: center;
   width: 15px; height: 15px; border-radius: 50%; margin-left: 5px;

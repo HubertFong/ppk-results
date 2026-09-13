@@ -78,7 +78,9 @@ td.t { font-variant-numeric: tabular-nums; }
 tr:nth-child(even) td { background: #fafaf7; }
 td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
          font-size: 18px; color: var(--navy); width: 40px; }
-tr.podium-1 td.rk { color: var(--orange); }
+tr.podium-1 td.rk { color: #D4A017; }
+tr.podium-2 td.rk { color: #9AA5B1; }
+tr.podium-3 td.rk { color: #B0672B; }
 .pb { font-weight: 600; }
 .tablewrap { overflow-x: auto; }
 
@@ -87,6 +89,8 @@ tr.podium-1 td.rk { color: var(--orange); }
   font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
   color: #fff; border-radius: 20px; padding: 1px 10px 2px;
 }
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.chip.badge { background: var(--navy); font-size: 13px; padding: 5px 12px 6px; cursor: help; }
 .record-badge {
   display: inline-flex; align-items: center; justify-content: center;
   width: 15px; height: 15px; border-radius: 50%; margin-left: 5px;
@@ -196,6 +200,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <div class="stat"><b>#37</b><span>2026 Short · 1 pts</span></div>
 <div class="stat"><b>—</b><span>Short vs previous race - first race</span></div>
 </div>
+<h2>Achievements</h2>
+<div class="badge-row"><span class="chip badge" title="Completed your first SQDTT">First SQDTT</span></div>
+<p class="note">Next up: 4 more races for 5 Races · 20:27 off Sub-60 Short · 3 more wins for 3× Winner</p>
 <h2>Race history</h2>
 <div class="tablewrap"><button class="splits-toggle" type="button" aria-expanded="false">Show splits</button><table class="results-table"><tr><th>Event</th><th>Date</th><th>Course</th><th class='col-run1'>Run 1</th><th class='col-bike'>Bike</th><th class='col-run2'>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-115">#115</a></td><td class='t'>2026-01-11</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>19:11<span class="split-note">6:24/km</span></td><td class='t col-bike'>38:05<span class="split-note">23.6 km/h</span></td><td class='t col-run2'>23:11<span class="split-note">7:44/km</span></td><td class='t pb'>1:20:27 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>11</td></tr></table></div>
 </main>
