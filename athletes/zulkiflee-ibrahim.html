@@ -73,9 +73,14 @@ th {
 }
 td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
 td.t { font-variant-numeric: tabular-nums; }
+tbody th[scope="row"], tr th[scope="row"] {
+  font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
+  letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
+  color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+}
 .split-note { display: block; font-size: 11px; font-weight: 400;
                color: #5a5a6b; font-variant-numeric: tabular-nums; }
-tr:nth-child(even) td { background: #fafaf7; }
+tr:nth-child(even) td, tr:nth-child(even) th[scope="row"] { background: #fafaf7; }
 td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
          font-size: 18px; color: var(--navy); width: 40px; }
 tr.podium-1 td.rk { color: #D4A017; }
@@ -126,9 +131,13 @@ tr.podium-3 td.rk { color: #B0672B; }
 .highlight-list { list-style: none; background: #fff; border-radius: 10px;
   box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
 
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
 .cmp-controls { background: #fff; border-radius: 10px; padding: 16px 18px;
   box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 18px 0; }
-.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px;
+.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px; border: 0; padding: 0;
   font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
   letter-spacing: .04em; font-size: 15px; }
 .cmp-cats label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -258,9 +267,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <div class="badge-row"><span class="chip badge" title="Completed your first SQDTT">First SQDTT</span><span class="chip badge" title="Broke 60 minutes on the Short course">Sub-60 Short</span></div>
 <p class="note">Next up: 3 more races for 5 Races · 3 more wins for 3× Winner</p>
 <h2><span class="catdot" style="background:#1B9590"></span>Short progression</h2>
-<div class="chart"><svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Total time by event, Short course"><text x="64" y="16" font-size="13" fill="#5a5a6b">faster ↑</text><line x1="64" y1="60.0" x2="620" y2="60.0" stroke="#ececf2" stroke-width="1"/><line x1="64" y1="102.0" x2="620" y2="102.0" stroke="#ececf2" stroke-width="1"/><line x1="64" y1="144.0" x2="620" y2="144.0" stroke="#ececf2" stroke-width="1"/><polyline points="64.0,34.3 620.0,169.7" fill="none" stroke="#1B9590" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="64.0" cy="34.3" r="5" fill="#1B9590"/><circle cx="620.0" cy="169.7" r="5" fill="#1B9590"/><text x="64.0" y="22.3" text-anchor="middle" font-size="13" fill="#1c1c28" font-weight="600">58:38</text><text x="64.0" y="210" text-anchor="middle" font-size="13" fill="#5a5a6b">#113</text><text x="620.0" y="189.7" text-anchor="middle" font-size="13" fill="#1c1c28" font-weight="600">1:00:33</text><text x="620.0" y="210" text-anchor="middle" font-size="13" fill="#5a5a6b">#117</text></svg></div>
+<div class="chart"><svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Total time by event, Short course" aria-describedby="chart-summary-short"><text x="64" y="16" font-size="13" fill="#5a5a6b">faster ↑</text><line x1="64" y1="60.0" x2="620" y2="60.0" stroke="#ececf2" stroke-width="1"/><line x1="64" y1="102.0" x2="620" y2="102.0" stroke="#ececf2" stroke-width="1"/><line x1="64" y1="144.0" x2="620" y2="144.0" stroke="#ececf2" stroke-width="1"/><polyline points="64.0,34.3 620.0,169.7" fill="none" stroke="#1B9590" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="64.0" cy="34.3" r="5" fill="#1B9590"/><circle cx="620.0" cy="169.7" r="5" fill="#1B9590"/><text x="64.0" y="22.3" text-anchor="middle" font-size="13" fill="#1c1c28" font-weight="600">58:38</text><text x="64.0" y="210" text-anchor="middle" font-size="13" fill="#5a5a6b">#113</text><text x="620.0" y="189.7" text-anchor="middle" font-size="13" fill="#1c1c28" font-weight="600">1:00:33</text><text x="620.0" y="210" text-anchor="middle" font-size="13" fill="#5a5a6b">#117</text></svg></div><p id="chart-summary-short" class="visually-hidden">Total time by event, Short course, across 2 races from #113 to #117: fastest 58:38 at #113, slowest 1:00:33 at #117. The latest race is 1:55 slower than the first race shown (#113). See the race history table below for exact per-event times.</p>
 <h2>Race history</h2>
-<div class="tablewrap"><button class="splits-toggle" type="button" aria-expanded="false">Show splits</button><table class="results-table"><tr><th>Event</th><th>Date</th><th>Course</th><th class='col-run1'>Run 1</th><th class='col-bike'>Bike</th><th class='col-run2'>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-117">#117</a></td><td class='t'>2026-05-10</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>14:15<span class="split-note">4:45/km</span></td><td class='t col-bike'>30:37<span class="split-note">29.4 km/h</span></td><td class='t col-run2'>15:41<span class="split-note">5:14/km</span></td><td class='t pb'>1:00:33</td><td class='t'>2</td></tr><tr><td class='t'><a href="../events.html#event-113">#113</a></td><td class='t'>2025-09-14</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>13:18<span class="split-note">4:26/km</span></td><td class='t col-bike'>30:31<span class="split-note">29.5 km/h</span></td><td class='t col-run2'>14:49<span class="split-note">4:56/km</span></td><td class='t pb'>58:38 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>4</td></tr></table></div>
+<div class="tablewrap"><button class="splits-toggle" type="button" aria-expanded="false">Show splits</button><table class="results-table"><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Course</th><th scope='col' class='col-run1'>Run 1</th><th scope='col' class='col-bike'>Bike</th><th scope='col' class='col-run2'>Run 2</th><th scope='col'>Total</th><th scope='col'>Place</th></tr><tr><td class='t'><a href="../events.html#event-117">#117</a></td><td class='t'>2026-05-10</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>14:15<span class="split-note">4:45/km</span></td><td class='t col-bike'>30:37<span class="split-note">29.4 km/h</span></td><td class='t col-run2'>15:41<span class="split-note">5:14/km</span></td><td class='t pb'>1:00:33</td><td class='t'>2</td></tr><tr><td class='t'><a href="../events.html#event-113">#113</a></td><td class='t'>2025-09-14</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>13:18<span class="split-note">4:26/km</span></td><td class='t col-bike'>30:31<span class="split-note">29.5 km/h</span></td><td class='t col-run2'>14:49<span class="split-note">4:56/km</span></td><td class='t pb'>58:38 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>4</td></tr></table></div>
 </main>
 <script>
 (function() {
