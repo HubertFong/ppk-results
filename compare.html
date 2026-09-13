@@ -139,6 +139,16 @@ tr.podium-3 td.rk { color: #B0672B; }
 .cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
   padding: 3px 0; cursor: pointer; }
 .cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+.cmp-ineligible { opacity: .55; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 1px; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-chip-remove {
+  background: none; border: none; color: #fff; font-size: 15px; line-height: 1;
+  cursor: pointer; padding: 0 0 0 2px;
+}
+#cmp-baseline { margin: 16px 0; background: #fff; border-radius: 10px;
+  padding: 12px 18px; box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+#cmp-baseline label { margin-right: 14px; cursor: pointer; }
 #cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
 .highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
@@ -214,21 +224,25 @@ footer { background: var(--navy); color: #cfd3ea; }
 </header>
 <main>
 <h1>Compare athletes</h1>
-<p class="sub">Pick 2-4 athletes to compare PB, splits, and race-by-race history, one course at a time.</p>
+<p class="sub">Pick 2-4 athletes to compare PB, splits, and race-by-race history, one course at a time. Your selection is saved in the page's URL, so you can copy the link to share this exact comparison.</p>
 <div class="cmp-controls">
 <div class="cmp-cats">
 <label><input type="radio" name="cmp-cat" value="Long" checked> Long</label><label><input type="radio" name="cmp-cat" value="Short"> Short</label>
+<button id="cmp-copy-link" type="button" class="highlights-toggle">Copy link</button>
 </div>
+<div id="cmp-chips" class="cmp-chips"></div>
 <input type="text" id="cmp-filter" placeholder="Filter athletes..." autocomplete="off">
 <p class="note" id="cmp-status">Pick 2-4 athletes below to compare.</p>
 <div id="cmp-checklist" class="cmp-checklist"></div>
 </div>
+<div id="cmp-baseline" class="cmp-cats" hidden></div>
 <div id="cmp-result"></div>
 <script>
 (function() {
   var DATA = {"A015": {"name": "Dr. K", "categories": {"Short": {"pb": {"total": 3711.2, "event": 113, "run1": 937.7, "bike": 1821.9, "run2": 951.6}, "best": {"run1": {"value": 874.5, "event": 112}, "bike": {"value": 1776.6, "event": 117}, "run2": {"value": 951.6, "event": 113}}, "history": [{"event": 112, "total": 3715.5}, {"event": 113, "total": 3711.2}, {"event": 115, "total": 3802.9}, {"event": 117, "total": 3762.4}, {"event": 121, "total": 3744.0}]}}}, "A032": {"name": "Marcus Sherwood", "categories": {"Short": {"pb": {"total": 3834.5, "event": 112, "run1": 899.4, "bike": 1830.4, "run2": 1104.7}, "best": {"run1": {"value": 899.4, "event": 112}, "bike": {"value": 1830.4, "event": 112}, "run2": {"value": 1034.1, "event": 119}}, "history": [{"event": 112, "total": 3834.5}, {"event": 119, "total": 3947.6}]}}}, "A059": {"name": "Ko Khye Chun", "categories": {"Short": {"pb": {"total": 3949.4, "event": 112, "run1": 836.6, "bike": 2045.8, "run2": 1067.0}, "best": {"run1": {"value": 836.6, "event": 112}, "bike": {"value": 2045.8, "event": 112}, "run2": {"value": 1067.0, "event": 112}}, "history": [{"event": 112, "total": 3949.4}]}}}, "A025": {"name": "Kiron Reyon", "categories": {"Short": {"pb": {"total": 3788.3, "event": 113, "run1": 890.7, "bike": 1866.5, "run2": 1031.1}, "best": {"run1": {"value": 848.2, "event": 121}, "bike": {"value": 1866.5, "event": 113}, "run2": {"value": 1031.1, "event": 113}}, "history": [{"event": 112, "total": 3987.8}, {"event": 113, "total": 3788.3}, {"event": 117, "total": 4213.4}, {"event": 119, "total": 3861.3}, {"event": 120, "total": 3977.0}, {"event": 121, "total": 3831.9}]}}}, "A007": {"name": "Aidan Chan", "categories": {"Short": {"pb": {"total": 4045.0, "event": 115, "run1": 1043.7, "bike": 1870.8, "run2": 1130.5}, "best": {"run1": {"value": 1002.6, "event": 112}, "bike": {"value": 1870.8, "event": 115}, "run2": {"value": 1130.5, "event": 115}}, "history": [{"event": 112, "total": 4103.1}, {"event": 115, "total": 4045.0}]}}}, "A057": {"name": "Adrian Kang", "categories": {"Short": {"pb": {"total": 4191.0, "event": 120, "run1": 1068.4, "bike": 1890.2, "run2": 1232.4}, "best": {"run1": {"value": 1068.4, "event": 120}, "bike": {"value": 1890.2, "event": 120}, "run2": {"value": 1232.4, "event": 120}}, "history": [{"event": 112, "total": 4419.5}, {"event": 120, "total": 4191.0}]}}}, "A054": {"name": "Theo Hurford", "categories": {"Short": {"pb": {"total": 3198.8, "event": 113, "run1": 671.9, "bike": 1824.7, "run2": 702.2}, "best": {"run1": {"value": 671.9, "event": 113}, "bike": {"value": 1824.7, "event": 113}, "run2": {"value": 702.2, "event": 113}}, "history": [{"event": 113, "total": 3198.8}, {"event": 115, "total": 3365.6}]}}}, "A026": {"name": "Lee Ke Wynn", "categories": {"Short": {"pb": {"total": 3391.7, "event": 115, "run1": 800.6, "bike": 1727.2, "run2": 863.9}, "best": {"run1": {"value": 800.6, "event": 115}, "bike": {"value": 1724.4, "event": 113}, "run2": {"value": 863.9, "event": 115}}, "history": [{"event": 113, "total": 3417.6}, {"event": 115, "total": 3391.7}, {"event": 117, "total": 5629.9}, {"event": 121, "total": 3504.8}]}}}, "A045": {"name": "Ryan Ganose", "categories": {"Short": {"pb": {"total": 3430.6, "event": 113, "run1": 667.8, "bike": 2027.3, "run2": 735.5}, "best": {"run1": {"value": 667.8, "event": 113}, "bike": {"value": 2027.3, "event": 113}, "run2": {"value": 735.5, "event": 113}}, "history": [{"event": 113, "total": 3430.6}]}}}, "A056": {"name": "Zulkiflee Ibrahim", "categories": {"Short": {"pb": {"total": 3517.7, "event": 113, "run1": 797.5, "bike": 1831.4, "run2": 888.8}, "best": {"run1": {"value": 797.5, "event": 113}, "bike": {"value": 1831.4, "event": 113}, "run2": {"value": 888.8, "event": 113}}, "history": [{"event": 113, "total": 3517.7}, {"event": 117, "total": 3632.8}]}}}, "A041": {"name": "Paul Hinchliffe", "categories": {"Short": {"pb": {"total": 3549.8, "event": 113, "run1": 828.0, "bike": 1848.1, "run2": 873.7}, "best": {"run1": {"value": 828.0, "event": 113}, "bike": {"value": 1848.1, "event": 113}, "run2": {"value": 873.7, "event": 113}}, "history": [{"event": 113, "total": 3549.8}]}}}, "A037": {"name": "Muhammad Syawal bin Naseer Khan", "categories": {"Short": {"pb": {"total": 3760.2, "event": 113, "run1": 901.9, "bike": 1869.3, "run2": 989.0}, "best": {"run1": {"value": 901.9, "event": 113}, "bike": {"value": 1869.3, "event": 113}, "run2": {"value": 989.0, "event": 113}}, "history": [{"event": 113, "total": 3760.2}]}}}, "A021": {"name": "Joy Cheong", "categories": {"Short": {"pb": {"total": 3923.5, "event": 113, "run1": 940.2, "bike": 1927.0, "run2": 1056.3}, "best": {"run1": {"value": 940.2, "event": 113}, "bike": {"value": 1850.4, "event": 117}, "run2": {"value": 1056.3, "event": 113}}, "history": [{"event": 113, "total": 3923.5}, {"event": 115, "total": 4066.4}, {"event": 117, "total": 3960.8}, {"event": 119, "total": 4168.1}]}}}, "A044": {"name": "Richard Khor", "categories": {"Short": {"pb": {"total": 4054.7, "event": 113, "run1": 1021.9, "bike": 1857.6, "run2": 1175.2}, "best": {"run1": {"value": 1021.9, "event": 113}, "bike": {"value": 1857.6, "event": 113}, "run2": {"value": 1175.2, "event": 113}}, "history": [{"event": 113, "total": 4054.7}]}}}, "A039": {"name": "Ng Kok Chee", "categories": {"Short": {"pb": {"total": 4083.0, "event": 113, "run1": 1038.0, "bike": 1979.6, "run2": 1065.4}, "best": {"run1": {"value": 1038.0, "event": 113}, "bike": {"value": 1979.6, "event": 113}, "run2": {"value": 1065.4, "event": 113}}, "history": [{"event": 113, "total": 4083.0}]}}}, "A009": {"name": "Alishia Lim", "categories": {"Short": {"pb": {"total": 4173.3, "event": 121, "run1": 1046.1, "bike": 1976.4, "run2": 1150.8}, "best": {"run1": {"value": 1039.2, "event": 115}, "bike": {"value": 1976.4, "event": 121}, "run2": {"value": 1141.7, "event": 115}}, "history": [{"event": 113, "total": 4297.7}, {"event": 115, "total": 4207.2}, {"event": 121, "total": 4173.3}]}}}, "A018": {"name": "Hubert Fong", "categories": {"Long": {"pb": {"total": 6826.8, "event": 121, "run1": 1686.7, "bike": 3081.2, "run2": 2058.9}, "best": {"run1": {"value": 1686.7, "event": 121}, "bike": {"value": 3081.2, "event": 121}, "run2": {"value": 1900.0, "event": 119}}, "history": [{"event": 115, "total": 6835.7}, {"event": 117, "total": 7064.6}, {"event": 119, "total": 7103.3}, {"event": 121, "total": 6826.8}]}}}, "A011": {"name": "Cadmon Ho", "categories": {"Long": {"pb": {"total": 6894.2, "event": 115, "run1": 1699.5, "bike": 3437.8, "run2": 1756.9}, "best": {"run1": {"value": 1699.5, "event": 115}, "bike": {"value": 3437.8, "event": 115}, "run2": {"value": 1756.9, "event": 115}}, "history": [{"event": 115, "total": 6894.2}, {"event": 117, "total": 7453.8}]}}}, "A031": {"name": "Lu Ee Chen", "categories": {"Long": {"pb": {"total": 6974.0, "event": 121, "run1": 1545.3, "bike": 3878.0, "run2": 1550.7}, "best": {"run1": {"value": 1545.3, "event": 121}, "bike": {"value": 3839.7, "event": 115}, "run2": {"value": 1550.7, "event": 121}}, "history": [{"event": 115, "total": 7064.0}, {"event": 121, "total": 6974.0}]}, "Short": {"pb": {"total": 3631.4, "event": 120, "run1": 870.9, "bike": 1993.3, "run2": 767.2}, "best": {"run1": {"value": 870.9, "event": 120}, "bike": {"value": 1993.3, "event": 120}, "run2": {"value": 767.2, "event": 120}}, "history": [{"event": 120, "total": 3631.4}]}}}, "A012": {"name": "Chan Hock Yin", "categories": {"Long": {"pb": {"total": 7135.0, "event": 115, "run1": 1725.0, "bike": 3547.7, "run2": 1862.3}, "best": {"run1": {"value": 1725.0, "event": 115}, "bike": {"value": 3547.7, "event": 115}, "run2": {"value": 1862.3, "event": 115}}, "history": [{"event": 115, "total": 7135.0}]}}}, "A052": {"name": "Tan Joo Ong", "categories": {"Short": {"pb": {"total": 3755.6, "event": 115, "run1": 913.1, "bike": 1812.9, "run2": 1029.6}, "best": {"run1": {"value": 913.1, "event": 115}, "bike": {"value": 1780.8, "event": 117}, "run2": {"value": 1029.6, "event": 115}}, "history": [{"event": 115, "total": 3755.6}, {"event": 117, "total": 3788.8}]}}}, "A027": {"name": "Lee Xin Lam", "categories": {"Short": {"pb": {"total": 3888.5, "event": 115, "run1": 905.8, "bike": 2076.8, "run2": 905.9}, "best": {"run1": {"value": 905.8, "event": 115}, "bike": {"value": 2076.8, "event": 115}, "run2": {"value": 905.9, "event": 115}}, "history": [{"event": 115, "total": 3888.5}]}}}, "A028": {"name": "Lee Xin Yong", "categories": {"Short": {"pb": {"total": 4184.9, "event": 115, "run1": 954.6, "bike": 2127.7, "run2": 1102.6}, "best": {"run1": {"value": 954.6, "event": 115}, "bike": {"value": 2127.7, "event": 115}, "run2": {"value": 1102.6, "event": 115}}, "history": [{"event": 115, "total": 4184.9}]}}}, "A050": {"name": "Tan Hoay Thing", "categories": {"Short": {"pb": {"total": 4474.4, "event": 115, "run1": 1033.2, "bike": 2192.8, "run2": 1248.4}, "best": {"run1": {"value": 1033.2, "event": 115}, "bike": {"value": 2192.8, "event": 115}, "run2": {"value": 1248.4, "event": 115}}, "history": [{"event": 115, "total": 4474.4}]}}}, "A001": {"name": "Aaron Wong", "categories": {"Short": {"pb": {"total": 4826.8, "event": 115, "run1": 1150.7, "bike": 2285.2, "run2": 1390.9}, "best": {"run1": {"value": 1150.7, "event": 115}, "bike": {"value": 2285.2, "event": 115}, "run2": {"value": 1390.9, "event": 115}}, "history": [{"event": 115, "total": 4826.8}]}}}, "A024": {"name": "Khaw Lek Ming", "categories": {"Long": {"pb": {"total": 7092.4, "event": 117, "run1": null, "bike": null, "run2": null}, "best": {"run1": {"value": 1980.1, "event": 119}, "bike": {"value": 3803.5, "event": 119}, "run2": {"value": 2284.2, "event": 119}}, "history": [{"event": 117, "total": 7092.4}, {"event": 119, "total": 8067.8}]}}}, "A055": {"name": "Winson Khoo", "categories": {"Long": {"pb": {"total": 7231.0, "event": 117, "run1": 1752.6, "bike": 3555.7, "run2": 1922.7}, "best": {"run1": {"value": 1750.1, "event": 121}, "bike": {"value": 3555.7, "event": 117}, "run2": {"value": 1922.7, "event": 117}}, "history": [{"event": 117, "total": 7231.0}, {"event": 121, "total": 7386.6}]}}}, "A043": {"name": "Poh Zhen-E", "categories": {"Long": {"pb": {"total": 7362.9, "event": 117, "run1": 2028.3, "bike": 3360.5, "run2": 1974.1}, "best": {"run1": {"value": 2028.3, "event": 117}, "bike": {"value": 3360.5, "event": 117}, "run2": {"value": 1974.1, "event": 117}}, "history": [{"event": 117, "total": 7362.9}]}}}, "A022": {"name": "Kan Khai Wei", "categories": {"Short": {"pb": {"total": 3629.5, "event": 117, "run1": 886.5, "bike": 1798.3, "run2": 944.7}, "best": {"run1": {"value": 868.0, "event": 121}, "bike": {"value": 1798.3, "event": 117}, "run2": {"value": 944.7, "event": 117}}, "history": [{"event": 117, "total": 3629.5}, {"event": 121, "total": 3639.8}]}}}, "A005": {"name": "Ahmad Adli", "categories": {"Short": {"pb": {"total": 3703.9, "event": 117, "run1": 887.1, "bike": 1811.9, "run2": 1004.9}, "best": {"run1": {"value": 887.1, "event": 117}, "bike": {"value": 1811.9, "event": 117}, "run2": {"value": 1004.9, "event": 117}}, "history": [{"event": 117, "total": 3703.9}]}}}, "A010": {"name": "Barry", "categories": {"Long": {"pb": {"total": 7760.0, "event": 120, "run1": 2232.6, "bike": 3625.8, "run2": 1901.6}, "best": {"run1": {"value": 2232.6, "event": 120}, "bike": {"value": 3625.8, "event": 120}, "run2": {"value": 1901.6, "event": 120}}, "history": [{"event": 119, "total": 8127.8}, {"event": 120, "total": 7760.0}]}, "Short": {"pb": {"total": 3735.9, "event": 117, "run1": 926.5, "bike": 1913.3, "run2": 896.1}, "best": {"run1": {"value": 926.5, "event": 117}, "bike": {"value": 1808.8, "event": 121}, "run2": {"value": 889.3, "event": 121}}, "history": [{"event": 117, "total": 3735.9}, {"event": 121, "total": 3889.5}]}}}, "A019": {"name": "Jack Ng", "categories": {"Short": {"pb": {"total": 3797.5, "event": 117, "run1": 1007.5, "bike": 1733.9, "run2": 1056.1}, "best": {"run1": {"value": 1007.5, "event": 117}, "bike": {"value": 1733.9, "event": 117}, "run2": {"value": 1056.1, "event": 117}}, "history": [{"event": 117, "total": 3797.5}]}}}, "A020": {"name": "Jorge Chaves", "categories": {"Short": {"pb": {"total": 3602.0, "event": 121, "run1": 857.7, "bike": 1702.0, "run2": 1042.3}, "best": {"run1": {"value": 857.7, "event": 121}, "bike": {"value": 1702.0, "event": 121}, "run2": {"value": 1042.3, "event": 121}}, "history": [{"event": 117, "total": 3843.8}, {"event": 121, "total": 3602.0}]}}}, "A004": {"name": "Adriana Álvarez", "categories": {"Short": {"pb": {"total": 3786.2, "event": 121, "run1": 946.5, "bike": 1787.1, "run2": 1052.6}, "best": {"run1": {"value": 946.5, "event": 121}, "bike": {"value": 1787.1, "event": 121}, "run2": {"value": 1052.6, "event": 121}}, "history": [{"event": 117, "total": 4038.1}, {"event": 121, "total": 3786.2}]}}}, "A033": {"name": "Marlon", "categories": {"Short": {"pb": {"total": 4266.7, "event": 119, "run1": 1225.9, "bike": 1810.7, "run2": 1230.1}, "best": {"run1": {"value": 1148.1, "event": 120}, "bike": {"value": 1810.7, "event": 119}, "run2": {"value": 1230.1, "event": 119}}, "history": [{"event": 117, "total": 4326.7}, {"event": 119, "total": 4266.7}, {"event": 120, "total": 4289.6}]}}}, "A053": {"name": "Tan Tze Taq", "categories": {"Short": {"pb": {"total": 4268.2, "event": 119, "run1": 1224.2, "bike": 1813.5, "run2": 1230.5}, "best": {"run1": {"value": 1151.4, "event": 120}, "bike": {"value": 1813.5, "event": 119}, "run2": {"value": 1230.5, "event": 119}}, "history": [{"event": 117, "total": 4327.7}, {"event": 119, "total": 4268.2}, {"event": 120, "total": 4292.1}]}}}, "A051": {"name": "Tan Huay Vern", "categories": {"Long": {"pb": {"total": 8834.8, "event": 120, "run1": 2304.4, "bike": 4307.0, "run2": 2223.4}, "best": {"run1": {"value": 2304.4, "event": 120}, "bike": {"value": 4307.0, "event": 120}, "run2": {"value": 2223.4, "event": 120}}, "history": [{"event": 120, "total": 8834.8}]}, "Short": {"pb": {"total": 4405.4, "event": 121, "run1": 1199.6, "bike": 2106.2, "run2": 1099.6}, "best": {"run1": {"value": 1093.0, "event": 117}, "bike": {"value": 2106.2, "event": 121}, "run2": {"value": 1099.6, "event": 121}}, "history": [{"event": 117, "total": 4466.5}, {"event": 121, "total": 4405.4}]}}}, "A017": {"name": "Edison", "categories": {"Short": {"pb": {"total": 4634.3, "event": 117, "run1": 1066.8, "bike": 2534.9, "run2": 1032.6}, "best": {"run1": {"value": 1066.8, "event": 117}, "bike": {"value": 2534.9, "event": 117}, "run2": {"value": 1032.6, "event": 117}}, "history": [{"event": 117, "total": 4634.3}]}}}, "A029": {"name": "Leo Ng", "categories": {"Short": {"pb": {"total": 4832.7, "event": 117, "run1": 1251.7, "bike": 2042.3, "run2": 1538.7}, "best": {"run1": {"value": 1251.7, "event": 117}, "bike": {"value": 2042.3, "event": 117}, "run2": {"value": 1538.7, "event": 117}}, "history": [{"event": 117, "total": 4832.7}]}}}, "A003": {"name": "Adrian Koay Hun Yi", "categories": {"Short": {"pb": {"total": 3578.4, "event": 119, "run1": 839.9, "bike": 1882.1, "run2": 856.4}, "best": {"run1": {"value": 839.9, "event": 119}, "bike": {"value": 1882.1, "event": 119}, "run2": {"value": 856.4, "event": 119}}, "history": [{"event": 119, "total": 3578.4}]}}}, "A040": {"name": "Omar", "categories": {"Short": {"pb": {"total": 3943.0, "event": 119, "run1": 864.6, "bike": 1870.9, "run2": 1207.5}, "best": {"run1": {"value": 864.6, "event": 119}, "bike": {"value": 1870.9, "event": 119}, "run2": {"value": 1207.5, "event": 119}}, "history": [{"event": 119, "total": 3943.0}]}}}, "A006": {"name": "Ahmad Luthfi bin Ahmad Azhari", "categories": {"Short": {"pb": {"total": 4371.3, "event": 119, "run1": 1196.3, "bike": 1991.2, "run2": 1183.8}, "best": {"run1": {"value": 1196.3, "event": 119}, "bike": {"value": 1991.2, "event": 119}, "run2": {"value": 1183.8, "event": 119}}, "history": [{"event": 119, "total": 4371.3}]}}}, "A049": {"name": "Syafiq Monaer", "categories": {"Short": {"pb": {"total": 8114.1, "event": 119, "run1": null, "bike": null, "run2": null}, "best": {}, "history": [{"event": 119, "total": 8114.1}]}}}, "A046": {"name": "Ryan Hoa", "categories": {"Long": {"pb": {"total": 6276.9, "event": 120, "run1": 1461.9, "bike": 3281.2, "run2": 1533.8}, "best": {"run1": {"value": 1461.9, "event": 120}, "bike": {"value": 3281.2, "event": 120}, "run2": {"value": 1533.8, "event": 120}}, "history": [{"event": 120, "total": 6276.9}]}}}, "A060": {"name": "Jacky Fong", "categories": {"Short": {"pb": {"total": 3549.0, "event": 120, "run1": 754.7, "bike": 1876.7, "run2": 917.6}, "best": {"run1": {"value": 754.7, "event": 120}, "bike": {"value": 1876.7, "event": 120}, "run2": {"value": 917.6, "event": 120}}, "history": [{"event": 120, "total": 3549.0}]}}}, "A013": {"name": "Clarabelle Yii Jia Tong", "categories": {"Short": {"pb": {"total": 4100.5, "event": 121, "run1": 952.6, "bike": 2168.0, "run2": 979.9}, "best": {"run1": {"value": 952.6, "event": 121}, "bike": {"value": 2163.3, "event": 120}, "run2": {"value": 979.9, "event": 121}}, "history": [{"event": 120, "total": 4307.8}, {"event": 121, "total": 4100.5}]}}}, "A061": {"name": "Rasyidi Bakar", "categories": {"Short": {"pb": {"total": 5054.2, "event": 120, "run1": 2073.4, "bike": 1853.8, "run2": 1127.0}, "best": {"run1": {"value": 2073.4, "event": 120}, "bike": {"value": 1853.8, "event": 120}, "run2": {"value": 1127.0, "event": 120}}, "history": [{"event": 120, "total": 5054.2}]}}}, "A062": {"name": "Michelle Ding Sook Xin", "categories": {"Short": {"pb": {"total": 5143.1, "event": 120, "run1": 1200.6, "bike": 2514.3, "run2": 1428.2}, "best": {"run1": {"value": 1200.6, "event": 120}, "bike": {"value": 2514.3, "event": 120}, "run2": {"value": 1428.2, "event": 120}}, "history": [{"event": 120, "total": 5143.1}]}}}, "A063": {"name": "Tan Chern Wuay", "categories": {"Short": {"pb": {"total": 5263.1, "event": 120, "run1": 1393.4, "bike": 2010.2, "run2": 1859.5}, "best": {"run1": {"value": 1393.4, "event": 120}, "bike": {"value": 1971.6, "event": 121}, "run2": {"value": 1859.5, "event": 120}}, "history": [{"event": 120, "total": 5263.1}, {"event": 121, "total": 5422.7}]}}}, "A064": {"name": "Fish Lim", "categories": {"Long": {"pb": {"total": 6675.0, "event": 121, "run1": 1693.0, "bike": 3248.2, "run2": 1733.8}, "best": {"run1": {"value": 1693.0, "event": 121}, "bike": {"value": 3248.2, "event": 121}, "run2": {"value": 1733.8, "event": 121}}, "history": [{"event": 121, "total": 6675.0}]}}}, "A065": {"name": "Dysen Leong Chat Shen", "categories": {"Long": {"pb": {"total": 6690.9, "event": 121, "run1": 1692.1, "bike": 3203.7, "run2": 1795.1}, "best": {"run1": {"value": 1692.1, "event": 121}, "bike": {"value": 3203.7, "event": 121}, "run2": {"value": 1795.1, "event": 121}}, "history": [{"event": 121, "total": 6690.9}]}}}, "A067": {"name": "Calvin Lee", "categories": {"Long": {"pb": {"total": 7410.6, "event": 121, "run1": 1850.6, "bike": 3314.8, "run2": 2245.2}, "best": {"run1": {"value": 1850.6, "event": 121}, "bike": {"value": 3314.8, "event": 121}, "run2": {"value": 2245.2, "event": 121}}, "history": [{"event": 121, "total": 7410.6}]}}}, "A068": {"name": "Henry Cheang", "categories": {"Long": {"pb": {"total": 7800.4, "event": 121, "run1": 1695.3, "bike": 3718.9, "run2": 2386.2}, "best": {"run1": {"value": 1695.3, "event": 121}, "bike": {"value": 3718.9, "event": 121}, "run2": {"value": 2386.2, "event": 121}}, "history": [{"event": 121, "total": 7800.4}]}}}, "A070": {"name": "Alice Cheah", "categories": {"Long": {"pb": {"total": 7894.1, "event": 121, "run1": 1933.4, "bike": 3696.6, "run2": 2264.1}, "best": {"run1": {"value": 1933.4, "event": 121}, "bike": {"value": 3696.6, "event": 121}, "run2": {"value": 2264.1, "event": 121}}, "history": [{"event": 121, "total": 7894.1}]}}}, "A071": {"name": "Penny Ooi", "categories": {"Long": {"pb": {"total": 7986.5, "event": 121, "run1": 2006.7, "bike": 3803.2, "run2": 2176.6}, "best": {"run1": {"value": 2006.7, "event": 121}, "bike": {"value": 3803.2, "event": 121}, "run2": {"value": 2176.6, "event": 121}}, "history": [{"event": 121, "total": 7986.5}]}}}, "A072": {"name": "Saw Jia Wei", "categories": {"Long": {"pb": {"total": 8088.9, "event": 121, "run1": 2137.4, "bike": 3864.6, "run2": 2086.9}, "best": {"run1": {"value": 2137.4, "event": 121}, "bike": {"value": 3864.6, "event": 121}, "run2": {"value": 2086.9, "event": 121}}, "history": [{"event": 121, "total": 8088.9}]}}}, "A074": {"name": "Tao", "categories": {"Short": {"pb": {"total": 3778.1, "event": 121, "run1": 947.9, "bike": 1663.3, "run2": 1166.9}, "best": {"run1": {"value": 947.9, "event": 121}, "bike": {"value": 1663.3, "event": 121}, "run2": {"value": 1166.9, "event": 121}}, "history": [{"event": 121, "total": 3778.1}]}}}, "A075": {"name": "Rebecca", "categories": {"Short": {"pb": {"total": 3809.5, "event": 121, "run1": 956.6, "bike": 1855.1, "run2": 997.8}, "best": {"run1": {"value": 956.6, "event": 121}, "bike": {"value": 1855.1, "event": 121}, "run2": {"value": 997.8, "event": 121}}, "history": [{"event": 121, "total": 3809.5}]}}}, "A076": {"name": "Eric Ooi", "categories": {"Short": {"pb": {"total": 3974.1, "event": 121, "run1": 986.0, "bike": 1862.8, "run2": 1125.3}, "best": {"run1": {"value": 986.0, "event": 121}, "bike": {"value": 1862.8, "event": 121}, "run2": {"value": 1125.3, "event": 121}}, "history": [{"event": 121, "total": 3974.1}]}}}, "A014": {"name": "Dominic Loke", "categories": {"Short": {"pb": {"total": 4036.8, "event": 121, "run1": 891.1, "bike": 1983.1, "run2": 1162.6}, "best": {"run1": {"value": 891.1, "event": 121}, "bike": {"value": 1983.1, "event": 121}, "run2": {"value": 1162.6, "event": 121}}, "history": [{"event": 121, "total": 4036.8}]}}}, "A077": {"name": "Abby Rahn", "categories": {"Short": {"pb": {"total": 4065.2, "event": 121, "run1": 913.0, "bike": 2104.2, "run2": 1048.0}, "best": {"run1": {"value": 913.0, "event": 121}, "bike": {"value": 2104.2, "event": 121}, "run2": {"value": 1048.0, "event": 121}}, "history": [{"event": 121, "total": 4065.2}]}}}, "A078": {"name": "Ng Wei Liang", "categories": {"Short": {"pb": {"total": 4394.9, "event": 121, "run1": 1056.9, "bike": 2245.6, "run2": 1092.4}, "best": {"run1": {"value": 1056.9, "event": 121}, "bike": {"value": 2245.6, "event": 121}, "run2": {"value": 1092.4, "event": 121}}, "history": [{"event": 121, "total": 4394.9}]}}}, "A079": {"name": "Wong Yit Hao", "categories": {"Short": {"pb": {"total": 4996.9, "event": 121, "run1": 1071.9, "bike": 2226.4, "run2": 1698.6}, "best": {"run1": {"value": 1071.9, "event": 121}, "bike": {"value": 2226.4, "event": 121}, "run2": {"value": 1698.6, "event": 121}}, "history": [{"event": 121, "total": 4996.9}]}}}, "A081": {"name": "Tio Shi Jie", "categories": {"Short": {"pb": {"total": 5811.3, "event": 121, "run1": 1370.3, "bike": 2684.3, "run2": 1756.7}, "best": {"run1": {"value": 1370.3, "event": 121}, "bike": {"value": 2684.3, "event": 121}, "run2": {"value": 1756.7, "event": 121}}, "history": [{"event": 121, "total": 5811.3}]}}}};
   var MAX_PICK = 4;
   var selected = [];
+  var baseline = null;
 
   function fmtSec(s) {
     if (s === null || s === undefined) return '–';
@@ -239,12 +253,73 @@ footer { background: var(--navy); color: #cfd3ea; }
     return h ? (h + ':' + mm + ':' + ss) : (mm + ':' + ss);
   }
 
+  function deltaSuffix(value, baseValue) {
+    if (value === null || value === undefined || baseValue === null || baseValue === undefined) return '';
+    var d = value - baseValue;
+    if (d === 0) return '';
+    return ' (' + fmtSec(Math.abs(d)) + ' ' + (d < 0 ? 'faster' : 'slower') + ')';
+  }
+
   var checklist = document.getElementById('cmp-checklist');
   var filterInput = document.getElementById('cmp-filter');
   var status = document.getElementById('cmp-status');
   var result = document.getElementById('cmp-result');
+  var chipsEl = document.getElementById('cmp-chips');
+  var baselineEl = document.getElementById('cmp-baseline');
+  var copyBtn = document.getElementById('cmp-copy-link');
 
   var ids = Object.keys(DATA).sort(function(a, b) { return DATA[a].name.localeCompare(DATA[b].name); });
+
+  function activeCategory() {
+    var checked = document.querySelector('input[name="cmp-cat"]:checked');
+    return checked ? checked.value : 'Long';
+  }
+
+  function isEligible(id) { return !!DATA[id].categories[activeCategory()]; }
+
+  function removeSelected(id) {
+    selected = selected.filter(function(x) { return x !== id; });
+    if (baseline === id) baseline = selected[0] || null;
+  }
+
+  function syncUrl() {
+    var params = new URLSearchParams();
+    if (selected.length) params.set('ids', selected.join(','));
+    params.set('cat', activeCategory());
+    history.replaceState(null, '', location.pathname + '?' + params.toString());
+  }
+
+  function loadFromUrl() {
+    var params = new URLSearchParams(location.search);
+    var cat = params.get('cat');
+    if (cat) {
+      var radio = document.querySelector('input[name="cmp-cat"][value="' + cat + '"]');
+      if (radio) radio.checked = true;
+    }
+    var idsParam = params.get('ids');
+    if (idsParam) {
+      selected = idsParam.split(',').filter(function(id) { return DATA[id]; }).slice(0, MAX_PICK);
+      baseline = selected[0] || null;
+    }
+  }
+
+  function renderChips() {
+    chipsEl.innerHTML = '';
+    selected.forEach(function(id) {
+      var chip = document.createElement('span');
+      chip.className = 'chip cmp-chip';
+      chip.style.background = '#102060';
+      chip.appendChild(document.createTextNode(DATA[id].name + ' '));
+      var x = document.createElement('button');
+      x.type = 'button';
+      x.className = 'cmp-chip-remove';
+      x.setAttribute('aria-label', 'Remove ' + DATA[id].name + ' from comparison');
+      x.textContent = '\u00d7';
+      x.addEventListener('click', function() { removeSelected(id); renderAll(); });
+      chip.appendChild(x);
+      chipsEl.appendChild(chip);
+    });
+  }
 
   function renderChecklist(filterText) {
     checklist.innerHTML = '';
@@ -252,6 +327,7 @@ footer { background: var(--navy); color: #cfd3ea; }
     ids.forEach(function(id) {
       if (q && DATA[id].name.toLowerCase().indexOf(q) === -1) return;
       var label = document.createElement('label');
+      if (!isEligible(id)) label.className = 'cmp-ineligible';
       var box = document.createElement('input');
       box.type = 'checkbox';
       box.value = id;
@@ -261,21 +337,35 @@ footer { background: var(--navy); color: #cfd3ea; }
         if (box.checked) {
           if (selected.length >= MAX_PICK) { box.checked = false; return; }
           selected.push(id);
+          if (!baseline) baseline = id;
         } else {
-          selected = selected.filter(function(x) { return x !== id; });
+          removeSelected(id);
         }
-        renderChecklist(filterInput.value);
-        renderComparison();
+        renderAll();
       });
       label.appendChild(box);
-      label.appendChild(document.createTextNode(' ' + DATA[id].name));
+      var suffix = isEligible(id) ? '' : ' (no ' + activeCategory() + ' history)';
+      label.appendChild(document.createTextNode(' ' + DATA[id].name + suffix));
       checklist.appendChild(label);
     });
   }
 
-  function activeCategory() {
-    var checked = document.querySelector('input[name="cmp-cat"]:checked');
-    return checked ? checked.value : 'Long';
+  function renderBaselinePicker() {
+    if (selected.length < 2) { baselineEl.hidden = true; baselineEl.innerHTML = ''; return; }
+    baselineEl.hidden = false;
+    baselineEl.innerHTML = '<strong style="margin-right:10px">Compare against:</strong>';
+    selected.forEach(function(id) {
+      var label = document.createElement('label');
+      var radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'cmp-baseline';
+      radio.value = id;
+      radio.checked = baseline === id;
+      radio.addEventListener('change', function() { baseline = id; renderComparison(); syncUrl(); });
+      label.appendChild(radio);
+      label.appendChild(document.createTextNode(' ' + DATA[id].name));
+      baselineEl.appendChild(label);
+    });
   }
 
   function renderComparison() {
@@ -292,13 +382,35 @@ footer { background: var(--navy); color: #cfd3ea; }
 
     var category = activeCategory();
     var athletes = selected.map(function(id) { return {id: id, name: DATA[id].name, cat: DATA[id].categories[category]}; });
+    var baseAthlete = athletes.filter(function(a) { return a.id === baseline; })[0] || athletes[0];
+
+    function withDelta(value, event, baseValue) {
+      if (value === null || value === undefined) return '–';
+      return fmtSec(value) + (event !== undefined ? ' (#' + event + ')' : '') + deltaSuffix(value, baseValue);
+    }
 
     var table = document.createElement('table');
     var rows = [
-      ['PB total', function(a) { return a.cat ? fmtSec(a.cat.pb.total) + ' (#' + a.cat.pb.event + ')' : 'No ' + category + ' history'; }],
-      ['Best run 1', function(a) { return a.cat && a.cat.best.run1 ? fmtSec(a.cat.best.run1.value) + ' (#' + a.cat.best.run1.event + ')' : '–'; }],
-      ['Best bike', function(a) { return a.cat && a.cat.best.bike ? fmtSec(a.cat.best.bike.value) + ' (#' + a.cat.best.bike.event + ')' : '–'; }],
-      ['Best run 2', function(a) { return a.cat && a.cat.best.run2 ? fmtSec(a.cat.best.run2.value) + ' (#' + a.cat.best.run2.event + ')' : '–'; }],
+      ['PB total', function(a) {
+        if (!a.cat) return 'No ' + category + ' history';
+        var baseVal = baseAthlete.cat && a.id !== baseAthlete.id ? baseAthlete.cat.pb.total : undefined;
+        return withDelta(a.cat.pb.total, a.cat.pb.event, baseVal);
+      }],
+      ['Best run 1', function(a) {
+        if (!a.cat || !a.cat.best.run1) return '–';
+        var baseVal = (baseAthlete.cat && baseAthlete.cat.best.run1 && a.id !== baseAthlete.id) ? baseAthlete.cat.best.run1.value : undefined;
+        return withDelta(a.cat.best.run1.value, a.cat.best.run1.event, baseVal);
+      }],
+      ['Best bike', function(a) {
+        if (!a.cat || !a.cat.best.bike) return '–';
+        var baseVal = (baseAthlete.cat && baseAthlete.cat.best.bike && a.id !== baseAthlete.id) ? baseAthlete.cat.best.bike.value : undefined;
+        return withDelta(a.cat.best.bike.value, a.cat.best.bike.event, baseVal);
+      }],
+      ['Best run 2', function(a) {
+        if (!a.cat || !a.cat.best.run2) return '–';
+        var baseVal = (baseAthlete.cat && baseAthlete.cat.best.run2 && a.id !== baseAthlete.id) ? baseAthlete.cat.best.run2.value : undefined;
+        return withDelta(a.cat.best.run2.value, a.cat.best.run2.event, baseVal);
+      }],
       ['PB race - run 1', function(a) { return a.cat ? fmtSec(a.cat.pb.run1) : '–'; }],
       ['PB race - bike', function(a) { return a.cat ? fmtSec(a.cat.pb.bike) : '–'; }],
       ['PB race - run 2', function(a) { return a.cat ? fmtSec(a.cat.pb.run2) : '–'; }],
@@ -308,7 +420,7 @@ footer { background: var(--navy); color: #cfd3ea; }
     thead.appendChild(document.createElement('th'));
     athletes.forEach(function(a) {
       var th = document.createElement('th');
-      th.textContent = a.name;
+      th.textContent = a.name + (a.id === baseAthlete.id && selected.length > 1 ? ' (baseline)' : '');
       thead.appendChild(th);
     });
     table.appendChild(thead);
@@ -332,7 +444,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 
     var note = document.createElement('p');
     note.className = 'note';
-    note.textContent = '"Best" splits are each athlete\'s fastest-ever for that leg, which may be from a different race than their PB. "PB race" splits are from the specific race that set their PB total.';
+    note.textContent = '"Best" splits are each athlete\'s fastest-ever for that leg, which may be from a different race than their PB. "PB race" splits are from the specific race that set their PB total. Differences in brackets are versus the baseline athlete, chosen below.';
     result.appendChild(note);
 
     var events = {};
@@ -375,11 +487,29 @@ footer { background: var(--navy); color: #cfd3ea; }
     }
   }
 
+  function renderAll() {
+    renderChips();
+    renderChecklist(filterInput.value);
+    renderBaselinePicker();
+    renderComparison();
+    syncUrl();
+  }
+
   filterInput.addEventListener('input', function() { renderChecklist(filterInput.value); });
   document.querySelectorAll('input[name="cmp-cat"]').forEach(function(radio) {
-    radio.addEventListener('change', renderComparison);
+    radio.addEventListener('change', renderAll);
   });
-  renderChecklist('');
+  copyBtn.addEventListener('click', function() {
+    syncUrl();
+    navigator.clipboard.writeText(location.href).then(function() {
+      var original = copyBtn.textContent;
+      copyBtn.textContent = 'Copied!';
+      setTimeout(function() { copyBtn.textContent = original; }, 1500);
+    });
+  });
+
+  loadFromUrl();
+  renderAll();
 })();
 </script>
 </main>

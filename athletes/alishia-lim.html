@@ -139,6 +139,16 @@ tr.podium-3 td.rk { color: #B0672B; }
 .cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
   padding: 3px 0; cursor: pointer; }
 .cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+.cmp-ineligible { opacity: .55; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 1px; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-chip-remove {
+  background: none; border: none; color: #fff; font-size: 15px; line-height: 1;
+  cursor: pointer; padding: 0 0 0 2px;
+}
+#cmp-baseline { margin: 16px 0; background: #fff; border-radius: 10px;
+  padding: 12px 18px; box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+#cmp-baseline label { margin-right: 14px; cursor: pointer; }
 #cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
 .highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
