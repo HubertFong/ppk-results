@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ahmad Adli · SQDTT Results - Timing by PPK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #102060; --orange: #E64D24; --mustard: #FAB615;
+  --cyan: #1B9590; --paper: #F7F6F2;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: 'Barlow', system-ui, sans-serif;
+  background: var(--paper); color: #1c1c28;
+  font-size: 16px; line-height: 1.55;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+
+header { background: var(--navy); color: #fff; }
+.head-inner {
+  max-width: 960px; margin: 0 auto; padding: 26px 20px 22px;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.brand {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 30px; letter-spacing: .04em; color: #fff;
+}
+.brand span { color: var(--mustard); }
+nav { margin-left: auto; display: flex; gap: 18px; }
+nav a {
+  color: #fff; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 3px solid transparent; padding-bottom: 2px;
+}
+nav a.on { border-color: var(--orange); }
+nav a:hover { text-decoration: none; border-color: var(--mustard); }
+
+main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
+h1 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 42px; letter-spacing: .02em; color: var(--navy);
+  line-height: 1.1;
+}
+.sub { color: #5a5a6b; margin: 6px 0 26px; }
+h2 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--navy); margin: 38px 0 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.subhead {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 32px; color: var(--navy); margin-top: 34px;
+}
+.subhead .dim { color: #5a5a6b; font-size: 20px; }
+.catdot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff;
+         border-radius: 10px; overflow: hidden;
+         box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
+  white-space: nowrap;
+}
+td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
+td.t { font-variant-numeric: tabular-nums; }
+.split-note { display: block; font-size: 11px; font-weight: 400;
+               color: #5a5a6b; font-variant-numeric: tabular-nums; }
+tr:nth-child(even) td { background: #fafaf7; }
+td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+         font-size: 18px; color: var(--navy); width: 40px; }
+tr.podium-1 td.rk { color: var(--orange); }
+.pb { font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+
+.chip {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+  color: #fff; border-radius: 20px; padding: 1px 10px 2px;
+}
+.note { font-size: 14px; color: #5a5a6b; margin-top: 14px; }
+
+.statgrid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
+.stat {
+  background: #fff; border-radius: 10px; padding: 12px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); min-width: 130px;
+}
+.stat b {
+  display: block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; color: var(--navy); font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 13px; color: #5a5a6b; text-transform: uppercase;
+              letter-spacing: .06em; }
+.chart { background: #fff; border-radius: 10px; padding: 16px;
+          box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 10px 0 24px; }
+
+footer { background: var(--navy); color: #cfd3ea; }
+.foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
+               font-size: 14px; }
+.foot-inner b { color: var(--mustard); font-weight: 600; }
+.foot-inner a { color: #8fd8d3; }
+.foot-note { margin-top: 10px; font-size: 13px; color: #9aa0c4; }
+@media (max-width: 620px) {
+  h1 { font-size: 32px; }
+  .head-inner { padding-top: 18px; }
+  nav { width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </div>
+    <nav><a href="../events.html">Events</a><a href="../index.html">Leaderboard</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a></nav>
+  </div>
+</header>
+<main>
+<h1>Ahmad Adli</h1>
+<p class="sub"><span class="chip" style="background:#1B9590">Short</span></p>
+<div class="statgrid">
+<div class="stat"><b>1</b><span>races</span></div>
+<div class="stat"><b>0</b><span>wins</span></div>
+<div class="stat"><b>1</b><span>podiums</span></div>
+<div class="stat"><b><a href="../events.html#event-117">1:01:44</a></b><span>Short PB</span></div>
+</div>
+<h2>Race history</h2>
+<div class="tablewrap"><table><tr><th>Event</th><th>Date</th><th>Course</th><th>Run 1</th><th>Bike</th><th>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-117">#117</a></td><td class='t'>2026-05-10</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t'>14:47<span class="split-note">4:56/km</span></td><td class='t'>30:12<span class="split-note">29.8 km/h</span></td><td class='t'>16:45<span class="split-note">5:35/km</span></td><td class='t pb'>1:01:44 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>3</td></tr></table></div>
+</main>
+<footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
+Straits Quay Duathlon Time Trial series · Timing by Pedal Penangkia · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+<p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
+</div></footer>
+</body>
+</html>
