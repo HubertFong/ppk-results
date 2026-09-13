@@ -147,6 +147,20 @@ tr.podium-1 td.rk { color: var(--orange); }
   .search-results { width: 100%; }
 }
 
+.splits-toggle {
+  display: none; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin-bottom: 8px;
+}
+@media (max-width: 620px) {
+  .splits-toggle { display: inline-block; }
+  .results-table .col-run1, .results-table .col-bike,
+  .results-table .col-run2, .results-table .col-setat { display: none; }
+  .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
+  .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+}
+
 footer { background: var(--navy); color: #cfd3ea; }
 .foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
                font-size: 14px; }
@@ -176,8 +190,8 @@ footer { background: var(--navy); color: #cfd3ea; }
 <p class="sub">Straits Quay Duathlon Time Trial · Timing by Pedal Penangkia. Find yourself with the search box above, or jump in below.</p>
 <h2 class="subhead">Latest — Event #121 <span class="dim">· 2026-09-13</span></h2>
 <div class="statgrid"><div class="stat"><b><a href="athletes/fish-lim.html">Fish Lim</a></b><span>Long winner · 1:51:15</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short winner · 58:25</span></div></div>
-<h2 class="subhead">New records &amp; PBs from #121</h2>
-<ul class="highlight-list"><li><span class="record-badge r1">1</span> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long fastest bike, <a href="events.html#event-121">51:21<span class="split-note">35.1 km/h</span></a></li><li><span class="record-badge r1">1</span> <a href="athletes/tao.html">Tao</a> — Short fastest bike, <a href="events.html#event-121">27:43<span class="split-note">32.5 km/h</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/fish-lim.html">Fish Lim</a> — Long fastest overall, <a href="events.html#event-121">1:51:15</a></li><li><span class="record-badge r2">2</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 1, <a href="events.html#event-121">25:45<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 2, <a href="events.html#event-121">25:51<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short fastest bike, <a href="events.html#event-121">28:22<span class="split-note">31.7 km/h</span></a></li><li><span class="record-badge r3">3</span> <a href="athletes/dysen-leong-chat-shen.html">Dysen Leong Chat Shen</a> — Long fastest overall, <a href="events.html#event-121">1:51:31</a></li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long PB of 1:53:47</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long PB of 1:56:14</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short PB of 1:00:02</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/adriana-alvarez.html">Adriana Álvarez</a> — Short PB of 1:03:06</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/clarabelle-yii-jia-tong.html">Clarabelle Yii Jia Tong</a> — Short PB of 1:08:20</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/alishia-lim.html">Alishia Lim</a> — Short PB of 1:09:33</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/tan-huay-vern.html">Tan Huay Vern</a> — Short PB of 1:13:25</li></ul>
+<h2 class="subhead">What changed at #121</h2>
+<ul class="highlight-list"><li><span class="record-badge r1">1</span> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long fastest bike, <a href="events.html#event-121">51:21<span class="split-note">35.1 km/h</span></a></li><li><span class="record-badge r1">1</span> <a href="athletes/tao.html">Tao</a> — Short fastest bike, <a href="events.html#event-121">27:43<span class="split-note">32.5 km/h</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/fish-lim.html">Fish Lim</a> — Long fastest overall, <a href="events.html#event-121">1:51:15</a></li><li><span class="record-badge r2">2</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 1, <a href="events.html#event-121">25:45<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 2, <a href="events.html#event-121">25:51<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2">2</span> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short fastest bike, <a href="events.html#event-121">28:22<span class="split-note">31.7 km/h</span></a></li><li><span class="record-badge r3">3</span> <a href="athletes/dysen-leong-chat-shen.html">Dysen Leong Chat Shen</a> — Long fastest overall, <a href="events.html#event-121">1:51:31</a></li><li><span class="chip" style="background:#1B9590">NEW</span> 15 first-time racers this event</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long PB of 1:53:47</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long PB of 1:56:14</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short PB of 1:00:02</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/adriana-alvarez.html">Adriana Álvarez</a> — Short PB of 1:03:06</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/clarabelle-yii-jia-tong.html">Clarabelle Yii Jia Tong</a> — Short PB of 1:08:20</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/alishia-lim.html">Alishia Lim</a> — Short PB of 1:09:33</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/tan-huay-vern.html">Tan Huay Vern</a> — Short PB of 1:13:25</li><li><span class="chip" style="background:#E64D24">↑</span> <a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a> — biggest improvement: 35:25 (37.7%) faster</li><li><a href="athletes/fish-lim.html">Fish Lim</a> — enters the Long standings at #7</li><li><a href="athletes/dysen-leong-chat-shen.html">Dysen Leong Chat Shen</a> — enters the Long standings at #9</li><li><a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long standings: #6 ↑ #5</li><li><a href="athletes/winson-khoo.html">Winson Khoo</a> — Long standings: #7 ↓ #8</li><li><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a> — Short standings: #8 ↑ #1</li><li><a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short standings: #24 ↑ #9</li><li><a href="athletes/kan-khai-wei.html">Kan Khai Wei</a> — Short standings: #3 ↑ #2</li><li><a href="athletes/dr-k.html">Dr. K</a> — Short standings: #7 ↑ #4</li><li><a href="athletes/kiron-reyon.html">Kiron Reyon</a> — Short standings: #1 ↓ #3</li></ul>
 <h2 class="subhead">2026 championship leaders</h2>
 <div class="statgrid"><div class="stat"><b><a href="athletes/hubert-fong.html">Hubert Fong</a></b><span>Long leader · 90 pts</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short leader · 44 pts</span></div></div>
 <div class="home-actions"><a class="btn" href="events.html">View Event Results</a><a class="btn" href="leaderboard.html">All-Time PBs</a><a class="btn" href="standings.html">Standings</a><a class="btn" href="records.html">Records</a></div>
@@ -236,6 +250,12 @@ footer { background: var(--navy); color: #cfd3ea; }
 
   document.addEventListener('click', function(e) {
     if (!list.contains(e.target) && e.target !== input) list.hidden = true;
+    if (e.target.classList.contains('splits-toggle')) {
+      var table = e.target.nextElementSibling;
+      var expanded = table.classList.toggle('show-splits');
+      e.target.setAttribute('aria-expanded', expanded);
+      e.target.textContent = expanded ? 'Hide splits' : 'Show splits';
+    }
   });
 })();
 </script>

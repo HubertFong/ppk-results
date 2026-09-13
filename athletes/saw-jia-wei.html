@@ -147,6 +147,20 @@ tr.podium-1 td.rk { color: var(--orange); }
   .search-results { width: 100%; }
 }
 
+.splits-toggle {
+  display: none; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin-bottom: 8px;
+}
+@media (max-width: 620px) {
+  .splits-toggle { display: inline-block; }
+  .results-table .col-run1, .results-table .col-bike,
+  .results-table .col-run2, .results-table .col-setat { display: none; }
+  .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
+  .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+}
+
 footer { background: var(--navy); color: #cfd3ea; }
 .foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
                font-size: 14px; }
@@ -183,7 +197,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <div class="stat"><b>—</b><span>Long vs previous race - first race</span></div>
 </div>
 <h2>Race history</h2>
-<div class="tablewrap"><table><tr><th>Event</th><th>Date</th><th>Course</th><th>Run 1</th><th>Bike</th><th>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-121">#121</a></td><td class='t'>2026-09-13</td><td><span class="chip" style="background:#E64D24">Long</span></td><td class='t'>35:37<span class="split-note">5:56/km</span></td><td class='t'>1:04:25<span class="split-note">27.9 km/h</span></td><td class='t'>34:47<span class="split-note">5:48/km</span></td><td class='t pb'>2:14:49 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>10</td></tr></table></div>
+<div class="tablewrap"><button class="splits-toggle" type="button" aria-expanded="false">Show splits</button><table class="results-table"><tr><th>Event</th><th>Date</th><th>Course</th><th class='col-run1'>Run 1</th><th class='col-bike'>Bike</th><th class='col-run2'>Run 2</th><th>Total</th><th>Place</th></tr><tr><td class='t'><a href="../events.html#event-121">#121</a></td><td class='t'>2026-09-13</td><td><span class="chip" style="background:#E64D24">Long</span></td><td class='t col-run1'>35:37<span class="split-note">5:56/km</span></td><td class='t col-bike'>1:04:25<span class="split-note">27.9 km/h</span></td><td class='t col-run2'>34:47<span class="split-note">5:48/km</span></td><td class='t pb'>2:14:49 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>10</td></tr></table></div>
 </main>
 <script>
 (function() {
@@ -239,6 +253,12 @@ footer { background: var(--navy); color: #cfd3ea; }
 
   document.addEventListener('click', function(e) {
     if (!list.contains(e.target) && e.target !== input) list.hidden = true;
+    if (e.target.classList.contains('splits-toggle')) {
+      var table = e.target.nextElementSibling;
+      var expanded = table.classList.toggle('show-splits');
+      e.target.setAttribute('aria-expanded', expanded);
+      e.target.textContent = expanded ? 'Hide splits' : 'Show splits';
+    }
   });
 })();
 </script>
