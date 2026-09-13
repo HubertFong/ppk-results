@@ -198,6 +198,24 @@ tr.podium-3 td.rk { color: #B0672B; }
   border-radius: 8px; padding: 6px 12px; margin: 4px 0 10px;
 }
 
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end;
+  background: #fff; border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.filter-field { display: flex; flex-direction: column; gap: 4px; }
+.filter-field label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .06em; color: #5a5a6b; }
+.filter-field select, .filter-field input[type="text"] {
+  font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid #d6d9e6; background: #fff; min-width: 150px; }
+.filter-field input[type="text"] { min-width: 200px; }
+.filter-note { font-size: 13px; color: #5a5a6b; margin: -4px 0 12px; }
+.no-results { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); color: #5a5a6b; margin: 16px 0; }
+th[data-sort] { cursor: pointer; user-select: none; }
+th[data-sort]:hover, th[data-sort]:focus-visible { background: #1a2f80; }
+th[data-sort] .sort-arrow { font-size: 11px; opacity: .55; margin-left: 4px; }
+th[data-sort][aria-sort] .sort-arrow { opacity: 1; }
+
 footer { background: var(--navy); color: #cfd3ea; }
 .foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
                font-size: 14px; }
@@ -320,6 +338,59 @@ footer { background: var(--navy); color: #cfd3ea; }
         btn.setAttribute('aria-expanded', 'true');
       }
     }
+  });
+})();
+</script>
+<script>
+(function() {
+  function visibleBody(table) {
+    return table.querySelector('tbody:not([hidden])') || table.tBodies[0];
+  }
+  function cellVal(td) {
+    var v = td.getAttribute('data-val');
+    return (v === null || v === '') ? null : parseFloat(v);
+  }
+  function sortRows(table, colIndex, ascending) {
+    var tbody = visibleBody(table);
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.rows);
+    rows.sort(function(a, b) {
+      var av = cellVal(a.cells[colIndex]), bv = cellVal(b.cells[colIndex]);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return ascending ? av - bv : bv - av;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+  document.querySelectorAll('table.sortable').forEach(function(table) {
+    var headRow = table.tHead ? table.tHead.rows[0] : table.rows[0];
+    Array.prototype.forEach.call(headRow.cells, function(th, i) {
+      if (!th.hasAttribute('data-sort')) return;
+      var arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↕';
+      th.appendChild(document.createTextNode(' '));
+      th.appendChild(arrow);
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('role', 'button');
+      function activate() {
+        var ascending = th.getAttribute('aria-sort') !== 'ascending';
+        Array.prototype.forEach.call(headRow.cells, function(other) {
+          other.removeAttribute('aria-sort');
+          var a = other.querySelector('.sort-arrow');
+          if (a) a.textContent = '↕';
+        });
+        th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+        arrow.textContent = ascending ? '↑' : '↓';
+        sortRows(table, i, ascending);
+      }
+      th.addEventListener('click', activate);
+      th.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
   });
 })();
 </script>
