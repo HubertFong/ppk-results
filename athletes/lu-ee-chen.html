@@ -181,6 +181,13 @@ tr.podium-3 td.rk { color: #B0672B; }
   .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
 }
 
+.highlights-toggle {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin: 4px 0 10px;
+}
+
 footer { background: var(--navy); color: #cfd3ea; }
 .foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
                font-size: 14px; }
@@ -219,12 +226,16 @@ footer { background: var(--navy); color: #cfd3ea; }
 <div class="stat"><b><a href="../events.html#event-121">↓ 1:30 (1.3%)</a></b><span>Long vs previous race - faster</span></div>
 <div class="stat"><b>—</b><span>Short vs previous race - first race</span></div>
 </div>
-<h2>Course records</h2>
+<h2>2026 points breakdown</h2>
+<p class="note">Long: <a href="../events.html#event-115">#115</a> (3rd) → 15 + <a href="../events.html#event-121">#121</a> (4th) → 12 = <strong>27 pts</strong> (#5 in the Long standings)</p>
+<p class="note">Short: <a href="../events.html#event-120">#120</a> (2nd) → 18 = <strong>18 pts</strong> (#12 in the Short standings)</p>
+<h2>Current course records</h2>
+<p class="note">Recalculated after every event - a faster ride by someone else can move one of these out of the top 3 without changing the race that earned it.</p>
 <div class="statgrid">
-<div class="stat"><b><a href="../events.html#event-121">25:45<span class="split-note">4:18/km</span></a></b><span>#2 Long fastest run 1</span></div>
-<div class="stat"><b><a href="../events.html#event-121">25:51<span class="split-note">4:18/km</span></a></b><span>#2 Long fastest run 2</span></div>
-<div class="stat"><b><a href="../events.html#event-115">27:09<span class="split-note">4:32/km</span></a></b><span>#3 Long fastest run 1</span></div>
-<div class="stat"><b><a href="../events.html#event-115">26:35<span class="split-note">4:26/km</span></a></b><span>#3 Long fastest run 2</span></div>
+<div class="stat"><b><a href="../events.html#event-121">25:45<span class="split-note">4:18/km</span></a></b><span>#2 all-time Long fastest run 1</span></div>
+<div class="stat"><b><a href="../events.html#event-121">25:51<span class="split-note">4:18/km</span></a></b><span>#2 all-time Long fastest run 2</span></div>
+<div class="stat"><b><a href="../events.html#event-115">27:09<span class="split-note">4:32/km</span></a></b><span>#3 all-time Long fastest run 1</span></div>
+<div class="stat"><b><a href="../events.html#event-115">26:35<span class="split-note">4:26/km</span></a></b><span>#3 all-time Long fastest run 2</span></div>
 </div>
 <h2>Achievements</h2>
 <div class="badge-row"><span class="chip badge" title="Completed your first SQDTT">First SQDTT</span><span class="chip badge" title="Broke 2 hours on the Long course">Sub-2 Long</span></div>
@@ -294,11 +305,26 @@ footer { background: var(--navy); color: #cfd3ea; }
       e.target.setAttribute('aria-expanded', expanded);
       e.target.textContent = expanded ? 'Hide splits' : 'Show splits';
     }
+    if (e.target.classList.contains('highlights-toggle')) {
+      var btn = e.target;
+      var list = btn.nextElementSibling;
+      var nowHidden = !list.hasAttribute('hidden');
+      if (nowHidden) {
+        list.setAttribute('hidden', '');
+        btn.textContent = 'Show ' + btn.dataset.count + ' more';
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        list.removeAttribute('hidden');
+        btn.textContent = 'Show fewer';
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
   });
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
 Straits Quay Duathlon Time Trial series · Timing by Pedal Penangkia · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+· <a href="../data.html">About this data</a>
 <p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
 </div></footer>
 </body>
