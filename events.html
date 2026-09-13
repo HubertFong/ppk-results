@@ -125,6 +125,22 @@ tr.podium-3 td.rk { color: #B0672B; }
 .btn:hover { background: #1a2f80; text-decoration: none; }
 .highlight-list { list-style: none; background: #fff; border-radius: 10px;
   box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
+
+.cmp-controls { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 18px 0; }
+.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px;
+  font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+  letter-spacing: .04em; font-size: 15px; }
+.cmp-cats label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#cmp-filter { font: inherit; font-size: 15px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #d6d9e6; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.cmp-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px; max-height: 260px; overflow-y: auto; }
+.cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
+  padding: 3px 0; cursor: pointer; }
+.cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+#cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
 .highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
 .highlight-list li:first-child { border-top: none; }
 
@@ -182,7 +198,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <header>
   <div class="head-inner">
     <a href="index.html" class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </a>
-    <nav><a href="index.html">Home</a><a href="events.html" class="on">Events</a><a href="leaderboard.html">Leaderboard</a><a href="standings.html">Standings</a><a href="records.html">Records</a></nav>
+    <nav><a href="index.html">Home</a><a href="events.html" class="on">Events</a><a href="leaderboard.html">Personal Bests</a><a href="standings.html">Standings</a><a href="records.html">Records</a><a href="compare.html">Compare</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
       <ul id="search-results" class="search-results" hidden></ul>
