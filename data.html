@@ -63,13 +63,14 @@ h2 {
 .dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
 
 table { width: 100%; border-collapse: collapse; background: #fff;
-         border-radius: 10px; overflow: hidden;
+         border-radius: 10px;
          box-shadow: 0 1px 4px rgba(16,32,96,.10); }
 th {
   font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
   letter-spacing: .08em; text-transform: uppercase;
   text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
   white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
 }
 td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
 td.t { font-variant-numeric: tabular-nums; }
@@ -77,6 +78,7 @@ tbody th[scope="row"], tr th[scope="row"] {
   font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
   letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
   color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+  position: static;
 }
 .split-note { display: block; font-size: 11px; font-weight: 400;
                color: #5a5a6b; font-variant-numeric: tabular-nums; }
@@ -87,7 +89,15 @@ tr.podium-1 td.rk { color: #D4A017; }
 tr.podium-2 td.rk { color: #9AA5B1; }
 tr.podium-3 td.rk { color: #B0672B; }
 .pb { font-weight: 600; }
-.tablewrap { overflow-x: auto; }
+/* .tablewrap (no overflow) is for results-table pages, which hide their
+   run1/bike/run2/set-at columns below 620px instead - so their sticky
+   headers can stick to the viewport (position:sticky needs every ancestor
+   up to the viewport to have overflow:visible; overflow-x:auto on a
+   scrolling ancestor would otherwise pin the header to that ancestor's own
+   box instead). Tables with more columns than that trick can hide (Standings,
+   Records, Compare, Data) use .tablewrap-x for horizontal scroll instead -
+   their headers just don't stick, same as before this feature existed. */
+.tablewrap-x { overflow-x: auto; }
 
 .chip {
   display: inline-block; font-family: 'Barlow Condensed', sans-serif;
@@ -198,6 +208,12 @@ tr.podium-3 td.rk { color: #B0672B; }
   .results-table .col-run2, .results-table .col-setat { display: none; }
   .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
   .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+  /* Revealing splits can make the table wider than the screen again - give
+     .tablewrap (results-table pages only; .tablewrap-x already scrolls)
+     its horizontal scroll back here, contained to the table instead of the
+     whole page. This is also why sticky headers are desktop-only: a sticky
+     ancestor can't have a scrolling ancestor between it and the viewport. */
+  .tablewrap { overflow-x: auto; }
 }
 
 .highlights-toggle {
@@ -253,14 +269,14 @@ footer { background: var(--navy); color: #cfd3ea; }
 <h1>About this data</h1>
 <p class="sub">Where the numbers on this site come from, how a result gets classified, and how to flag something that looks wrong.</p>
 <h2>Coverage</h2>
-<p>Results cover 7 events: #112, #113, #115, #117, #119, #120, #121. This page was generated on 2026-09-13, from the same build that produced every other page on the site - there's no separate delay between an event being entered and it showing up everywhere. If an event you raced isn't listed here, it hasn't been entered yet.</p>
+<p>Results cover 7 events: #112, #113, #115, #117, #119, #120, #121. This page was generated on 2026-09-14, from the same build that produced every other page on the site - there's no separate delay between an event being entered and it showing up everywhere. If an event you raced isn't listed here, it hasn't been entered yet.</p>
 <h2>How a result is classified</h2>
 <ul><li><strong>Finished (OK)</strong> - a real chip total was recorded.</li><li><strong>DNS</strong> (did not start) - never appears in the results at all.</li><li><strong>DNF / DQ</strong> - started but didn't post a qualifying finish; shown against the event with no time, so it's clear they took part.</li></ul><p>Times come from RaceClocker chip timing. A split (run 1, bike, or run 2) can be missing if a timing mat had an issue - the overall total is kept if it's still physically plausible for the course distance, but that split is shown as "–" rather than estimated.</p>
 <h2>Scoring and ties</h2>
 <p>Points per event, within each course: 25-18-15-12-10-8-6-4-2-1 for the top 10 finishers, 1 point for every other finisher. Season standings sum these across every event in a calendar year. Two athletes level on points are ordered by whichever has the better single best finish that season; results.csv preserves finishing order, so an exact dead-heat keeps whichever order the timing system recorded it in.</p>
 <h2>Correction log</h2>
 <p>Documented, reversible overrides applied when a timing mat is known to have misfired. The originally recorded value is never deleted from the master database - only the specific field(s) below are treated as unreliable for display, best-splits, and records.</p>
-<div class="tablewrap"><table><tr><th scope="col">Event</th><th scope="col">Athlete</th><th scope="col">Field(s)</th><th scope="col">Reason</th></tr><tr><td class='t'><a href="events.html#event-119">#119</a></td><td>Syafiq Monaer</td><td>run1;bike;run2</td><td>Timing point missed - splits unreliable but total retained</td></tr></table></div>
+<div class="tablewrap-x"><table><tr><th scope="col">Event</th><th scope="col">Athlete</th><th scope="col">Field(s)</th><th scope="col">Reason</th></tr><tr><td class='t'><a href="events.html#event-119">#119</a></td><td>Syafiq Monaer</td><td>run1;bike;run2</td><td>Timing point missed - splits unreliable but total retained</td></tr></table></div>
 <h2>Report a result issue</h2>
 <p>Spotted something wrong with a result, a name, or a split? <a href="https://linktr.ee/rideppk">Reach PPK via Linktree</a> with the event number and athlete name, and it'll be checked against the original timing data.</p>
 </main>

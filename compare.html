@@ -63,13 +63,14 @@ h2 {
 .dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
 
 table { width: 100%; border-collapse: collapse; background: #fff;
-         border-radius: 10px; overflow: hidden;
+         border-radius: 10px;
          box-shadow: 0 1px 4px rgba(16,32,96,.10); }
 th {
   font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
   letter-spacing: .08em; text-transform: uppercase;
   text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
   white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
 }
 td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
 td.t { font-variant-numeric: tabular-nums; }
@@ -77,6 +78,7 @@ tbody th[scope="row"], tr th[scope="row"] {
   font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
   letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
   color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+  position: static;
 }
 .split-note { display: block; font-size: 11px; font-weight: 400;
                color: #5a5a6b; font-variant-numeric: tabular-nums; }
@@ -87,7 +89,15 @@ tr.podium-1 td.rk { color: #D4A017; }
 tr.podium-2 td.rk { color: #9AA5B1; }
 tr.podium-3 td.rk { color: #B0672B; }
 .pb { font-weight: 600; }
-.tablewrap { overflow-x: auto; }
+/* .tablewrap (no overflow) is for results-table pages, which hide their
+   run1/bike/run2/set-at columns below 620px instead - so their sticky
+   headers can stick to the viewport (position:sticky needs every ancestor
+   up to the viewport to have overflow:visible; overflow-x:auto on a
+   scrolling ancestor would otherwise pin the header to that ancestor's own
+   box instead). Tables with more columns than that trick can hide (Standings,
+   Records, Compare, Data) use .tablewrap-x for horizontal scroll instead -
+   their headers just don't stick, same as before this feature existed. */
+.tablewrap-x { overflow-x: auto; }
 
 .chip {
   display: inline-block; font-family: 'Barlow Condensed', sans-serif;
@@ -198,6 +208,12 @@ tr.podium-3 td.rk { color: #B0672B; }
   .results-table .col-run2, .results-table .col-setat { display: none; }
   .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
   .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+  /* Revealing splits can make the table wider than the screen again - give
+     .tablewrap (results-table pages only; .tablewrap-x already scrolls)
+     its horizontal scroll back here, contained to the table instead of the
+     whole page. This is also why sticky headers are desktop-only: a sticky
+     ancestor can't have a scrolling ancestor between it and the viewport. */
+  .tablewrap { overflow-x: auto; }
 }
 
 .highlights-toggle {
@@ -468,7 +484,7 @@ footer { background: var(--navy); color: #cfd3ea; }
       table.appendChild(tr);
     });
     var wrap1 = document.createElement('div');
-    wrap1.className = 'tablewrap';
+    wrap1.className = 'tablewrap-x';
     wrap1.appendChild(table);
     result.appendChild(wrap1);
 
@@ -516,7 +532,7 @@ footer { background: var(--navy); color: #cfd3ea; }
         histTable.appendChild(tr);
       });
       var wrap2 = document.createElement('div');
-      wrap2.className = 'tablewrap';
+      wrap2.className = 'tablewrap-x';
       wrap2.appendChild(histTable);
       result.appendChild(wrap2);
     }
