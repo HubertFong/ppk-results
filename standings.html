@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Standings · SQDTT Results - Timing by PPK</title>
+<title>Standings · PPK SQDTT Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -28,11 +28,17 @@ header { background: var(--navy); color: #fff; }
   display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
 }
 .brand {
-  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-  font-size: 30px; letter-spacing: .04em; color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; color: #fff;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
 }
 .brand:hover { text-decoration: none; }
-.brand span { color: var(--mustard); }
+.brand-main {
+  font-weight: 700; font-size: 32px; letter-spacing: .04em; color: var(--mustard);
+}
+.brand-sub {
+  font-weight: 600; font-size: 16px; letter-spacing: .03em;
+  text-transform: uppercase; color: #cfd3ea;
+}
 nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; row-gap: 6px; }
 nav a {
   color: #fff; font-family: 'Barlow Condensed', sans-serif;
@@ -47,6 +53,11 @@ h1 {
   font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 42px; letter-spacing: .02em; color: var(--navy);
   line-height: 1.1;
+}
+.kicker {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
 }
 .sub { color: #5a5a6b; margin: 6px 0 26px; }
 h2 {
@@ -257,7 +268,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <body>
 <header>
   <div class="head-inner">
-    <a href="index.html" class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </a>
+    <a href="index.html" class="brand">
+      <span class="brand-main">PPK</span><span class="brand-sub">SQDTT Results</span>
+    </a>
     <nav><a href="index.html">Home</a><a href="events.html">Events</a><a href="leaderboard.html">Personal Bests</a><a href="standings.html" class="on">Standings</a><a href="records.html">Records</a><a href="compare.html">Compare</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
@@ -266,6 +279,7 @@ footer { background: var(--navy); color: #cfd3ea; }
   </div>
 </header>
 <main>
+<p class="kicker">Pedal Penangkia (PPK)</p>
 <h1>Season standings</h1>
 <p class="sub">Points per event within each course: 25–18–15–12–10–8–6–4–2–1 for the top ten, one point for every other finisher. Seasons follow the calendar year.</p>
 <div class="filter-bar"><div class="filter-field"><label for="st-year">Season</label><select id="st-year"><option value="">All seasons</option><option value="2026">2026</option><option value="2025">2025</option></select></div><div class="filter-field"><label for="st-course">Course</label><select id="st-course"><option value="">All courses</option><option value="Long">Long</option><option value="Short">Short</option></select></div><div class="filter-field"><label for="st-filter">Find athlete</label><input type="text" id="st-filter" placeholder="Find athlete..." autocomplete="off"></div></div><p class="no-results" id="st-no-results" hidden>No standings match this season/course/name combination.</p>
@@ -481,7 +495,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
-Straits Quay Duathlon Time Trial series · Timing by Pedal Penangkia · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+Pedal Penangkia (PPK) · results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
 · <a href="data.html">About this data</a>
 <p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
 </div></footer>

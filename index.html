@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home · SQDTT Results - Timing by PPK</title>
+<title>Home · PPK SQDTT Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -28,11 +28,17 @@ header { background: var(--navy); color: #fff; }
   display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
 }
 .brand {
-  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-  font-size: 30px; letter-spacing: .04em; color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; color: #fff;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
 }
 .brand:hover { text-decoration: none; }
-.brand span { color: var(--mustard); }
+.brand-main {
+  font-weight: 700; font-size: 32px; letter-spacing: .04em; color: var(--mustard);
+}
+.brand-sub {
+  font-weight: 600; font-size: 16px; letter-spacing: .03em;
+  text-transform: uppercase; color: #cfd3ea;
+}
 nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; row-gap: 6px; }
 nav a {
   color: #fff; font-family: 'Barlow Condensed', sans-serif;
@@ -47,6 +53,11 @@ h1 {
   font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 42px; letter-spacing: .02em; color: var(--navy);
   line-height: 1.1;
+}
+.kicker {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
 }
 .sub { color: #5a5a6b; margin: 6px 0 26px; }
 h2 {
@@ -257,7 +268,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <body>
 <header>
   <div class="head-inner">
-    <a href="index.html" class="brand">SQDTT RESULTS <span>·</span> Timing by PPK </a>
+    <a href="index.html" class="brand">
+      <span class="brand-main">PPK</span><span class="brand-sub">SQDTT Results</span>
+    </a>
     <nav><a href="index.html" class="on">Home</a><a href="events.html">Events</a><a href="leaderboard.html">Personal Bests</a><a href="standings.html">Standings</a><a href="records.html">Records</a><a href="compare.html">Compare</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
@@ -266,8 +279,9 @@ footer { background: var(--navy); color: #cfd3ea; }
   </div>
 </header>
 <main>
+<p class="kicker">Pedal Penangkia (PPK)</p>
 <h1>SQDTT Results</h1>
-<p class="sub">Straits Quay Duathlon Time Trial · Timing by Pedal Penangkia. Find yourself with the search box above, or jump in below.</p>
+<p class="sub">SQDTT (the Straits Quay Duathlon Time Trial) is one of the events PPK times. Find yourself with the search box above, or jump in below.</p>
 <h2 class="subhead">Latest — Event #121 <span class="dim">· 2026-09-13</span></h2>
 <div class="statgrid"><div class="stat"><b><a href="athletes/fish-lim.html">Fish Lim</a></b><span>Long event winner · 1:51:15</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short event winner · 58:25</span></div></div>
 <div class="home-actions"><a class="btn" href="events.html#event-121-long">View Long Results</a><a class="btn" href="events.html#event-121-short">View Short Results</a></div>
@@ -409,7 +423,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
-Straits Quay Duathlon Time Trial series · Timing by Pedal Penangkia · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+Pedal Penangkia (PPK) · results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
 · <a href="data.html">About this data</a>
 <p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
 </div></footer>
