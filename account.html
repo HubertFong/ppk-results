@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About this data · PPK SQDTT Results</title>
+<title>Sign in - PPK Account · PPK SQDTT Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -279,20 +279,157 @@ footer { background: var(--navy); color: #cfd3ea; }
   </div>
 </header>
 <main>
-<p class="kicker">Pedal Penangkia (PPK)</p>
-<h1>About this data</h1>
-<p class="sub">Where the numbers on this site come from, how a result gets classified, and how to flag something that looks wrong. This site covers SQDTT (the Straits Quay Duathlon Time Trial), one of the events PPK times.</p>
-<h2>Coverage</h2>
-<p>Results cover 7 events: #112, #113, #115, #117, #119, #120, #121. This page was generated on 2026-09-19, from the same build that produced every other page on the site - there's no separate delay between an event being entered and it showing up everywhere. If an event you raced isn't listed here, it hasn't been entered yet.</p>
-<h2>How a result is classified</h2>
-<ul><li><strong>Finished (OK)</strong> - a real chip total was recorded.</li><li><strong>DNS</strong> (did not start) - never appears in the results at all.</li><li><strong>DNF / DQ</strong> - started but didn't post a qualifying finish; shown against the event with no time, so it's clear they took part.</li></ul><p>Times come from RaceClocker chip timing. A split (run 1, bike, or run 2) can be missing if a timing mat had an issue - the overall total is kept if it's still physically plausible for the course distance, but that split is shown as "–" rather than estimated.</p>
-<h2>Scoring and ties</h2>
-<p>Points per event, within each course: 25-18-15-12-10-8-6-4-2-1 for the top 10 finishers, 1 point for every other finisher. Season standings sum these across every event in a calendar year. Two athletes level on points are ordered by whichever has the better single best finish that season; results.csv preserves finishing order, so an exact dead-heat keeps whichever order the timing system recorded it in.</p>
-<h2>Correction log</h2>
-<p>Documented, reversible overrides applied when a timing mat is known to have misfired. The originally recorded value is never deleted from the master database - only the specific field(s) below are treated as unreliable for display, best-splits, and records.</p>
-<div class="tablewrap-x"><table><tr><th scope="col">Event</th><th scope="col">Athlete</th><th scope="col">Field(s)</th><th scope="col">Reason</th></tr><tr><td class='t'><a href="events.html#event-119">#119</a></td><td>Syafiq Monaer</td><td>run1;bike;run2</td><td>Timing point missed - splits unreliable but total retained</td></tr></table></div>
-<h2>Report a result issue</h2>
-<p>Spotted something wrong with a result, a name, or a split? <a href="https://linktr.ee/rideppk">Reach PPK via Linktree</a> with the event number and athlete name, and it'll be checked against the original timing data.</p>
+
+<div class="account-card">
+  <h1>Sign in to PPK</h1>
+  <p class="sub">One login for group ride sign-ups, checkpoint check-ins, and
+  the other PPK member features being built - see
+  <a href="https://linktr.ee/rideppk">PPK's Linktree</a> if you're not a
+  member yet.</p>
+
+  <div id="account-form">
+    <label for="account-email">Email address</label>
+    <input type="email" id="account-email" placeholder="you@example.com" autocomplete="email">
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAE8-21h85YHdWYel" data-callback="ppkTurnstileSuccess" data-expired-callback="ppkTurnstileExpired"></div>
+    <button id="account-send" class="btn">Send magic link</button>
+    <p class="note">No password needed - we'll email you a link to sign in.
+    It's valid for a short time, so use it soon after it arrives.</p>
+  </div>
+
+  <div id="account-sent" hidden>
+    <p><strong>Check your inbox.</strong> We've sent a sign-in link to
+    <span id="account-sent-email"></span>. Open it on this device to finish
+    signing in.</p>
+  </div>
+
+  <div id="account-signed-in" hidden>
+    <p>You're signed in as <strong id="account-user-email"></strong>.</p>
+    <p class="note">More PPK member features are on the way. Ride with
+    Passion. Ride with Power. Ride to Create Memories.</p>
+    <button id="account-signout" class="btn">Sign out</button>
+  </div>
+
+  <p id="account-error" class="account-error" hidden></p>
+</div>
+
+<style>
+  .account-card {
+    background: #fff; border-radius: 10px; padding: 28px 30px;
+    max-width: 420px; margin: 0 auto;
+  }
+  .account-card label {
+    display: block; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+    font-size: 14px; color: #102060; margin-bottom: 4px;
+  }
+  .account-card input[type=email] {
+    width: 100%; box-sizing: border-box; padding: 10px 12px;
+    border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .account-card .btn { border: none; cursor: pointer; font-size: 16px; }
+  .account-error {
+    color: #E64D24; font-weight: 600; margin-top: 14px;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+<script>
+(function() {
+  var client = supabase.createClient("https://zwoaickxftqwwlugremy.supabase.co", "sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW");
+  var captchaRequired = true;
+  var captchaToken = null;
+
+  window.ppkTurnstileSuccess = function(token) { captchaToken = token; };
+  window.ppkTurnstileExpired = function() { captchaToken = null; };
+
+  function safeReturnTo(raw) {
+    if (!raw) return null;
+    try {
+      var target = new URL(raw, window.location.origin);
+      if (target.origin !== window.location.origin || !target.pathname.startsWith("/")) return null;
+      return target.pathname + target.search + target.hash;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  var accountUrl = new URL(window.location.href);
+  var returnTo = safeReturnTo(accountUrl.searchParams.get("returnTo"));
+  accountUrl.searchParams.delete("returnTo");
+  if (returnTo) sessionStorage.setItem("ppkReturnTo", returnTo);
+
+  var formEl = document.getElementById("account-form");
+  var sentEl = document.getElementById("account-sent");
+  var signedInEl = document.getElementById("account-signed-in");
+  var errorEl = document.getElementById("account-error");
+
+  function showError(message) {
+    errorEl.textContent = "Something went wrong: " + message + ". Please try again in a moment.";
+    errorEl.hidden = false;
+  }
+
+  function render(session) {
+    errorEl.hidden = true;
+    if (session) {
+      formEl.hidden = true;
+      sentEl.hidden = true;
+      signedInEl.hidden = false;
+      document.getElementById("account-user-email").textContent = session.user.email;
+    } else {
+      signedInEl.hidden = true;
+    }
+  }
+
+  function returnToSavedContext(session) {
+    if (!session) return;
+    var savedReturnTo = safeReturnTo(sessionStorage.getItem("ppkReturnTo"));
+    if (savedReturnTo) {
+      sessionStorage.removeItem("ppkReturnTo");
+      window.location.assign(savedReturnTo);
+    }
+  }
+
+  client.auth.getSession().then(function(res) {
+    render(res.data.session);
+    returnToSavedContext(res.data.session);
+  });
+  client.auth.onAuthStateChange(function(event, session) {
+    render(session);
+    if (event === "SIGNED_IN" || event === "INITIAL_SESSION") returnToSavedContext(session);
+  });
+
+  document.getElementById("account-send").addEventListener("click", function() {
+    var email = document.getElementById("account-email").value.trim();
+    if (!email) { showError("enter an email address first"); return; }
+    if (captchaRequired && !captchaToken) { showError("complete the security check first"); return; }
+    var authOptions = { emailRedirectTo: accountUrl.href };
+    if (captchaRequired) authOptions.captchaToken = captchaToken;
+    client.auth.signInWithOtp({
+      email: email,
+      options: authOptions
+    }).then(function(res) {
+      if (captchaRequired && window.turnstile) window.turnstile.reset();
+      captchaToken = null;
+      if (res.error) {
+        showError(res.error.message);
+      } else {
+        formEl.hidden = true;
+        sentEl.hidden = false;
+        document.getElementById("account-sent-email").textContent = email;
+      }
+    });
+  });
+
+  document.getElementById("account-signout").addEventListener("click", function() {
+    client.auth.signOut().then(function(res) {
+      if (res.error) showError(res.error.message);
+    });
+  });
+})();
+</script>
+
 </main>
 <script>
 (function() {
