@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About this data · PPK SQDTT Results</title>
+<title>Organize rides - PPK · PPK SQDTT Results</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -279,20 +279,112 @@ footer { background: var(--navy); color: #cfd3ea; }
   </div>
 </header>
 <main>
-<p class="kicker">Pedal Penangkia (PPK)</p>
-<h1>About this data</h1>
-<p class="sub">Where the numbers on this site come from, how a result gets classified, and how to flag something that looks wrong. This site covers SQDTT (the Straits Quay Duathlon Time Trial), one of the events PPK times.</p>
-<h2>Coverage</h2>
-<p>Results cover 7 events: #112, #113, #115, #117, #119, #120, #121. This page was generated on 2026-09-29, from the same build that produced every other page on the site - there's no separate delay between an event being entered and it showing up everywhere. If an event you raced isn't listed here, it hasn't been entered yet.</p>
-<h2>How a result is classified</h2>
-<ul><li><strong>Finished (OK)</strong> - a real chip total was recorded.</li><li><strong>DNS</strong> (did not start) - never appears in the results at all.</li><li><strong>DNF / DQ</strong> - started but didn't post a qualifying finish; shown against the event with no time, so it's clear they took part.</li></ul><p>Times come from RaceClocker chip timing. A split (run 1, bike, or run 2) can be missing if a timing mat had an issue - the overall total is kept if it's still physically plausible for the course distance, but that split is shown as "–" rather than estimated.</p>
-<h2>Scoring and ties</h2>
-<p>Points per event, within each course: 25-18-15-12-10-8-6-4-2-1 for the top 10 finishers, 1 point for every other finisher. Season standings sum these across every event in a calendar year. Two athletes level on points are ordered by whichever has the better single best finish that season; results.csv preserves finishing order, so an exact dead-heat keeps whichever order the timing system recorded it in.</p>
-<h2>Correction log</h2>
-<p>Documented, reversible overrides applied when a timing mat is known to have misfired. The originally recorded value is never deleted from the master database - only the specific field(s) below are treated as unreliable for display, best-splits, and records.</p>
-<div class="tablewrap-x"><table><tr><th scope="col">Event</th><th scope="col">Athlete</th><th scope="col">Field(s)</th><th scope="col">Reason</th></tr><tr><td class='t'><a href="events.html#event-119">#119</a></td><td>Syafiq Monaer</td><td>run1;bike;run2</td><td>Timing point missed - splits unreliable but total retained</td></tr></table></div>
-<h2>Report a result issue</h2>
-<p>Spotted something wrong with a result, a name, or a split? <a href="https://linktr.ee/rideppk">Reach PPK via Linktree</a> with the event number and athlete name, and it'll be checked against the original timing data.</p>
+
+<div class="account-card organize-card" id="organize-root" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW">
+  <h1>Organize rides</h1>
+  <p id="organize-loading">Checking your access...</p>
+
+  <div id="organize-signed-out" hidden>
+    <p>Sign in first. <a id="organize-signin" href="account.html">Go to your account page</a>.</p>
+  </div>
+
+  <div id="organize-denied" hidden>
+    <p>Your account doesn't have organizer access. Ask the club if you think it should.</p>
+  </div>
+
+  <div id="organize-app" hidden>
+    <button id="ride-new" class="btn">New ride</button>
+
+    <form id="ride-form" hidden novalidate>
+      <h2 id="ride-form-title">New ride</h2>
+      <label for="ride-title">Title</label>
+      <input type="text" id="ride-title" maxlength="120" required>
+      <label for="ride-meeting_point">Meeting point</label>
+      <input type="text" id="ride-meeting_point" maxlength="200" required>
+      <label for="ride-meeting_map_link">Meeting point map link</label>
+      <input type="url" id="ride-meeting_map_link" maxlength="500">
+      <label for="ride-meet_at">Meet-up time</label>
+      <input type="datetime-local" id="ride-meet_at" required>
+      <label for="ride-depart_at">Departure time</label>
+      <input type="datetime-local" id="ride-depart_at" required>
+      <label for="ride-signup_deadline">Sign-up deadline</label>
+      <input type="datetime-local" id="ride-signup_deadline" required>
+      <p class="note">Defaults to 8pm the evening before the meet-up.</p>
+      <label for="ride-capacity">Capacity</label>
+      <input type="number" id="ride-capacity" min="1" step="1" required>
+      <label for="ride-route_link">Route link</label>
+      <input type="url" id="ride-route_link" maxlength="500">
+      <label for="ride-distance_km">Distance (km)</label>
+      <input type="number" id="ride-distance_km" min="0.1" step="0.1">
+      <label for="ride-climbing_m">Climbing (m)</label>
+      <input type="number" id="ride-climbing_m" min="0" step="1">
+      <label for="ride-regroup_policy">Regroup policy</label>
+      <input type="text" id="ride-regroup_policy" maxlength="200">
+      <label for="ride-pace_note">Pace note</label>
+      <input type="text" id="ride-pace_note" maxlength="200">
+      <button type="submit" id="ride-save" class="btn">Save ride</button>
+      <button type="button" id="ride-form-cancel" class="btn">Close</button>
+      <p id="ride-form-error" class="account-error" hidden></p>
+    </form>
+
+    <h2>Rides</h2>
+    <ul id="ride-list"></ul>
+    <p id="ride-list-empty" hidden>No rides yet.</p>
+
+    <section id="roster" hidden>
+      <h2 id="roster-title">Roster</h2>
+      <p id="roster-note" class="note"></p>
+      <ul id="roster-list"></ul>
+      <p id="roster-empty" hidden>Nobody has signed up yet.</p>
+      <button type="button" id="roster-close" class="btn">Close roster</button>
+    </section>
+
+    <p id="organize-status" role="status"></p>
+    <p id="organize-error" class="account-error" hidden></p>
+  </div>
+</div>
+
+<style>
+  .organize-card {
+    background: #fff; border-radius: 10px; padding: 28px 30px;
+    max-width: 640px; margin: 0 auto;
+  }
+  .organize-card label {
+    display: block; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+    font-size: 14px; color: #102060; margin-bottom: 4px;
+  }
+  .organize-card input[type=text], .organize-card input[type=url],
+  .organize-card input[type=number], .organize-card input[type=datetime-local] {
+    width: 100%; box-sizing: border-box; padding: 10px 12px;
+    border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .organize-card h2 {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 24px; color: #102060; margin: 30px 0 4px;
+  }
+  .organize-card .btn { border: none; cursor: pointer; font-size: 16px; }
+  .organize-card #ride-list, .organize-card #roster-list {
+    list-style: none; padding: 0; margin: 8px 0 0;
+  }
+  .organize-card #ride-list li, .organize-card #roster-list li {
+    border: 1px solid #d8d8e0; border-radius: 6px; padding: 10px 12px;
+    margin-top: 8px;
+  }
+  .organize-card #ride-list li button, .organize-card #roster-list li button {
+    font-size: 13px; padding: 4px 10px; margin: 4px 0 0 6px;
+  }
+  .account-error {
+    color: #E64D24; font-weight: 600; margin-top: 14px;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+        integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
+        crossorigin="anonymous"></script>
+<script src="assets/organize.js?v=b759e1b8fe45"></script>
+
 </main>
 <script>
 (function() {

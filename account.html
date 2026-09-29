@@ -280,12 +280,13 @@ footer { background: var(--navy); color: #cfd3ea; }
 </header>
 <main>
 
-<div class="account-card">
+<div class="account-card" id="account-root" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW" data-captcha-required="true">
   <h1>Sign in to PPK</h1>
   <p class="sub">One login for group ride sign-ups, checkpoint check-ins, and
   the other PPK member features being built - see
   <a href="https://linktr.ee/rideppk">PPK's Linktree</a> if you're not a
   member yet.</p>
+  <p><a href="rides.html">See upcoming group rides</a></p>
 
   <div id="account-form">
     <label for="account-email">Email address</label>
@@ -307,6 +308,49 @@ footer { background: var(--navy); color: #cfd3ea; }
     <p class="note">More PPK member features are on the way. Ride with
     Passion. Ride with Power. Ride to Create Memories.</p>
     <button id="account-signout" class="btn">Sign out</button>
+    <p id="account-organizer" hidden><a href="organize.html">Organize rides</a></p>
+
+    <h2>Your profile</h2>
+    <p class="note">Every field is optional. If you sign up for a ride, its organizer
+    sees your name and phone number.</p>
+    <form id="profile-form" novalidate>
+      <label for="profile-full_name">Full name</label>
+      <input type="text" id="profile-full_name" name="full_name" maxlength="120" autocomplete="name">
+      <label for="profile-preferred_name">Preferred name</label>
+      <input type="text" id="profile-preferred_name" name="preferred_name" maxlength="60">
+      <label for="profile-date_of_birth">Date of birth</label>
+      <input type="date" id="profile-date_of_birth" name="date_of_birth" min="1900-01-01" autocomplete="bday">
+      <label for="profile-gender">Gender</label>
+      <input type="text" id="profile-gender" name="gender" maxlength="40">
+      <label for="profile-phone">Phone</label>
+      <input type="tel" id="profile-phone" name="phone" maxlength="32" autocomplete="tel">
+      <label for="profile-club">Club</label>
+      <input type="text" id="profile-club" name="club" maxlength="120">
+      <label for="profile-years_riding">Years riding</label>
+      <input type="number" id="profile-years_riding" name="years_riding" min="0" max="100" step="1">
+      <label for="profile-kit_size">Kit size</label>
+      <input type="text" id="profile-kit_size" name="kit_size" maxlength="20">
+      <label for="profile-bike_type">Bike type</label>
+      <input type="text" id="profile-bike_type" name="bike_type" maxlength="60">
+      <div class="check-row">
+        <input type="checkbox" id="profile-whatsapp_opt_in" name="whatsapp_opt_in">
+        <label for="profile-whatsapp_opt_in">PPK may contact me on WhatsApp</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="profile-email_opt_in" name="email_opt_in">
+        <label for="profile-email_opt_in">PPK may contact me by email</label>
+      </div>
+      <button type="submit" id="profile-save" class="btn">Save profile</button>
+      <p id="profile-status" role="status"></p>
+      <p id="profile-error" class="account-error" hidden></p>
+    </form>
+
+    <section id="achievements">
+      <h2>My achievements</h2>
+      <ul id="achievements-list"></ul>
+      <p id="achievements-empty" hidden>No achievements yet. When you earn one, for example by riding in a PPK group ride, it will show here.</p>
+      <p id="achievements-error" class="account-error" hidden></p>
+    </section>
   </div>
 
   <p id="account-error" class="account-error" hidden></p>
@@ -322,113 +366,36 @@ footer { background: var(--navy); color: #cfd3ea; }
     font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
     font-size: 14px; color: #102060; margin-bottom: 4px;
   }
-  .account-card input[type=email] {
+  .account-card input[type=email], .account-card input[type=text],
+  .account-card input[type=date], .account-card input[type=tel],
+  .account-card input[type=number] {
     width: 100%; box-sizing: border-box; padding: 10px 12px;
     border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
     margin-bottom: 10px;
   }
+  .account-card h2 {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 24px; color: #102060; margin: 30px 0 4px;
+  }
+  .account-card .check-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .account-card .check-row label { margin-bottom: 0; }
+  .account-card input[type=checkbox] { accent-color: #102060; }
+  .account-card #profile-status { margin-top: 10px; }
+  .account-card #achievements-list { list-style: none; padding: 0; margin: 8px 0 0; }
+  .account-card #achievements-list li { margin-top: 8px; }
   .account-card .btn { border: none; cursor: pointer; font-size: 16px; }
   .account-error {
     color: #E64D24; font-weight: 600; margin-top: 14px;
   }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+        integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
+        crossorigin="anonymous"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
-<script>
-(function() {
-  var client = supabase.createClient("https://zwoaickxftqwwlugremy.supabase.co", "sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW");
-  var captchaRequired = true;
-  var captchaToken = null;
-
-  window.ppkTurnstileSuccess = function(token) { captchaToken = token; };
-  window.ppkTurnstileExpired = function() { captchaToken = null; };
-
-  function safeReturnTo(raw) {
-    if (!raw) return null;
-    try {
-      var target = new URL(raw, window.location.origin);
-      if (target.origin !== window.location.origin || !target.pathname.startsWith("/")) return null;
-      return target.pathname + target.search + target.hash;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  var accountUrl = new URL(window.location.href);
-  var returnTo = safeReturnTo(accountUrl.searchParams.get("returnTo"));
-  accountUrl.searchParams.delete("returnTo");
-  if (returnTo) sessionStorage.setItem("ppkReturnTo", returnTo);
-
-  var formEl = document.getElementById("account-form");
-  var sentEl = document.getElementById("account-sent");
-  var signedInEl = document.getElementById("account-signed-in");
-  var errorEl = document.getElementById("account-error");
-
-  function showError(message) {
-    errorEl.textContent = "Something went wrong: " + message + ". Please try again in a moment.";
-    errorEl.hidden = false;
-  }
-
-  function render(session) {
-    errorEl.hidden = true;
-    if (session) {
-      formEl.hidden = true;
-      sentEl.hidden = true;
-      signedInEl.hidden = false;
-      document.getElementById("account-user-email").textContent = session.user.email;
-    } else {
-      signedInEl.hidden = true;
-    }
-  }
-
-  function returnToSavedContext(session) {
-    if (!session) return;
-    var savedReturnTo = safeReturnTo(sessionStorage.getItem("ppkReturnTo"));
-    if (savedReturnTo) {
-      sessionStorage.removeItem("ppkReturnTo");
-      window.location.assign(savedReturnTo);
-    }
-  }
-
-  client.auth.getSession().then(function(res) {
-    render(res.data.session);
-    returnToSavedContext(res.data.session);
-  });
-  client.auth.onAuthStateChange(function(event, session) {
-    render(session);
-    if (event === "SIGNED_IN" || event === "INITIAL_SESSION") returnToSavedContext(session);
-  });
-
-  document.getElementById("account-send").addEventListener("click", function() {
-    var email = document.getElementById("account-email").value.trim();
-    if (!email) { showError("enter an email address first"); return; }
-    if (captchaRequired && !captchaToken) { showError("complete the security check first"); return; }
-    var authOptions = { emailRedirectTo: accountUrl.href };
-    if (captchaRequired) authOptions.captchaToken = captchaToken;
-    client.auth.signInWithOtp({
-      email: email,
-      options: authOptions
-    }).then(function(res) {
-      if (captchaRequired && window.turnstile) window.turnstile.reset();
-      captchaToken = null;
-      if (res.error) {
-        showError(res.error.message);
-      } else {
-        formEl.hidden = true;
-        sentEl.hidden = false;
-        document.getElementById("account-sent-email").textContent = email;
-      }
-    });
-  });
-
-  document.getElementById("account-signout").addEventListener("click", function() {
-    client.auth.signOut().then(function(res) {
-      if (res.error) showError(res.error.message);
-    });
-  });
-})();
-</script>
+<script src="assets/account.js?v=4773aeff2630"></script>
 
 </main>
 <script>
