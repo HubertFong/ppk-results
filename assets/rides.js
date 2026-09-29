@@ -33,6 +33,9 @@
   var currentUser = null; // the signed-in member, or null
   var loadedUserId;       // whose session the list holds; undefined until the first report
   var listVersion = 0;    // bumped on every rides reload, drops stale replies
+  var sharedRideShown = false; // the ?ride= card is found on the first list build only
+  var sharedRideItem = null;    // that card, until the list around it stops growing
+  var placesPending = 0;        // places reads still out for the current list
 
   function clearChildren(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
@@ -188,6 +191,49 @@
     return textBlock("div", "Places left: " + left + " of " + ride.capacity);
   }
 
+  // -------------------------------------------------------------- sharing
+
+  // What the WhatsApp message carries: the ride's own words, and a link the
+  // receiver can open.
+  function shareText(ride, url) {
+    return ride.title + "\n" + formatTime(ride.meet_at) + " at " +
+      (ride.meeting_point || "") + "\nSign up: " + url;
+  }
+
+  // Only a published or postponed ride is worth sharing: a cancelled ride is
+  // a message nobody should send. The ride's card on this page is the link at
+  // first; the per-ride share page (r/<ride id>.html) is written only when
+  // the site is published, so a HEAD asks whether it exists and, if so, it
+  // becomes the link. A failed HEAD leaves the fallback in place.
+  function shareLink(ride) {
+    var link = document.createElement("a");
+    link.className = "btn share-btn";
+    link.textContent = "Share on WhatsApp";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    var url = new URL("rides.html?ride=" + encodeURIComponent(ride.id),
+      window.location.href).href;
+    link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, url));
+    var sharePage = new URL("r/" + ride.id.toLowerCase() + ".html",
+      window.location.href).href;
+    fetch(sharePage, { method: "HEAD", cache: "no-store" }).then(function (res) {
+      if (!res.ok) return;
+      link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, sharePage));
+    }).catch(function () {
+      // Offline, or the page was never written: keep the card link.
+    });
+    return link;
+  }
+
+  // The share link's own line, or null for a ride that cannot be shared.
+  function shareLine(ride) {
+    if (ride.status !== "published" && ride.status !== "postponed") return null;
+    var line = document.createElement("div");
+    line.className = "ride-share";
+    line.appendChild(shareLink(ride));
+    return line;
+  }
+
   // -------------------------------------------------------------- actions
 
   // A member whose earlier sign-up was cancelled is signing up again: the row
@@ -296,6 +342,8 @@
 
   function rideItem(ride, signupStatus, version) {
     var item = document.createElement("li");
+    // A stable id lets a shared link (rides.html?ride=<id>) find this card.
+    item.id = "ride-" + ride.id;
     item.appendChild(rideHeading(ride));
     appendDetail(item, meetLine(ride));
     appendDetail(item, textBlock("div", "Departs: " + formatTime(ride.depart_at)));
@@ -306,6 +354,9 @@
     appendDetail(item, textLine("Pace", ride.pace_note));
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
     item.appendChild(closesLine);
+    // Sharing does not depend on the places count, so its line is here from
+    // the start rather than waiting for the second read below.
+    appendDetail(item, shareLine(ride));
     // The places count is a second read, and the action line waits for it:
     // the count chooses between a sign-up button and "This ride is full."
     client.rpc("ride_places_taken", { ride_id: ride.id }).then(function (res) {
@@ -320,14 +371,45 @@
       if (taken !== null) item.insertBefore(placesLine(ride, taken), closesLine);
       var actions = actionLine(ride, signupStatus, taken);
       if (actions) item.appendChild(actions);
+      placesPending -= 1;
+      if (placesPending === 0) settleSharedRide();
     });
     return item;
   }
 
+  // A link shared from this page carries the ride in ?ride=<id>. The list is
+  // rebuilt on every sign-in and sign-out, so the card is found and scrolled
+  // to on the first build only. A past or draft ride is not in this list:
+  // then there is nothing to show.
+  function showSharedRide() {
+    if (sharedRideShown) return;
+    sharedRideShown = true;
+    var wanted = new URLSearchParams(window.location.search).get("ride");
+    if (!wanted) return;
+    var item = document.getElementById("ride-" + wanted);
+    if (!item) return;
+    item.classList.add("ride-highlight");
+    item.scrollIntoView({ behavior: "smooth", block: "center" });
+    sharedRideItem = item;
+  }
+
+  // Every card grows when its places count arrives, which pushes a shared
+  // ride further down after the first scroll. Once the last count is in,
+  // scroll to it again, and then leave the page where the member puts it.
+  function settleSharedRide() {
+    if (!sharedRideItem) return;
+    if (document.body.contains(sharedRideItem)) {
+      sharedRideItem.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    sharedRideItem = null;
+  }
+
   function appendRides(rides, statuses, version) {
+    placesPending = rides.length;
     rides.forEach(function (ride) {
       listEl.appendChild(rideItem(ride, statuses[ride.id] || null, version));
     });
+    showSharedRide();
   }
 
   // The member's own sign-ups, by ride id. RLS limits this read to their own
