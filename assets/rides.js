@@ -22,6 +22,7 @@
 
   var rootEl = document.getElementById("rides-root");
   var sessionEl = document.getElementById("rides-session");
+  var organizeEl = document.getElementById("rides-organize");
   var loadingEl = document.getElementById("rides-loading");
   var listEl = document.getElementById("rides-list");
   var emptyEl = document.getElementById("rides-empty");
@@ -100,10 +101,23 @@
     sessionEl.appendChild(link);
   }
 
+  // The link is a convenience for the ride organizer: organize.html and the
+  // organizer functions check the grant again on the server (#75).
+  function showOrganizeLink(user) {
+    organizeEl.hidden = true;
+    if (!user) return;
+    client.rpc("has_club_role", { required_role: "event_organizer" }).then(function (res) {
+      // A reply for a member who has since signed out is dropped.
+      if (!currentUser || currentUser.id !== user.id) return;
+      organizeEl.hidden = res.data !== true;
+    });
+  }
+
   function applySession(session) {
     var user = session ? session.user : null;
     currentUser = user;
     showSessionLine(user);
+    showOrganizeLink(user);
     // getSession() and INITIAL_SESSION report the same session, so only a
     // change of member re-reads the rides.
     var userId = user ? user.id : null;
@@ -414,6 +428,37 @@
     return heading;
   }
 
+  // Who's riding (#74): signed-in members see each confirmed rider's
+  // preferred name, or "A rider" for one who set none. ride_riders() returns
+  // names only and refuses a signed-out caller, so a visitor gets an invite
+  // to sign in instead. A long list is cut, so the card stays readable.
+  var RIDERS_SHOWN = 12;
+
+  function ridersText(names) {
+    if (names.length === 0) return "Who's riding: nobody yet. Be the first!";
+    var shown = names.slice(0, RIDERS_SHOWN).join(", ");
+    var more = names.length - RIDERS_SHOWN;
+    return "Who's riding (" + names.length + "): " + shown + (more > 0 ? " and " + more + " more" : "");
+  }
+
+  function ridersLine(ride, version) {
+    if (ride.status !== "published" && ride.status !== "postponed") return null;
+    if (!currentUser) return textBlock("div", "Sign in to see who's riding.", "ride-riders");
+    var line = textBlock("div", "Who's riding: ...", "ride-riders");
+    client.rpc("ride_riders", { ride_id: ride.id }).then(function (res) {
+      // A reply for a list that has been reloaded away is dropped.
+      if (version !== listVersion) return;
+      if (res.error) {
+        line.textContent = "Couldn't read who's riding.";
+        return;
+      }
+      line.textContent = ridersText((res.data || []).map(function (row) {
+        return row.display_name;
+      }));
+    });
+    return line;
+  }
+
   function rideItem(ride, signupStatus, version, pointsByRide, choices) {
     var points = pointsByRide[ride.id] || [];
     var chosen = choices[ride.id] || null;
@@ -433,6 +478,7 @@
     appendDetail(item, textLine("Pace", ride.pace_note));
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
     item.appendChild(closesLine);
+    appendDetail(item, ridersLine(ride, version));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.
     appendDetail(item, shareLine(ride));
