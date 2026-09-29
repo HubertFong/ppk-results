@@ -305,11 +305,18 @@ footer { background: var(--navy); color: #cfd3ea; }
       <input type="url" id="ride-meeting_map_link" maxlength="500">
       <label for="ride-meet_at">Meet-up time</label>
       <input type="datetime-local" id="ride-meet_at" required>
-      <label for="ride-depart_at">Departure time</label>
-      <input type="datetime-local" id="ride-depart_at" required>
+      <fieldset id="ride-starts-fieldset">
+        <legend>Other start points</legend>
+        <p class="note">Optional. For riders who join along the route. Riders choose their start when they sign up.</p>
+        <div id="ride-starts"></div>
+        <button type="button" id="ride-start-add" class="btn">Add a start point</button>
+      </fieldset>
+      <label for="ride-depart_at">Departure time (optional)</label>
+      <input type="datetime-local" id="ride-depart_at">
+      <p class="note">Leave it empty if the ride leaves at the meet-up time.</p>
       <label for="ride-signup_deadline">Sign-up deadline</label>
       <input type="datetime-local" id="ride-signup_deadline" required>
-      <p class="note">Defaults to 8pm the evening before the meet-up.</p>
+      <p class="note">Defaults to 30 minutes before the meet-up.</p>
       <label for="ride-capacity">Capacity</label>
       <input type="number" id="ride-capacity" min="1" step="1" required>
       <label for="ride-route_link">Route link</label>
@@ -375,6 +382,22 @@ footer { background: var(--navy); color: #cfd3ea; }
   .organize-card #ride-list li button, .organize-card #roster-list li button {
     font-size: 13px; padding: 4px 10px; margin: 4px 0 0 6px;
   }
+  /* The extra start points: one bordered row each, with its own Remove. */
+  .organize-card #ride-starts-fieldset {
+    border: 1px solid #d8d8e0; border-radius: 6px; padding: 10px 12px 12px;
+    margin: 4px 0 12px;
+  }
+  .organize-card #ride-starts-fieldset legend {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em; font-size: 14px;
+    color: #102060; padding: 0 4px;
+  }
+  .organize-card .start-row {
+    border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px;
+  }
+  .organize-card .start-row button, .organize-card #ride-start-add {
+    font-size: 13px; padding: 4px 10px;
+  }
   .account-error {
     color: #E64D24; font-weight: 600; margin-top: 14px;
   }
@@ -383,7 +406,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/organize.js?v=b759e1b8fe45"></script>
+<script src="assets/organize.js?v=95365c1b070e"></script>
 
 </main>
 <script>

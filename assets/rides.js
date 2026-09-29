@@ -1,5 +1,5 @@
-/* The PPK member rides page: the upcoming group rides, with sign-up and
- * cancel for signed-in members.
+/* The PPK member rides page: the upcoming group rides and their meet-up
+ * points, with sign-up, cancel and the join point for signed-in members.
  *
  * A classic script, loaded at the end of the body by site_rides.py, so every
  * element below already exists when it runs. Its only dependency is the
@@ -165,7 +165,11 @@
     return link;
   }
 
-  function meetLine(ride) {
+  // One line per start point: the ride's own point (1) first, then each
+  // extra point in position order, with its own Map link. The lines are
+  // siblings, so they come back as an array for the caller to append.
+  function meetLine(ride, points) {
+    var lines = [];
     var line = textBlock("div",
       "Meet: " + formatTime(ride.meet_at) + " at " + (ride.meeting_point || ""));
     var mapLink = externalLink(ride.meeting_map_link, "Map");
@@ -173,7 +177,27 @@
       line.appendChild(document.createTextNode(" "));
       line.appendChild(mapLink);
     }
-    return line;
+    lines.push(line);
+    (points || []).forEach(function (point) {
+      var also = textBlock("div",
+        "Or start: " + formatTime(point.start_at) + " at " + point.place);
+      var pointMap = externalLink(point.map_link, "Map");
+      if (pointMap) {
+        also.appendChild(document.createTextNode(" "));
+        also.appendChild(pointMap);
+      }
+      lines.push(also);
+    });
+    return lines;
+  }
+
+  // The departure is worth its own line only when it differs from the
+  // meet-up time; the same time twice tells the rider nothing.
+  function departsLine(ride) {
+    if (new Date(ride.depart_at).getTime() === new Date(ride.meet_at).getTime()) {
+      return null;
+    }
+    return textBlock("div", "Departs: " + formatTime(ride.depart_at));
   }
 
   function routeLine(ride) {
@@ -284,19 +308,69 @@
     });
   }
 
+  // A confirmed rider on a ride that has extra start points picks where
+  // they start. choose_start() checks the ride, the sign-up and the point
+  // again, so a refusal from the server is shown as it comes.
+  function startChoice(ride, points, chosen) {
+    var label = document.createElement("label");
+    label.appendChild(document.createTextNode("Starting at: "));
+    var select = document.createElement("select");
+    var mainOption = document.createElement("option");
+    mainOption.value = "1";
+    mainOption.textContent = formatTime(ride.meet_at) + " at " +
+      (ride.meeting_point || "");
+    select.appendChild(mainOption);
+    points.forEach(function (point) {
+      var option = document.createElement("option");
+      option.value = String(point.position);
+      option.textContent = formatTime(point.start_at) + " at " + point.place;
+      select.appendChild(option);
+    });
+    // A null choice is the ride's own point; so is a chosen point that has
+    // since been removed from the ride.
+    select.value = String(chosen || 1);
+    if (select.selectedIndex < 0) select.value = "1";
+    var previous = select.value;
+    select.addEventListener("change", function () {
+      clearError();
+      select.disabled = true;
+      var wanted = Number(select.value);
+      client.rpc("choose_start", { ride_id: ride.id, start_point: wanted })
+        .then(function (res) {
+          select.disabled = false;
+          if (res.error) {
+            showError(refusalText(res.error.message));
+            select.value = previous;
+            return;
+          }
+          previous = select.value;
+          statusEl.textContent = "Saved: you're starting at " +
+            select.options[select.selectedIndex].textContent;
+        });
+    });
+    label.appendChild(select);
+    return label;
+  }
+
   // The one thing this member can do about this ride, or a line saying why
   // there is nothing to do. Only a published ride takes sign-ups: a postponed
   // ride may still run, but it cannot be joined, and a member already on it
   // keeps their place and can still cancel it.
-  function actionLine(ride, signupStatus, placesTaken) {
+  function actionLine(ride, signupStatus, placesTaken, points, chosen) {
     if (ride.status === "cancelled") return null;
     var line = document.createElement("div");
     line.className = "ride-actions";
     if (signupStatus === "confirmed") {
       line.appendChild(textBlock("span", "You're signed up."));
+      // A ride that has started takes no change any more: cancel goes, and
+      // so does the start choice, which choose_start() would refuse.
       if (isBefore(ride.depart_at)) {
         line.appendChild(document.createTextNode(" "));
         line.appendChild(cancelButton(ride));
+        if (points.length > 0) {
+          line.appendChild(document.createTextNode(" "));
+          line.appendChild(startChoice(ride, points, chosen));
+        }
       }
       return line;
     }
@@ -340,13 +414,18 @@
     return heading;
   }
 
-  function rideItem(ride, signupStatus, version) {
+  function rideItem(ride, signupStatus, version, pointsByRide, choices) {
+    var points = pointsByRide[ride.id] || [];
+    var chosen = choices[ride.id] || null;
     var item = document.createElement("li");
     // A stable id lets a shared link (rides.html?ride=<id>) find this card.
     item.id = "ride-" + ride.id;
     item.appendChild(rideHeading(ride));
-    appendDetail(item, meetLine(ride));
-    appendDetail(item, textBlock("div", "Departs: " + formatTime(ride.depart_at)));
+    // One line for the ride's own start point, then each extra point's.
+    meetLine(ride, points).forEach(function (line) {
+      appendDetail(item, line);
+    });
+    appendDetail(item, departsLine(ride));
     appendDetail(item, routeLine(ride));
     appendDetail(item, distanceLine(ride));
     appendDetail(item, climbingLine(ride));
@@ -369,7 +448,7 @@
         taken = Number(res.data || 0);
       }
       if (taken !== null) item.insertBefore(placesLine(ride, taken), closesLine);
-      var actions = actionLine(ride, signupStatus, taken);
+      var actions = actionLine(ride, signupStatus, taken, points, chosen);
       if (actions) item.appendChild(actions);
       placesPending -= 1;
       if (placesPending === 0) settleSharedRide();
@@ -404,20 +483,23 @@
     sharedRideItem = null;
   }
 
-  function appendRides(rides, statuses, version) {
+  function appendRides(rides, statuses, choices, pointsByRide, version) {
     placesPending = rides.length;
     rides.forEach(function (ride) {
-      listEl.appendChild(rideItem(ride, statuses[ride.id] || null, version));
+      listEl.appendChild(
+        rideItem(ride, statuses[ride.id] || null, version, pointsByRide, choices));
     });
     showSharedRide();
   }
 
-  // The member's own sign-ups, by ride id. RLS limits this read to their own
-  // rows: another rider's sign-up cannot come back, whatever is asked for.
-  function loadSignupStatuses(rides, version) {
+  // The member's own sign-ups, by ride id, and the start point each one
+  // chose (null means the ride's own point). RLS limits this read to their
+  // own rows: another rider's sign-up cannot come back, whatever is asked
+  // for.
+  function loadSignupStatuses(rides, pointsByRide, version) {
     var ids = rides.map(function (ride) { return ride.id; });
     client.from("session_signups")
-      .select("session_id, status")
+      .select("session_id, status, start_position")
       .in("session_id", ids)
       .then(function (res) {
         if (version !== listVersion) return;
@@ -427,10 +509,12 @@
           showError("Couldn't read your sign-ups: " + res.error.message);
         }
         var statuses = {};
+        var choices = {};
         (res.data || []).forEach(function (row) {
           statuses[row.session_id] = row.status;
+          choices[row.session_id] = row.start_position;
         });
-        appendRides(rides, statuses, version);
+        appendRides(rides, statuses, choices, pointsByRide, version);
       });
   }
 
@@ -456,12 +540,33 @@
         var rides = res.data || [];
         emptyEl.hidden = rides.length > 0;
         if (rides.length === 0) return;
-        // A visitor who is not signed in has no sign-ups to look up.
-        if (!currentUser) {
-          appendRides(rides, {}, version);
-          return;
-        }
-        loadSignupStatuses(rides, version);
+        // The rides' extra start points, by ride id. A failed read costs
+        // only those points: point 1 is part of the ride itself, and
+        // choose_start() refuses any point it does not know.
+        var ids = rides.map(function (ride) { return ride.id; });
+        client.from("session_starts")
+          .select("session_id, position, place, map_link, start_at")
+          .in("session_id", ids)
+          .order("position", { ascending: true })
+          .then(function (pointsRes) {
+            if (version !== listVersion) return;
+            var pointsByRide = {};
+            if (pointsRes.error) {
+              showError("Couldn't read the start points: " +
+                pointsRes.error.message);
+            } else {
+              (pointsRes.data || []).forEach(function (point) {
+                if (!pointsByRide[point.session_id]) pointsByRide[point.session_id] = [];
+                pointsByRide[point.session_id].push(point);
+              });
+            }
+            // A visitor who is not signed in has no sign-ups to look up.
+            if (!currentUser) {
+              appendRides(rides, {}, {}, pointsByRide, version);
+              return;
+            }
+            loadSignupStatuses(rides, pointsByRide, version);
+          });
       });
   }
 

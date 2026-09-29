@@ -50,6 +50,8 @@
   var saveButton = document.getElementById("ride-save");
   var formCancelButton = document.getElementById("ride-form-cancel");
   var formErrorEl = document.getElementById("ride-form-error");
+  var startsEl = document.getElementById("ride-starts");
+  var startAddButton = document.getElementById("ride-start-add");
   var listEl = document.getElementById("ride-list");
   var listEmptyEl = document.getElementById("ride-list-empty");
   var rosterEl = document.getElementById("roster");
@@ -65,6 +67,11 @@
 
   var startedUserId = null;   // whose access check has already run
   var listVersion = 0;        // bumped on every rides reload, drops stale replies
+  var formVersion = 0;        // bumped on every form open or copy, drops stale replies
+  // False while a saved ride's extra points are loading into the form, or
+  // after they failed to load. Saving then would send an empty list, and
+  // set_ride_starts() would delete the points the form never showed.
+  var startsReady = true;
   var editingRide = null;     // the ride the form is editing, or null for a new one
   var deadlineEdited = false; // the deadline was typed by hand in this form
   var rosterRide = null;      // the ride whose roster is on screen, or null
@@ -130,12 +137,14 @@
     return Number.isNaN(date.getTime()) ? "" : localDateTimeText(date);
   }
 
-  // 8pm the evening before the meet-up: the sign-up deadline default (#33).
+  // Sign-up closes 30 minutes before the meet-up by default (Hubert,
+  // 2026-09-29; it was 8pm the evening before, #33).
+  var DEADLINE_LEAD_MINUTES = 30;
+
   function defaultDeadline(meetAtValue) {
     var meet = new Date(meetAtValue);
     if (Number.isNaN(meet.getTime())) return "";
-    var eveningBefore = new Date(meet.getFullYear(), meet.getMonth(), meet.getDate() - 1, 20, 0);
-    return localDateTimeText(eveningBefore);
+    return localDateTimeText(new Date(meet.getTime() - DEADLINE_LEAD_MINUTES * 60 * 1000));
   }
 
   // ------------------------------------------------------- sign in / access
@@ -236,6 +245,7 @@
         }
       }));
     }
+    buttons.appendChild(actionButton("Copy", function () { copyRide(ride); }));
     buttons.appendChild(actionButton("Roster", function () { openRoster(ride); }));
     return buttons;
   }
@@ -308,9 +318,13 @@
   }
 
   function openForm(ride) {
+    // Every opening is a new form version, so a late reply for an earlier
+    // form can never add its rows to this one.
+    formVersion += 1;
+    var version = formVersion;
     editingRide = ride || null;
     // A saved ride's deadline was chosen already: moving its meet-up must not
-    // quietly reset it. Only a new ride gets the 8pm default.
+    // quietly reset it. Only a new ride gets the 30-minute default.
     deadlineEdited = Boolean(editingRide);
     formEl.reset();
     fillRideForm(editingRide);
@@ -318,6 +332,57 @@
     clearFormError();
     formEl.hidden = false;
     inputFor("title").focus();
+    clearStartRows();
+    updateStartAddButton();
+    // A saved ride's points 2..10 load after the form is up.
+    startsReady = !editingRide;
+    if (!editingRide) return;
+    loadStarts(editingRide.id).then(function (res) {
+      if (version !== formVersion) return;
+      if (res.error) {
+        // startsReady stays false, so this form cannot save over points it
+        // never showed.
+        showFormError("Couldn't load this ride's start points, so it can't be saved. " +
+          "Close the form and open it again. (" + res.error.message + ")");
+        return;
+      }
+      (res.data || []).forEach(function (point) {
+        addStartRow(point);
+      });
+      updateStartAddButton();
+      startsReady = true;
+    });
+  }
+
+  // A new draft that starts from an earlier ride's settings (E3). It is a
+  // new ride: create_ride() gives it its own id, no sign-up comes with it,
+  // and the three times are left empty for the organizer to choose.
+  function copyRide(ride) {
+    openForm(null);
+    // openForm() has just bumped formVersion; the copy's rows are dropped if
+    // another form opens before its reply lands.
+    var version = formVersion;
+    fillRideForm(ride);
+    [meetAtInput, departAtInput, deadlineInput].forEach(function (input) { input.value = ""; });
+    formTitleEl.textContent = "New ride, copied from " + ride.title;
+    // The copy keeps the source's places and map links (E3) but not its
+    // times: the organizer picks new ones for every point. Saving waits for
+    // them, so a quick save cannot drop them from the copy.
+    startsReady = false;
+    loadStarts(ride.id).then(function (res) {
+      if (version !== formVersion) return;
+      // A new ride has no points to lose, so a failed read only means none
+      // are copied; the form can still save.
+      startsReady = true;
+      if (res.error) {
+        showFormError("Couldn't copy the start points: " + res.error.message);
+        return;
+      }
+      (res.data || []).forEach(function (point) {
+        addStartRow({ place: point.place, map_link: point.map_link, start_at: null });
+      });
+      updateStartAddButton();
+    });
   }
 
   function closeForm() {
@@ -341,9 +406,6 @@
     if (meetAtInput.value === "") {
       return { input: meetAtInput, message: "The meet-up time is required." };
     }
-    if (departAtInput.value === "") {
-      return { input: departAtInput, message: "The departure time is required." };
-    }
     if (deadlineInput.value === "") {
       return { input: deadlineInput, message: "The sign-up deadline is required." };
     }
@@ -352,7 +414,8 @@
     if (capacity.value === "" || !Number.isInteger(places) || places < 1) {
       return { input: capacity, message: "Capacity must be a whole number of 1 or more." };
     }
-    if (new Date(departAtInput.value).getTime() < new Date(meetAtInput.value).getTime()) {
+    if (departAtInput.value !== "" &&
+        new Date(departAtInput.value).getTime() < new Date(meetAtInput.value).getTime()) {
       return { input: departAtInput, message: "The ride can't depart before its meet-up." };
     }
     if (new Date(deadlineInput.value).getTime() > new Date(meetAtInput.value).getTime()) {
@@ -379,13 +442,23 @@
         payload[field.param] = value;
       }
     });
+    // Departure is optional in the form: an empty one means the ride leaves
+    // at the meet-up time, which is what the database stores.
+    if (payload.p_depart_at === null) payload.p_depart_at = payload.p_meet_at;
     return payload;
   }
 
   formEl.addEventListener("submit", function (event) {
     event.preventDefault();
     clearFormError();
-    var problem = firstRideProblem();
+    if (!startsReady) {
+      showFormError("The start points haven't loaded yet. Wait a moment, or close the " +
+        "form and open it again.");
+      return;
+    }
+    // firstStartProblem() only runs once the ride's own fields pass, so
+    // they are reported first; both are shown and focused the same way.
+    var problem = firstRideProblem() || firstStartProblem();
     if (problem) {
       showFormError(problem.message);
       problem.input.focus();
@@ -402,30 +475,178 @@
       saved = client.rpc("create_ride", payload);
     }
     saved.then(function (res) {
-      saveButton.disabled = false;
       if (res.error) {
+        saveButton.disabled = false;
         // The form keeps the organizer's input so they can correct it.
         statusEl.textContent = "";
         showFormError(res.error.message);
         return;
       }
-      closeForm();
-      statusEl.textContent = "Ride saved.";
-      loadRides();
+      // create_ride() answers with the new ride's id; update_ride() has none,
+      // so the form's own ride carries it. The extra points are a second
+      // call: set_ride_starts() replaces them all at once.
+      var rideId = editingRide ? editingRide.id : res.data;
+      client.rpc("set_ride_starts", { p_ride_id: rideId, p_starts: startPayload() })
+        .then(function (startRes) {
+          saveButton.disabled = false;
+          if (startRes.error) {
+            // The ride itself is saved. A new one turns into an edit of
+            // itself, so trying again updates that ride instead of creating
+            // a second one.
+            if (!editingRide) {
+              editingRide = { id: rideId };
+              formTitleEl.textContent = "Edit ride";
+            }
+            statusEl.textContent = "";
+            showFormError("The ride was saved, but its start points were not: " +
+              startRes.error.message);
+            return;
+          }
+          closeForm();
+          statusEl.textContent = "Ride saved.";
+          loadRides();
+        });
     });
   });
 
   // The deadline default applies until the organizer edits that field by
-  // hand in this form; a departure left empty follows the meet-up time.
+  // hand in this form. Departure is not copied from the meet-up any more:
+  // copying on every keystroke could catch a half-typed time and keep it
+  // (the first pilot ride got a 12:07 departure that way). An empty
+  // departure is saved as the meet-up time instead (ridePayload).
   deadlineInput.addEventListener("input", function () { deadlineEdited = true; });
   deadlineInput.addEventListener("change", function () { deadlineEdited = true; });
   meetAtInput.addEventListener("input", function () {
     if (!deadlineEdited) deadlineInput.value = defaultDeadline(meetAtInput.value);
-    if (departAtInput.value === "") departAtInput.value = meetAtInput.value;
   });
 
   newButton.addEventListener("click", function () { openForm(null); });
   formCancelButton.addEventListener("click", closeForm);
+
+  // ---------------------------------------------------- extra start points
+
+  // Point 1 is the ride's own meeting point, map link and meet-up time;
+  // points 2 to 10 live in session_starts (0009_ride_starts.sql), at most
+  // nine rows here.
+  var MAX_EXTRA_STARTS = 9;
+
+  // A label wraps its own text and input, so a row needs no ids and every
+  // label points at exactly the input it holds.
+  function startLabel(text, input) {
+    var label = document.createElement("label");
+    label.textContent = text;
+    label.appendChild(input);
+    return label;
+  }
+
+  // One row in the order the points are numbered: place, map link, time,
+  // then Remove. `point` is null for a new row, or { place, map_link,
+  // start_at } from session_starts (start_at an ISO string or null). Returns
+  // the place input so the caller can focus it.
+  function addStartRow(point) {
+    var row = document.createElement("div");
+    row.className = "start-row";
+
+    var placeInput = document.createElement("input");
+    placeInput.type = "text";
+    placeInput.maxLength = 200;
+    placeInput.className = "start-place";
+    if (point && point.place) placeInput.value = point.place;
+    row.appendChild(startLabel("Place", placeInput));
+
+    var mapInput = document.createElement("input");
+    mapInput.type = "url";
+    mapInput.maxLength = 500;
+    mapInput.className = "start-map";
+    if (point && point.map_link) mapInput.value = point.map_link;
+    row.appendChild(startLabel("Map link", mapInput));
+
+    var timeInput = document.createElement("input");
+    timeInput.type = "datetime-local";
+    timeInput.className = "start-time";
+    // Stored times are ISO (UTC); the input speaks local wall time.
+    if (point && point.start_at) timeInput.value = localDateTimeValue(point.start_at);
+    row.appendChild(startLabel("Time", timeInput));
+
+    row.appendChild(actionButton("Remove", function () {
+      startsEl.removeChild(row);
+      updateStartAddButton();
+    }));
+    startsEl.appendChild(row);
+    return placeInput;
+  }
+
+  function clearStartRows() {
+    clearChildren(startsEl);
+  }
+
+  // The rows' inputs in display order, which is point order.
+  function startRowInputs() {
+    var rows = [];
+    var nodes = startsEl.querySelectorAll(".start-row");
+    for (var i = 0; i < nodes.length; i += 1) {
+      rows.push({
+        place: nodes[i].querySelector(".start-place"),
+        map: nodes[i].querySelector(".start-map"),
+        time: nodes[i].querySelector(".start-time")
+      });
+    }
+    return rows;
+  }
+
+  // The add button disappears at the limit the database also enforces.
+  function updateStartAddButton() {
+    startAddButton.hidden = startRowInputs().length >= MAX_EXTRA_STARTS;
+  }
+
+  // Reads a ride's points 2..10 in point order. The caller keeps the promise
+  // so it can act on the rows once they arrive.
+  function loadStarts(rideId) {
+    return client.from("session_starts")
+      .select("position, place, map_link, start_at")
+      .eq("session_id", rideId)
+      .order("position", { ascending: true });
+  }
+
+  // The first bad row in point order as { input, message }, or null. The
+  // database checks the same places and times again (set_ride_starts).
+  function firstStartProblem() {
+    var rows = startRowInputs();
+    for (var i = 0; i < rows.length; i += 1) {
+      var number = i + 2;
+      if (rows[i].place.value.trim() === "") {
+        return { input: rows[i].place, message: "Start point " + number + " needs a place." };
+      }
+      if (rows[i].time.value === "") {
+        return { input: rows[i].time, message: "Start point " + number + " needs a time." };
+      }
+    }
+    return null;
+  }
+
+  // The rows as set_ride_starts() takes them: array order gives positions
+  // 2, 3 and so on, an empty map link goes as null, and the times go as
+  // ISO (UTC) strings.
+  function startPayload() {
+    return startRowInputs().map(function (row) {
+      var mapLink = row.map.value.trim();
+      return {
+        place: row.place.value.trim(),
+        map_link: mapLink === "" ? null : mapLink,
+        start_at: new Date(row.time.value).toISOString()
+      };
+    });
+  }
+
+  startAddButton.addEventListener("click", function () {
+    if (startRowInputs().length >= MAX_EXTRA_STARTS) {
+      updateStartAddButton();
+      return;
+    }
+    var placeInput = addStartRow(null);
+    updateStartAddButton();
+    placeInput.focus();
+  });
 
   // ---------------------------------------------------------------- roster
 
@@ -460,7 +681,19 @@
       });
   }
 
-  function rosterItem(ride, signup) {
+  // The start line for one rider. Position 1 (or no row in the choices) is
+  // the ride's own point; a later position is session_starts' row for it.
+  function startJoinText(ride, signup, joinInfo) {
+    var position = joinInfo.positions[signup.signup_id] || 1;
+    if (position === 1) {
+      return "Starts at: " + formatMeetAt(ride.meet_at) + " at " + ride.meeting_point;
+    }
+    var point = joinInfo.points[position];
+    if (!point) return "Starts at: start point " + position;
+    return "Starts at: " + formatMeetAt(point.start_at) + " at " + point.place;
+  }
+
+  function rosterItem(ride, signup, joinInfo) {
     var item = document.createElement("li");
     item.appendChild(textBlock("strong", signup.rider_name || "Name not given"));
     var href = telHref(signup.phone);
@@ -473,6 +706,9 @@
     }
     item.appendChild(textBlock("div", "Sign-up: " + signup.status));
     item.appendChild(textBlock("div", "Attendance: " + attendanceText(signup.attendance)));
+    // joinInfo is null unless the ride has an extra point, so a ride with
+    // only its own point shows no line.
+    if (joinInfo) item.appendChild(textBlock("div", startJoinText(ride, signup, joinInfo)));
     if (canMarkAttendance(ride, signup)) {
       item.appendChild(actionButton("Attended", function () {
         markAttendance(ride, signup, "attended");
@@ -490,16 +726,44 @@
     var version = rosterVersion;
     clearChildren(rosterListEl);
     rosterEmptyEl.hidden = true;
-    client.rpc("ride_roster", { p_ride_id: ride.id }).then(function (res) {
+    // One screen, three reads: the roster itself, the point each rider chose
+    // (ride_start_choices) and the ride's extra points. A failed choices or
+    // points read only drops the start line, never the roster, and is
+    // reported by the usual error banner.
+    Promise.all([
+      client.rpc("ride_roster", { p_ride_id: ride.id }),
+      client.rpc("ride_start_choices", { p_ride_id: ride.id }),
+      loadStarts(ride.id)
+    ]).then(function (results) {
       // A reply for a roster that has been closed or replaced is dropped.
       if (version !== rosterVersion || rosterRide !== ride) return;
-      if (res.error) {
-        showOrganizeError(res.error.message);
+      var rosterRes = results[0];
+      if (rosterRes.error) {
+        showOrganizeError(rosterRes.error.message);
         return;
       }
-      var signups = res.data || [];
+      var choicesRes = results[1];
+      var startsRes = results[2];
+      var joinInfo = null;
+      if (choicesRes.error || startsRes.error) {
+        showOrganizeError((choicesRes.error || startsRes.error).message);
+      } else {
+        var positions = {};
+        (choicesRes.data || []).forEach(function (choice) {
+          positions[choice.signup_id] = choice.start_position;
+        });
+        var points = {};
+        (startsRes.data || []).forEach(function (point) {
+          points[point.position] = point;
+        });
+        // With no extra point the only place to join is the ride's own.
+        if (Object.keys(points).length > 0) {
+          joinInfo = { positions: positions, points: points };
+        }
+      }
+      var signups = rosterRes.data || [];
       signups.forEach(function (signup) {
-        rosterListEl.appendChild(rosterItem(ride, signup));
+        rosterListEl.appendChild(rosterItem(ride, signup, joinInfo));
       });
       rosterEmptyEl.hidden = signups.length > 0;
     });
