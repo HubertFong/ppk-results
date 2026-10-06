@@ -697,7 +697,38 @@
     return "Starts at: " + formatMeetAt(point.start_at) + " at " + point.place;
   }
 
-  function rosterItem(ride, signup, joinInfo) {
+  // The ride's day in Malaysia time, as 0013's ride_emergency_contacts()
+  // counts it. The server refuses on any other day; this only avoids asking.
+  function malaysiaDate(value) {
+    return new Date(value).toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });
+  }
+
+  function isRideDay(ride) {
+    return malaysiaDate(ride.meet_at) === malaysiaDate(Date.now());
+  }
+
+  // One line per rider on the ride day (#97): the contact the rider shared,
+  // or that they haven't shared one.
+  function emergencyLine(signup, contacts) {
+    var line = document.createElement("div");
+    var contact = contacts[signup.signup_id];
+    if (!contact) {
+      line.textContent = "Emergency contact: not shared";
+      return line;
+    }
+    line.appendChild(document.createTextNode("Emergency contact: " + (contact.contact_name || "") +
+      (contact.relationship ? " (" + contact.relationship + ")" : "") + " "));
+    var href = telHref(contact.contact_phone);
+    if (href) {
+      var link = document.createElement("a");
+      link.href = href;
+      link.textContent = contact.contact_phone;
+      line.appendChild(link);
+    }
+    return line;
+  }
+
+  function rosterItem(ride, signup, joinInfo, contacts) {
     var item = document.createElement("li");
     item.appendChild(textBlock("strong", signup.rider_name || "Name not given"));
     var href = telHref(signup.phone);
@@ -713,6 +744,7 @@
     // joinInfo is null unless the ride has an extra point, so a ride with
     // only its own point shows no line.
     if (joinInfo) item.appendChild(textBlock("div", startJoinText(ride, signup, joinInfo)));
+    if (contacts && signup.status === "confirmed") item.appendChild(emergencyLine(signup, contacts));
     if (canMarkAttendance(ride, signup)) {
       item.appendChild(actionButton("Attended", function () {
         markAttendance(ride, signup, "attended");
@@ -737,7 +769,10 @@
     Promise.all([
       client.rpc("ride_roster", { p_ride_id: ride.id }),
       client.rpc("ride_start_choices", { p_ride_id: ride.id }),
-      loadStarts(ride.id)
+      loadStarts(ride.id),
+      isRideDay(ride)
+        ? client.rpc("ride_emergency_contacts", { p_ride_id: ride.id })
+        : Promise.resolve({ data: null, error: null })
     ]).then(function (results) {
       // A reply for a roster that has been closed or replaced is dropped.
       if (version !== rosterVersion || rosterRide !== ride) return;
@@ -765,9 +800,19 @@
           joinInfo = { positions: positions, points: points };
         }
       }
+      // Emergency contacts only on the ride day; a failed read drops the
+      // lines, never the roster, and says why.
+      var contactsRes = results[3];
+      var contacts = null;
+      if (contactsRes.error) {
+        showOrganizeError(contactsRes.error.message);
+      } else if (contactsRes.data) {
+        contacts = {};
+        contactsRes.data.forEach(function (contact) { contacts[contact.signup_id] = contact; });
+      }
       var signups = rosterRes.data || [];
       signups.forEach(function (signup) {
-        rosterListEl.appendChild(rosterItem(ride, signup, joinInfo));
+        rosterListEl.appendChild(rosterItem(ride, signup, joinInfo, contacts));
       });
       rosterEmptyEl.hidden = signups.length > 0;
     });

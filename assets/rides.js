@@ -72,6 +72,18 @@
     errorEl.hidden = false;
   }
 
+  // join_ride() refuses an incomplete safety set with this hint (#97).
+  function showSafetyNeeded() {
+    clearChildren(errorEl);
+    errorEl.appendChild(document.createTextNode("Complete your safety details first: "));
+    var link = document.createElement("a");
+    link.href = returnToHref();
+    link.textContent = "go to your account page";
+    errorEl.appendChild(link);
+    errorEl.appendChild(document.createTextNode("."));
+    errorEl.hidden = false;
+  }
+
   // The server words a refusal as "join_ride: this ride is full"; the member
   // needs the reason, not the function's name.
   function refusalText(message) {
@@ -113,11 +125,24 @@
     });
   }
 
+  // A signed-in member must complete their safety details before joining a
+  // ride (#97), so they go to the account page first and come back here.
+  // Only a clear "false" sends them: an error leaves the page as it is, and
+  // join_ride() still refuses on the server.
+  function checkSafetySet(user) {
+    if (!user) return;
+    client.rpc("safety_set_complete").then(function (res) {
+      if (!currentUser || currentUser.id !== user.id) return;
+      if (!res.error && res.data === false) window.location.assign(returnToHref());
+    });
+  }
+
   function applySession(session) {
     var user = session ? session.user : null;
     currentUser = user;
     showSessionLine(user);
     showOrganizeLink(user);
+    checkSafetySet(user);
     // getSession() and INITIAL_SESSION report the same session, so only a
     // change of member re-reads the rides.
     var userId = user ? user.id : null;
@@ -298,6 +323,10 @@
     client.rpc("join_ride", { ride_id: ride.id }).then(function (res) {
       button.disabled = false;
       if (res.error) {
+        if (res.error.hint === "safety_set_incomplete") {
+          showSafetyNeeded();
+          return;
+        }
         showError(refusalText(res.error.message));
         return;
       }

@@ -38,6 +38,13 @@
   var ACHIEVEMENT_SELECT =
     "granted_at, achievement_definitions(label, description, display_order)";
   var OLDEST_BIRTH_DATE = "1900-01-01";
+  // Full name, phone and date of birth are required: 0013's
+  // safety_set_complete() needs them before a member can join a ride (#97).
+  var REQUIRED_COLUMNS = ["full_name", "phone", "date_of_birth"];
+  var SAFETY_SELECT =
+    "contact_name, relationship, contact_phone, risk_ack_version, risk_ack_at, " +
+    "organizer_share_consent_at";
+  var GUARDIAN = "Parent or guardian";
 
   var rootEl = document.getElementById("account-root");
   var formEl = document.getElementById("account-form");
@@ -60,6 +67,22 @@
   var achievementsEmptyEl = document.getElementById("achievements-empty");
   var achievementsErrorEl = document.getElementById("achievements-error");
   var organizerEl = document.getElementById("account-organizer");
+  var safetyRequiredEl = document.getElementById("safety-required");
+  var optionalGroupEl = document.getElementById("profile-optional-group");
+  var achievementsSectionEl = document.getElementById("achievements");
+  var safetyFormEl = document.getElementById("safety-form");
+  var safetyNameEl = document.getElementById("safety-contact_name");
+  var safetyRelationshipEl = document.getElementById("safety-relationship");
+  var safetyPhoneEl = document.getElementById("safety-contact_phone");
+  var safetyAcceptEl = document.getElementById("safety-accept");
+  var safetyConsentEl = document.getElementById("safety-consent");
+  var safetyMinorNoteEl = document.getElementById("safety-minor-note");
+  var safetySaveButton = document.getElementById("safety-save");
+  var safetyStatusEl = document.getElementById("safety-status");
+  var safetyErrorEl = document.getElementById("safety-error");
+  // The version of the ride terms this page shows. It must match 0013's
+  // current_risk_ack_version(), or the acceptance would not count.
+  var TERMS_VERSION = document.getElementById("safety-terms").dataset.version;
 
   var client = supabase.createClient(rootEl.dataset.supabaseUrl, rootEl.dataset.supabaseKey);
   var captchaRequired = rootEl.dataset.captchaRequired === "true";
@@ -126,10 +149,16 @@
     return safeReturnTo(saved.to);
   }
 
+  // A member whose safety set is incomplete stays here to finish it; the
+  // saved target waits until it is done (#97), so the rides page and this
+  // page never send a member back and forth.
   function returnToSavedContext(session) {
     if (!session) return;
-    var savedReturnTo = takeSavedReturnTo();
-    if (savedReturnTo) window.location.assign(savedReturnTo);
+    refreshSafety(session.user.id).then(function (complete) {
+      if (!complete) return;
+      var savedReturnTo = takeSavedReturnTo();
+      if (savedReturnTo) window.location.assign(savedReturnTo);
+    });
   }
 
   function render(session) {
@@ -153,6 +182,7 @@
     if (user.id === loadedUserId) return;
     loadedUserId = user.id;
     loadProfile(user.id);
+    loadSafety(user.id);
     loadAchievements(user.id);
     checkOrganizer(user.id);
   }
@@ -173,6 +203,13 @@
     clearChildren(achievementsListEl);
     achievementsEmptyEl.hidden = true;
     organizerEl.hidden = true;
+    safetyFormEl.reset();
+    loadedSafetyRow = null;
+    safetyStatusEl.textContent = "";
+    clearSafetyError();
+    safetyMinorNoteEl.hidden = true;
+    applyGate(false);
+    safetyRequiredEl.hidden = true;
   }
 
   // ---------------------------------------------------------- profile
@@ -253,6 +290,10 @@
       var field = PROFILE_FIELDS[i];
       var input = profileInput(field.column);
       var value = input.value.trim();
+      if (REQUIRED_COLUMNS.indexOf(field.column) !== -1 &&
+          (value === "" || value === field.prefill)) {
+        return { input: input, message: field.label + " is required." };
+      }
       // Array.from counts characters as Postgres's char_length does; .length
       // would count an emoji twice.
       if (field.kind === "text" && Array.from(value).length > field.maxLength) {
@@ -346,8 +387,175 @@
         }
         profileStatusEl.textContent = "Saved.";
         fillProfileForm(res.data);
+        showMinorNote();
+        afterSafetyChange(currentUser.id);
       });
   });
+
+  // ------------------------------------------------------- safety set
+
+  function clearSafetyError() {
+    safetyErrorEl.textContent = "";
+    safetyErrorEl.hidden = true;
+  }
+
+  function showSafetyError(message) {
+    safetyErrorEl.textContent = message;
+    safetyErrorEl.hidden = false;
+  }
+
+  // Until the required set is complete, the page asks for it first: the
+  // optional fields and the achievements wait (Hubert, 2026-10-04, #97).
+  function applyGate(complete) {
+    safetyRequiredEl.hidden = complete;
+    optionalGroupEl.hidden = !complete;
+    achievementsSectionEl.hidden = !complete;
+  }
+
+  // Resolves to true or false, and shows the result if this member is still
+  // the one on screen. The server decides: safety_set_complete() checks the
+  // same rule join_ride() does.
+  function refreshSafety(userId) {
+    return client.rpc("safety_set_complete").then(function (res) {
+      var complete = !res.error && res.data === true;
+      if (stillShowing(userId)) applyGate(complete);
+      return complete;
+    });
+  }
+
+  function afterSafetyChange(userId) {
+    refreshSafety(userId).then(function (complete) {
+      if (!complete || !stillShowing(userId)) return;
+      var savedReturnTo = takeSavedReturnTo();
+      if (savedReturnTo) window.location.assign(savedReturnTo);
+    });
+  }
+
+  // Age in whole years on today's date, or null without a real date.
+  function ageOn(dateValue) {
+    if (!isRealDate(dateValue)) return null;
+    var parts = dateValue.split("-").map(Number);
+    var now = new Date();
+    var age = now.getFullYear() - parts[0];
+    var month = now.getMonth() + 1;
+    if (month < parts[1] || (month === parts[1] && now.getDate() < parts[2])) age -= 1;
+    return age;
+  }
+
+  // Under 18, the emergency contact is a parent or guardian (#98 decision 3).
+  function showMinorNote() {
+    var age = ageOn(profileInput("date_of_birth").value.trim());
+    var minor = age !== null && age < 18;
+    safetyMinorNoteEl.hidden = !minor;
+    if (minor && safetyRelationshipEl.value.trim() === "") safetyRelationshipEl.value = GUARDIAN;
+  }
+
+  function fillSafetyForm(row) {
+    safetyNameEl.value = row && row.contact_name ? String(row.contact_name) : "";
+    safetyRelationshipEl.value = row && row.relationship ? String(row.relationship) : "";
+    safetyPhoneEl.value = row && row.contact_phone ? String(row.contact_phone) : "+60";
+    // An acceptance of an older version of the terms does not count.
+    safetyAcceptEl.checked = !!row && row.risk_ack_version === TERMS_VERSION;
+    safetyConsentEl.checked = !!row && row.organizer_share_consent_at !== null &&
+      row.organizer_share_consent_at !== undefined;
+    showMinorNote();
+  }
+
+  function loadSafety(userId) {
+    clearSafetyError();
+    safetyStatusEl.textContent = "";
+    client.from("profile_emergency")
+      .select(SAFETY_SELECT)
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(function (res) {
+        if (!stillShowing(userId)) return;
+        if (res.error) {
+          showSafetyError("Couldn't load your safety details: " + res.error.message);
+          return;
+        }
+        loadedSafetyRow = res.data;
+        fillSafetyForm(res.data);
+      });
+  }
+
+  var loadedSafetyRow = null;
+
+  function firstSafetyProblem() {
+    var name = safetyNameEl.value.trim();
+    var relationship = safetyRelationshipEl.value.trim();
+    var phone = safetyPhoneEl.value.trim();
+    if (name === "") return { input: safetyNameEl, message: "Emergency contact name is required." };
+    if (Array.from(name).length > 120) {
+      return { input: safetyNameEl, message: "Emergency contact name must be 120 characters or fewer." };
+    }
+    if (relationship === "") return { input: safetyRelationshipEl, message: "Relationship is required." };
+    if (Array.from(relationship).length > 60) {
+      return { input: safetyRelationshipEl, message: "Relationship must be 60 characters or fewer." };
+    }
+    var digits = phone.replace(/[^0-9]/g, "");
+    if (phone === "" || phone === "+60" || digits.length < 6 || Array.from(phone).length > 32) {
+      return { input: safetyPhoneEl, message: "Enter the emergency contact's phone number, like +60 12 345 6789." };
+    }
+    if (!safetyAcceptEl.checked) {
+      return { input: safetyAcceptEl, message: "Tick \"I accept the PPK ride terms\" to continue." };
+    }
+    if (!safetyConsentEl.checked) {
+      return { input: safetyConsentEl, message: "Tick the box to let a ride's organiser see your emergency contact on the ride day." };
+    }
+    return null;
+  }
+
+  safetyFormEl.addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (!currentUser) {
+      showSafetyError("You need to sign in again before saving.");
+      return;
+    }
+    clearSafetyError();
+    var problem = firstSafetyProblem();
+    if (problem) {
+      showSafetyError(problem.message);
+      problem.input.focus();
+      return;
+    }
+    var now = new Date().toISOString();
+    var previous = loadedSafetyRow;
+    var payload = {
+      user_id: currentUser.id,
+      contact_name: safetyNameEl.value.trim(),
+      relationship: safetyRelationshipEl.value.trim(),
+      contact_phone: safetyPhoneEl.value.trim(),
+      risk_ack_version: TERMS_VERSION,
+      // A re-save keeps the first acceptance and consent times of this version.
+      risk_ack_at: previous && previous.risk_ack_version === TERMS_VERSION && previous.risk_ack_at
+        ? previous.risk_ack_at : now,
+      organizer_share_consent_at: previous && previous.organizer_share_consent_at
+        ? previous.organizer_share_consent_at : now,
+      updated_at: now
+    };
+    var userId = currentUser.id;
+    safetySaveButton.disabled = true;
+    safetyStatusEl.textContent = "Saving...";
+    client.from("profile_emergency")
+      .upsert(payload, { onConflict: "user_id" })
+      .select(SAFETY_SELECT)
+      .single()
+      .then(function (res) {
+        safetySaveButton.disabled = false;
+        if (res.error) {
+          safetyStatusEl.textContent = "";
+          showSafetyError("Couldn't save: " + res.error.message);
+          return;
+        }
+        safetyStatusEl.textContent = "Saved.";
+        loadedSafetyRow = res.data;
+        fillSafetyForm(res.data);
+        afterSafetyChange(userId);
+      });
+  });
+
+  profileInput("date_of_birth").addEventListener("input", showMinorNote);
 
   // The link is a convenience only: organize.html and the organizer functions
   // check the grant again on the server.

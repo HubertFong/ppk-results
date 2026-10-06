@@ -336,6 +336,8 @@ footer { background: var(--navy); color: #cfd3ea; }
   </div>
 
   <div id="account-signed-in" hidden>
+    <p id="safety-required" class="safety-banner" hidden>Before you can join a ride, fill in
+    your Basics (full name, phone and date of birth) and your Safety details below.</p>
     <p>You're signed in as <strong id="account-user-email"></strong>.</p>
     <p class="note">More PPK member features are on the way. Ride with
     Passion. Ride with Power. Ride to Create Memories.</p>
@@ -358,6 +360,7 @@ footer { background: var(--navy); color: #cfd3ea; }
       <p class="note">Include the country code, like +60 12 345 6789.</p>
       <label for="profile-date_of_birth">Date of birth</label>
       <input type="date" id="profile-date_of_birth" name="date_of_birth" min="1900-01-01" autocomplete="bday">
+      <div id="profile-optional-group">
       <h3 id="profile-optional" class="form-group-break">More about you (optional)</h3>
       <p class="note">These help PPK plan rides and kit. Rewards for filling them in are coming.</p>
       <label for="profile-gender">Gender</label>
@@ -415,9 +418,41 @@ footer { background: var(--navy); color: #cfd3ea; }
         <input type="checkbox" id="profile-email_opt_in" name="email_opt_in">
         <label for="profile-email_opt_in">PPK may contact me by email</label>
       </div>
+      </div>
       <button type="submit" id="profile-save" class="btn">Save profile</button>
       <p id="profile-status" role="status"></p>
       <p id="profile-error" class="account-error" hidden></p>
+    </form>
+    </section>
+
+    <section class="page-section" id="safety-section">
+    <h2>Safety details</h2>
+    <p class="note">Required before you join a ride. Your emergency contact is private: only
+    the organiser of a ride you join sees it, on the day of that ride.</p>
+    <form id="safety-form" novalidate>
+      <label for="safety-contact_name">Emergency contact name</label>
+      <input type="text" id="safety-contact_name" maxlength="120" autocomplete="off">
+      <label for="safety-relationship">Relationship</label>
+      <input type="text" id="safety-relationship" maxlength="60" placeholder="For example: spouse, parent, friend">
+      <p class="note" id="safety-minor-note" hidden>Riders under 18 need a parent or guardian&#x27;s agreement. Enter your parent or guardian as your emergency contact. By ticking the box below, your parent or guardian also accepts the ride terms for you.</p>
+      <label for="safety-contact_phone">Emergency contact phone</label>
+      <input type="tel" id="safety-contact_phone" maxlength="32" value="+60">
+      <p class="note">Include the country code, like +60 12 345 6789.</p>
+      <h3 class="form-group-break">Riding with PPK</h3>
+      <div class="safety-terms" id="safety-terms" data-version="2026-10-v1">
+        <p>PPK group rides are social rides on public roads, organised by volunteers. By ticking the box I confirm that:</p><ol><li>Cycling on public roads carries risks, including falls, collisions and injury. I take part at my own risk and ride within my own ability.</li><li>I am responsible for my own safety and my bicycle. I will wear a helmet, ride a roadworthy bike, and use lights when it is dark.</li><li>I will follow Malaysian traffic law and the ride leader&#x27;s instructions, and I will ride considerately with other road users.</li><li>I am fit to ride, and I will not ride if I am unwell or affected by alcohol or drugs.</li><li>PPK and its volunteers do not provide insurance for me. I am responsible for my own medical and accident cover.</li><li>If I am hurt or unwell, PPK may contact my emergency contact, and may share my details with emergency services.</li></ol>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="safety-accept">
+        <label for="safety-accept">I accept the PPK ride terms</label>
+      </div>
+      <div class="check-row consent-row">
+        <input type="checkbox" id="safety-consent">
+        <label for="safety-consent" class="consent-label">I agree that the organiser of a ride I join may see my emergency contact&#x27;s name, relationship and phone number, on the day of that ride only, so they can reach them if something happens to me. PPK keeps these details private, does not show them to other members, and deletes them when I delete my account.</label>
+      </div>
+      <button type="submit" id="safety-save" class="btn">Save safety details</button>
+      <p id="safety-status" role="status"></p>
+      <p id="safety-error" class="account-error" hidden></p>
     </form>
     </section>
 
@@ -461,6 +496,21 @@ footer { background: var(--navy); color: #cfd3ea; }
     display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
   .account-card .check-row label { margin-bottom: 0; }
+  .account-card .safety-banner {
+    background: #fff4e5; border-left: 4px solid #E64D24; padding: 10px 14px;
+    border-radius: 6px; margin: 14px 0 14px; font-weight: 600;
+  }
+  .account-card .safety-terms {
+    background: #f6f7fb; border-radius: 8px; padding: 12px 16px; margin-top: 10px;
+    font-size: 14px; color: #33334a;
+  }
+  .account-card .safety-terms ol { margin: 6px 0 0 18px; padding: 0; }
+  .account-card .safety-terms li { margin-top: 4px; }
+  .account-card .check-row.consent-row { align-items: flex-start; }
+  .account-card .consent-label {
+    font-family: inherit; font-weight: 400; text-transform: none; letter-spacing: 0;
+    font-size: 14px; color: #33334a;
+  }
   .account-card input[type=checkbox] { accent-color: #102060; }
   .account-card select { background: #fff; }
   .account-card #profile-status { margin-top: 10px; }
@@ -477,7 +527,7 @@ footer { background: var(--navy); color: #cfd3ea; }
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
-<script src="assets/account.js?v=0170db6b0c07"></script>
+<script src="assets/account.js?v=5ae5aa7b0e97"></script>
 
 </main>
 <script>
