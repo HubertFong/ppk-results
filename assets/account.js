@@ -389,6 +389,9 @@
         fillProfileForm(res.data);
         showMinorNote();
         afterSafetyChange(currentUser.id);
+        // Filling every optional field earns Profile Complete (0017) on this
+        // save, so the list shows it without a reload.
+        loadAchievements(currentUser.id);
       });
   });
 
