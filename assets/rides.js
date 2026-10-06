@@ -15,7 +15,10 @@
   var RIDE_SELECT =
     "id, title, meeting_point, meeting_map_link, meet_at, depart_at, " +
     "route_link, distance_m, climbing_m, regroup_policy, pace_note, " +
-    "capacity, signup_deadline, status";
+    "capacity, signup_deadline, status, signup_type, required_fields";
+
+  // The details a type 3 ride may ask for (0016), as a rider reads them.
+  var DETAIL_TEXT = { bike_type: "bike type", gender: "gender" };
 
   // An organizer's own session can read drafts as well, so the list names the
   // three statuses a rider may see: a draft must never show here.
@@ -77,6 +80,20 @@
   function showSafetyNeeded() {
     clearChildren(errorEl);
     errorEl.appendChild(document.createTextNode("Complete your safety details first: "));
+    var link = document.createElement("a");
+    link.href = returnToHref();
+    link.textContent = "go to your account page";
+    errorEl.appendChild(link);
+    errorEl.appendChild(document.createTextNode("."));
+    errorEl.hidden = false;
+  }
+
+  // join_ride() refuses a type 3 ride whose details the member hasn't
+  // filled (0016). Its message names them: "Add your bike type on your
+  // account page first".
+  function showDetailsNeeded(message) {
+    clearChildren(errorEl);
+    errorEl.appendChild(document.createTextNode(refusalText(message).replace(/\.$/, "") + ": "));
     var link = document.createElement("a");
     link.href = returnToHref();
     link.textContent = "go to your account page";
@@ -263,9 +280,21 @@
 
   // Hubert, 2026-09-30 (#93): most rides have no limit, and riders who
   // haven't signed up are still welcome at the start.
+  // A ride for members only (0016) needs the sign-up, so it is optional only
+  // on a type 1 ride.
   function optionalLine(ride) {
-    if (ride.capacity !== null) return null;
+    if (ride.capacity !== null || ride.signup_type !== "name") return null;
     return textBlock("div", "Sign-up is optional. You can still join us at the meeting point.", "note");
+  }
+
+  // Who can sign up, on a ride that isn't open to typed names (0016).
+  function typeLine(ride) {
+    if (ride.signup_type === "account") return textBlock("div", "PPK members only.", "note");
+    if (ride.signup_type !== "fields") return null;
+    var details = (ride.required_fields || []).map(function (column) {
+      return DETAIL_TEXT[column] || column;
+    }).join(" and ");
+    return textBlock("div", "PPK members only, with your " + details + " on your account page.", "note");
   }
 
   // -------------------------------------------------------------- sharing
@@ -329,6 +358,10 @@
       if (res.error) {
         if (res.error.hint === "safety_set_incomplete") {
           showSafetyNeeded();
+          return;
+        }
+        if (String(res.error.hint || "").indexOf("fields_missing:") === 0) {
+          showDetailsNeeded(res.error.message);
           return;
         }
         showError(refusalText(res.error.message));
@@ -496,7 +529,7 @@
     if (!currentUser) {
       // A ride with no limit takes a typed name (0014); one with a limit
       // needs an account.
-      if (ride.capacity === null) {
+      if (ride.signup_type === "name" && ride.capacity === null) {
         line.appendChild(nameForm(ride));
         return line;
       }
@@ -627,6 +660,7 @@
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
     item.appendChild(closesLine);
     appendDetail(item, optionalLine(ride));
+    appendDetail(item, typeLine(ride));
     appendDetail(item, ridersLine(ride, version));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.

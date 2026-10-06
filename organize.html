@@ -343,6 +343,18 @@ footer { background: var(--navy); color: #cfd3ea; }
       <label for="ride-signup_deadline">Sign-up deadline</label>
       <input type="datetime-local" id="ride-signup_deadline" required>
       <p class="note">Defaults to 30 minutes before the meet-up.</p>
+      <label for="ride-signup_type">Who can sign up</label>
+      <select id="ride-signup_type">
+        <option value="name">Anyone, by typing a name (no limit)</option>
+        <option value="account">PPK members</option>
+        <option value="fields">PPK members with these details</option>
+      </select>
+      <p class="note">Members need their safety details first. Typed names need a ride with no limit.</p>
+      <fieldset id="ride-fields-fieldset" hidden>
+        <legend>Details riders must give</legend>
+        <div class="check-row"><input type="checkbox" id="ride-required-bike_type"><label for="ride-required-bike_type">Bike type</label></div>
+        <div class="check-row"><input type="checkbox" id="ride-required-gender"><label for="ride-required-gender">Gender</label></div>
+      </fieldset>
       <label for="ride-capacity">Capacity (optional)</label>
       <input type="number" id="ride-capacity" min="1" step="1">
       <p class="note">Leave it empty for no limit.</p>
@@ -416,6 +428,24 @@ footer { background: var(--navy); color: #cfd3ea; }
     border: 1px solid #d8d8e0; border-radius: 6px; padding: 10px 12px 12px;
     margin: 4px 0 12px;
   }
+  /* Who can sign up (#110): the type's select, and its details fieldset. */
+  .organize-card select {
+    width: 100%; box-sizing: border-box; padding: 10px 12px;
+    border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
+    margin-bottom: 10px; background: #fff;
+  }
+  .organize-card #ride-fields-fieldset {
+    border: 1px solid #d8d8e0; border-radius: 6px; padding: 10px 12px 12px;
+    margin: 4px 0 12px;
+  }
+  .organize-card #ride-fields-fieldset legend {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em; font-size: 14px;
+    color: #102060; padding: 0 4px;
+  }
+  .organize-card .check-row { display: flex; align-items: center; gap: 8px; }
+  .organize-card .check-row label { margin-bottom: 0; }
+  .organize-card input[type=checkbox] { accent-color: #102060; }
   .organize-card #ride-starts-fieldset legend {
     font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
     text-transform: uppercase; letter-spacing: .04em; font-size: 14px;
@@ -435,7 +465,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/organize.js?v=0b30af20928a"></script>
+<script src="assets/organize.js?v=509a3d98aa15"></script>
 
 </main>
 <script>

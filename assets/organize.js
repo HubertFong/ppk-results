@@ -9,12 +9,24 @@
 (function () {
   "use strict";
 
-  // Exactly the columns 0006_rides.sql grants. select("*") is refused,
-  // because created_by is not readable.
+  // Exactly the columns 0006_rides.sql and 0016 grant. select("*") is
+  // refused, because created_by is not readable.
   var RIDE_SELECT =
     "id, title, meeting_point, meeting_map_link, meet_at, depart_at, " +
     "route_link, distance_m, climbing_m, regroup_policy, pace_note, " +
-    "capacity, signup_deadline, status";
+    "capacity, signup_deadline, status, signup_type, required_fields";
+
+  // Who can sign up (#110), as the ride list says it, and the details a
+  // type 3 ride may ask for, as 0016 allows them.
+  var SIGNUP_TYPE_TEXT = {
+    name: "anyone, by typing a name",
+    account: "PPK members",
+    fields: "PPK members with chosen details"
+  };
+  var DETAIL_FIELDS = [
+    { name: "bike_type", label: "Bike type" },
+    { name: "gender", label: "Gender" }
+  ];
 
   // The ride form's fields, in the order the form shows them: each input is
   // #ride-<column> and each create_ride()/update_ride() argument is <param>.
@@ -27,6 +39,7 @@
     { column: "meet_at", param: "p_meet_at", kind: "datetime" },
     { column: "depart_at", param: "p_depart_at", kind: "datetime" },
     { column: "signup_deadline", param: "p_signup_deadline", kind: "datetime" },
+    { column: "signup_type", param: "p_signup_type", kind: "text" },
     { column: "capacity", param: "p_capacity", kind: "integer" },
     { column: "route_link", param: "p_route_link", kind: "text" },
     { column: "distance_km", param: "p_distance_m", kind: "km" },
@@ -47,6 +60,8 @@
   var meetAtInput = document.getElementById("ride-meet_at");
   var departAtInput = document.getElementById("ride-depart_at");
   var deadlineInput = document.getElementById("ride-signup_deadline");
+  var signupTypeInput = document.getElementById("ride-signup_type");
+  var detailsFieldset = document.getElementById("ride-fields-fieldset");
   var saveButton = document.getElementById("ride-save");
   var formCancelButton = document.getElementById("ride-form-cancel");
   var formErrorEl = document.getElementById("ride-form-error");
@@ -257,6 +272,8 @@
     heading.appendChild(textBlock("span", " [" + ride.status + "]"));
     item.appendChild(heading);
     item.appendChild(textBlock("div", "Meets " + formatMeetAt(ride.meet_at)));
+    item.appendChild(textBlock("div", "Who can sign up: " +
+      (SIGNUP_TYPE_TEXT[ride.signup_type] || ride.signup_type)));
     var places = textBlock("div", "Checking places taken...");
     item.appendChild(places);
     client.rpc("ride_places_taken", { ride_id: ride.id }).then(function (res) {
@@ -318,7 +335,30 @@
         input.value = String(value);
       }
     });
+    // A new ride starts as type 1, the ordinary ride (Hubert, 2026-09-30).
+    if (signupTypeInput.value === "") signupTypeInput.value = "name";
+    var required = (ride && ride.required_fields) || [];
+    DETAIL_FIELDS.forEach(function (detail) {
+      detailBox(detail.name).checked = required.indexOf(detail.name) !== -1;
+    });
+    showDetails();
   }
+
+  function detailBox(column) {
+    return document.getElementById("ride-required-" + column);
+  }
+
+  function checkedDetails() {
+    return DETAIL_FIELDS.map(function (detail) { return detail.name; })
+      .filter(function (column) { return detailBox(column).checked; });
+  }
+
+  // The details are for a type 3 ride only.
+  function showDetails() {
+    detailsFieldset.hidden = signupTypeInput.value !== "fields";
+  }
+
+  signupTypeInput.addEventListener("change", showDetails);
 
   function openForm(ride) {
     // Every opening is a new form version, so a late reply for an earlier
@@ -418,6 +458,14 @@
     if (capacity.value !== "" && (!Number.isInteger(places) || places < 1)) {
       return { input: capacity, message: "Capacity must be a whole number of 1 or more, or empty for no limit." };
     }
+    // 0016's rules, checked again by create_ride() and update_ride().
+    if (signupTypeInput.value === "name" && capacity.value !== "") {
+      return { input: capacity, message: "A ride that takes typed names has no limit. " +
+        "Empty the capacity, or choose PPK members." };
+    }
+    if (signupTypeInput.value === "fields" && checkedDetails().length === 0) {
+      return { input: detailBox("bike_type"), message: "Pick at least one detail riders must give." };
+    }
     if (departAtInput.value !== "" &&
         new Date(departAtInput.value).getTime() < new Date(meetAtInput.value).getTime()) {
       return { input: departAtInput, message: "The ride can't depart before its meet-up." };
@@ -449,6 +497,7 @@
     // Departure is optional in the form: an empty one means the ride leaves
     // at the meet-up time, which is what the database stores.
     if (payload.p_depart_at === null) payload.p_depart_at = payload.p_meet_at;
+    payload.p_required_fields = payload.p_signup_type === "fields" ? checkedDetails() : [];
     return payload;
   }
 
@@ -728,7 +777,21 @@
     return line;
   }
 
-  function rosterItem(ride, signup, joinInfo, contacts) {
+  // A type 3 ride's details for one confirmed rider (0016): only those the
+  // ride asks for, and "not given" for one a rider joined without (they
+  // joined before the ride asked for it).
+  function detailsLine(ride, signup, details) {
+    var row = details[signup.signup_id] || {};
+    var parts = DETAIL_FIELDS.filter(function (detail) {
+      return (ride.required_fields || []).indexOf(detail.name) !== -1;
+    }).map(function (detail) {
+      var value = row[detail.name];
+      return detail.label + ": " + (value === null || value === undefined || value === "" ? "not given" : value);
+    });
+    return textBlock("div", parts.join("; "));
+  }
+
+  function rosterItem(ride, signup, joinInfo, contacts, details) {
     var item = document.createElement("li");
     item.appendChild(textBlock("strong", signup.rider_name || "Name not given"));
     var href = telHref(signup.phone);
@@ -745,6 +808,7 @@
     // only its own point shows no line.
     if (joinInfo) item.appendChild(textBlock("div", startJoinText(ride, signup, joinInfo)));
     if (contacts && signup.status === "confirmed") item.appendChild(emergencyLine(signup, contacts));
+    if (details && signup.status === "confirmed") item.appendChild(detailsLine(ride, signup, details));
     if (canMarkAttendance(ride, signup)) {
       item.appendChild(actionButton("Attended", function () {
         markAttendance(ride, signup, "attended");
@@ -791,11 +855,12 @@
     var version = rosterVersion;
     clearChildren(rosterListEl);
     rosterEmptyEl.hidden = true;
-    // One screen, five reads: the roster itself, the point each rider chose
+    // One screen, six reads: the roster itself, the point each rider chose
     // (ride_start_choices), the ride's extra points, the ride-day emergency
-    // contacts and the typed names (0014). A failed choices or points read
-    // only drops the start line, and a failed typed-names read only drops
-    // those names, never the roster; the usual error banner reports both.
+    // contacts, the typed names (0014) and a type 3 ride's details (0016).
+    // A failed choices or points read only drops the start line, and a
+    // failed typed-names or details read only drops those, never the
+    // roster; the usual error banner reports them.
     Promise.all([
       client.rpc("ride_roster", { p_ride_id: ride.id }),
       client.rpc("ride_start_choices", { p_ride_id: ride.id }),
@@ -803,7 +868,10 @@
       isRideDay(ride)
         ? client.rpc("ride_emergency_contacts", { p_ride_id: ride.id })
         : Promise.resolve({ data: null, error: null }),
-      client.rpc("ride_name_roster", { p_ride_id: ride.id })
+      client.rpc("ride_name_roster", { p_ride_id: ride.id }),
+      ride.signup_type === "fields"
+        ? client.rpc("ride_required_fields", { p_ride_id: ride.id })
+        : Promise.resolve({ data: null, error: null })
     ]).then(function (results) {
       // A reply for a roster that has been closed or replaced is dropped.
       if (version !== rosterVersion || rosterRide !== ride) return;
@@ -841,9 +909,17 @@
         contacts = {};
         contactsRes.data.forEach(function (contact) { contacts[contact.signup_id] = contact; });
       }
+      var detailsRes = results[5];
+      var details = null;
+      if (detailsRes.error) {
+        showOrganizeError(detailsRes.error.message);
+      } else if (detailsRes.data) {
+        details = {};
+        detailsRes.data.forEach(function (row) { details[row.signup_id] = row; });
+      }
       var signups = rosterRes.data || [];
       signups.forEach(function (signup) {
-        rosterListEl.appendChild(rosterItem(ride, signup, joinInfo, contacts));
+        rosterListEl.appendChild(rosterItem(ride, signup, joinInfo, contacts, details));
       });
       var namesRes = results[4];
       var names = [];
