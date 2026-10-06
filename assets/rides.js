@@ -106,9 +106,10 @@
       sessionEl.textContent = "You're signed in as " + (user.email || "");
       return;
     }
-    // Most rides also take just a name (0014), on the ride's own card.
+    // A ride that takes typed names (0014) says so on its own card, so this
+    // line is true whether or not any ride on the page does.
     sessionEl.appendChild(document.createTextNode(
-      "Sign up with just your name on a ride below, or as a member on your account page: "));
+      "Sign in on your account page to sign up as a member: "));
     var link = document.createElement("a");
     link.id = "rides-signin-link";
     link.href = returnToHref();
@@ -384,9 +385,9 @@
     button.className = "btn";
     button.textContent = "Sign up";
     var note = textBlock("div",
-      "Your name is shown to signed-in PPK members and the ride organizer, " +
-      "and deleted the day after the ride. Don't add a phone number or " +
-      "email. To take it off, ask the organizer.", "note");
+      "Your name is shown on this page to anyone who opens it, and deleted " +
+      "the day after the ride. Don't add a phone number or email. To take " +
+      "it off, ask the organizer.", "note");
     var account = document.createElement("div");
     account.appendChild(document.createTextNode("Have a PPK account? "));
     var signInLink = document.createElement("a");
@@ -535,10 +536,9 @@
 
   // Who's riding (#74): signed-in members see each confirmed rider's
   // preferred name, or "A rider" for one who set none. ride_riders() returns
-  // names only and refuses a signed-out caller, so a visitor gets an invite
-  // to sign in instead. Typed names (0014) follow the members' names, from
-  // ride_typed_names(), which also refuses a signed-out caller. A long list
-  // is cut, so the card stays readable.
+  // names only and refuses a signed-out caller. Typed names (0014) follow
+  // the members' names, from ride_typed_names(), which everyone may read
+  // since 0015. A long list is cut, so the card stays readable.
   var RIDERS_SHOWN = 12;
 
   function ridersText(names) {
@@ -548,9 +548,44 @@
     return "Who's riding (" + names.length + "): " + shown + (more > 0 ? " and " + more + " more" : "");
   }
 
+  // A signed-out visitor sees the typed names, so someone who signed up by
+  // name can find theirs (Hubert, 2026-10-06, #113), and a count of the
+  // members, whose names stay for signed-in members only.
+  function publicRidersText(names, members) {
+    if (names.length === 0 && members === 0) return ridersText([]);
+    var parts = names.slice(0, RIDERS_SHOWN);
+    var more = names.length - parts.length;
+    if (more > 0) parts.push(more + " more");
+    if (members > 0) parts.push(members + (members === 1 ? " member" : " members"));
+    var last = parts.pop();
+    var list = parts.length ? parts.join(", ") + " and " + last : last;
+    return "Who's riding (" + (names.length + members) + "): " + list;
+  }
+
+  function publicRidersLine(ride, version) {
+    var line = textBlock("div", "Who's riding: ...", "ride-riders");
+    Promise.all([
+      client.rpc("ride_typed_names", { ride_id: ride.id }),
+      client.rpc("ride_places_taken", { ride_id: ride.id })
+    ]).then(function (results) {
+      if (version !== listVersion) return;
+      if (results[0].error || results[1].error) {
+        line.textContent = "Couldn't read who's riding.";
+        return;
+      }
+      var names = (results[0].data || []).map(function (row) { return row.display_name; });
+      // On a ride with no limit the count includes the typed names; on a
+      // ride with a limit it counts members only (0014).
+      var taken = Number(results[1].data || 0);
+      var members = Math.max(0, ride.capacity === null ? taken - names.length : taken);
+      line.textContent = publicRidersText(names, members);
+    });
+    return line;
+  }
+
   function ridersLine(ride, version) {
     if (ride.status !== "published" && ride.status !== "postponed") return null;
-    if (!currentUser) return textBlock("div", "Sign in to see who's riding.", "ride-riders");
+    if (!currentUser) return publicRidersLine(ride, version);
     var line = textBlock("div", "Who's riding: ...", "ride-riders");
     Promise.all([
       client.rpc("ride_riders", { ride_id: ride.id }),
