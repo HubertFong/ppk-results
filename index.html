@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home · PPK SQDTT Results</title>
+<title>Home · PPK Pedal PenangKia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -47,6 +47,19 @@ nav a {
 }
 nav a.on { border-color: var(--orange); }
 nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
 
 main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
 h1 {
@@ -269,9 +282,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <header>
   <div class="head-inner">
     <a href="index.html" class="brand">
-      <span class="brand-main">PPK</span><span class="brand-sub">SQDTT Results</span>
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
     </a>
-    <nav><a href="index.html" class="on">Home</a><a href="events.html">Events</a><a href="leaderboard.html">Personal Bests</a><a href="standings.html">Standings</a><a href="records.html">Records</a><a href="compare.html">Compare</a><a href="rides.html">Group rides</a><a href="account.html">Account</a></nav>
+    <nav><a href="index.html" class="on">Home</a><a href="rides.html">Group rides</a><a href="sqdtt.html">SQDTT results</a><a href="account.html">Account</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
       <ul id="search-results" class="search-results" hidden></ul>
@@ -280,17 +293,70 @@ footer { background: var(--navy); color: #cfd3ea; }
 </header>
 <main>
 <p class="kicker">Pedal Penangkia (PPK)</p>
-<h1>SQDTT Results</h1>
-<p class="sub">SQDTT (the Straits Quay Duathlon Time Trial) is one of the events PPK times. Find yourself with the search box above, or jump in below.</p>
-<h2 class="subhead">Latest — Event #121 <span class="dim">· 2026-09-13</span></h2>
+<h1>Ride with PPK</h1>
+<p class="sub">PPK is a cycling club in Penang. We ride together, and we time the Straits Quay Duathlon Time Trial (SQDTT). Ride with Passion. Ride with Power. Ride to Create Memories.</p>
+<h2 class="subhead">Upcoming group rides</h2>
+<div id="home-rides" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW">
+<p id="home-rides-loading" class="note">Loading rides...</p>
+<ul id="home-rides-list" class="ride-list"></ul>
+<p id="home-rides-empty" class="note" hidden>No rides are open right now. Check back soon.</p>
+<p id="home-rides-error" class="note" hidden>The rides could not be loaded. See them on the group rides page.</p>
+</div>
+<div class="home-actions"><a class="btn" href="rides.html">All group rides</a></div>
+<script>
+(function () {
+  var root = document.getElementById("home-rides");
+  if (!root || !window.fetch) return;
+  var list = document.getElementById("home-rides-list");
+  var loading = document.getElementById("home-rides-loading");
+  var empty = document.getElementById("home-rides-empty");
+  var error = document.getElementById("home-rides-error");
+  var url = root.getAttribute("data-supabase-url").replace(/\/+$/, "")
+    + "/rest/v1/sessions?select=id,title,meeting_point,meet_at,status"
+    + "&status=in.(published,postponed)"
+    + "&depart_at=gte." + encodeURIComponent(new Date().toISOString())
+    + "&order=meet_at.asc&limit=3";
+  function when(iso) {
+    try {
+      return new Date(iso).toLocaleString("en-MY", {
+        timeZone: "Asia/Kuala_Lumpur", weekday: "short", day: "numeric",
+        month: "short", hour: "numeric", minute: "2-digit" });
+    } catch (e) { return ""; }
+  }
+  fetch(url, { headers: { apikey: root.getAttribute("data-supabase-key"),
+                          Accept: "application/json" } })
+    .then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function (rides) {
+      loading.hidden = true;
+      if (!Array.isArray(rides) || rides.length === 0) { empty.hidden = false; return; }
+      rides.forEach(function (ride) {
+        var item = document.createElement("li");
+        var link = document.createElement("a");
+        link.href = "rides.html?ride=" + encodeURIComponent(String(ride.id));
+        link.textContent = String(ride.title || "Group ride")
+          + (ride.status === "postponed" ? " (postponed)" : "");
+        var detail = document.createElement("span");
+        detail.className = "ride-when";
+        detail.textContent = [when(ride.meet_at), ride.meeting_point || ""]
+          .filter(Boolean).join(" · ");
+        item.appendChild(link);
+        item.appendChild(detail);
+        list.appendChild(item);
+      });
+    })
+    .catch(function () {
+      loading.hidden = true;
+      error.hidden = false;
+    });
+})();
+</script>
+<h2 class="subhead">Latest SQDTT event</h2>
+<p class="note">Event #121 · 2026-09-13</p>
 <div class="statgrid"><div class="stat"><b><a href="athletes/fish-lim.html">Fish Lim</a></b><span>Long event winner · 1:51:15</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short event winner · 58:25</span></div></div>
-<div class="home-actions"><a class="btn" href="events.html#event-121-long">View Long Results</a><a class="btn" href="events.html#event-121-short">View Short Results</a></div>
-<h2 class="subhead">2026 championship leaders</h2>
-<div class="statgrid"><div class="stat"><b><a href="athletes/hubert-fong.html">Hubert Fong</a></b><span>Long leader · 90 pts (+54)</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short leader · 44 pts (+4)</span></div></div>
-<h2 class="subhead">What changed at #121</h2>
-<ul class="highlight-list"><li><span class="record-badge r1" aria-hidden="true">1</span> <strong>New #1 all-time record:</strong> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long fastest bike, <a href="events.html#event-121">51:21<span class="split-note">35.1 km/h</span></a></li><li><span class="record-badge r1" aria-hidden="true">1</span> <strong>New #1 all-time record:</strong> <a href="athletes/tao.html">Tao</a> — Short fastest bike, <a href="events.html#event-121">27:43<span class="split-note">32.5 km/h</span></a></li><li><span class="record-badge r2" aria-hidden="true">2</span> <strong>New #2 all-time record:</strong> <a href="athletes/fish-lim.html">Fish Lim</a> — Long fastest overall, <a href="events.html#event-121">1:51:15</a></li></ul><button class="highlights-toggle" type="button" aria-expanded="false" data-count="22">Show 22 more</button><ul class="highlight-list" hidden><li><span class="record-badge r2" aria-hidden="true">2</span> <strong>New #2 all-time record:</strong> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 1, <a href="events.html#event-121">25:45<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2" aria-hidden="true">2</span> <strong>New #2 all-time record:</strong> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long fastest run 2, <a href="events.html#event-121">25:51<span class="split-note">4:18/km</span></a></li><li><span class="record-badge r2" aria-hidden="true">2</span> <strong>New #2 all-time record:</strong> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short fastest bike, <a href="events.html#event-121">28:22<span class="split-note">31.7 km/h</span></a></li><li><span class="record-badge r3" aria-hidden="true">3</span> <strong>New #3 all-time record:</strong> <a href="athletes/dysen-leong-chat-shen.html">Dysen Leong Chat Shen</a> — Long fastest overall, <a href="events.html#event-121">1:51:31</a></li><li><span class="chip" style="background:#1B9590">NEW</span> 15 first-time racers this event</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/hubert-fong.html">Hubert Fong</a> — Long PB of 1:53:47</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long PB of 1:56:14</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short PB of 1:00:02</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/adriana-alvarez.html">Adriana Álvarez</a> — Short PB of 1:03:06</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/clarabelle-yii-jia-tong.html">Clarabelle Yii Jia Tong</a> — Short PB of 1:08:20</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/alishia-lim.html">Alishia Lim</a> — Short PB of 1:09:33</li><li><span class="chip" style="background:#FAB615;color:#102060">PB</span> <a href="athletes/tan-huay-vern.html">Tan Huay Vern</a> — Short PB of 1:13:25</li><li><span class="chip" style="background:#E64D24">↑</span> <a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a> — biggest improvement: 35:25 (37.7%) faster</li><li><a href="athletes/fish-lim.html">Fish Lim</a> — enters the Long standings at #7</li><li><a href="athletes/dysen-leong-chat-shen.html">Dysen Leong Chat Shen</a> — enters the Long standings at #9</li><li><a href="athletes/lu-ee-chen.html">Lu Ee Chen</a> — Long standings: #6 <span aria-hidden="true">↑</span> #5</li><li><a href="athletes/winson-khoo.html">Winson Khoo</a> — Long standings: #7 <span aria-hidden="true">↓</span> #8</li><li><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a> — Short standings: #8 <span aria-hidden="true">↑</span> #1</li><li><a href="athletes/jorge-chaves.html">Jorge Chaves</a> — Short standings: #24 <span aria-hidden="true">↑</span> #9</li><li><a href="athletes/kan-khai-wei.html">Kan Khai Wei</a> — Short standings: #3 <span aria-hidden="true">↑</span> #2</li><li><a href="athletes/dr-k.html">Dr. K</a> — Short standings: #7 <span aria-hidden="true">↑</span> #4</li><li><a href="athletes/kiron-reyon.html">Kiron Reyon</a> — Short standings: #1 <span aria-hidden="true">↓</span> #3</li></ul>
-<p class="note"><span class="record-badge r1" aria-hidden="true">1</span> current all-time top-3 rank (recalculated after every event) · <span class="chip" style="background:#FAB615;color:#102060">PB</span> personal best · <span style="color:#D4A017;font-weight:700">1st</span>/<span style="color:#9AA5B1;font-weight:700">2nd</span>/<span style="color:#B0672B;font-weight:700">3rd</span> place in that event or standings.</p>
-<div class="home-actions"><a class="btn" href="events.html">All Events</a><a class="btn" href="leaderboard.html">All-Time PBs</a><a class="btn" href="standings.html">Standings</a><a class="btn" href="records.html">Records</a><a class="btn" href="compare.html">Compare</a></div>
+<div class="home-actions"><a class="btn" href="events.html#event-121-long">View Long Results</a><a class="btn" href="events.html#event-121-short">View Short Results</a><a class="btn" href="sqdtt.html">SQDTT results</a></div>
 </main>
 <script>
 (function() {
@@ -423,9 +489,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
-Pedal Penangkia (PPK) · results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
-· <a href="data.html">About this data</a>
-<p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
 </div></footer>
 </body>
 </html>

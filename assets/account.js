@@ -1,5 +1,5 @@
-/* The PPK member account page: magic-link sign-in, the member's profile, and
- * their achievement awards.
+/* The PPK member account page: sign-in by magic link or code, the member's
+ * profile, and their achievement awards.
  *
  * A classic script, loaded at the end of the body by site_account.py, so every
  * element below already exists when it runs. Its only dependency is the
@@ -16,17 +16,20 @@
   window.ppkTurnstileExpired = function () { captchaToken = null; };
 
   // The columns of `profiles`, in the order the form shows them. The labels
-  // are the form's own labels, reused in the validation messages.
+  // are the form's own labels, reused in the validation messages. A "choice"
+  // is a dropdown whose options are in the page. club and kit_size stay in
+  // the table, off the form (#92). A prefill shows when the column is empty,
+  // and is saved as empty if left as it is.
   var PROFILE_FIELDS = [
     { column: "full_name", label: "Full name", kind: "text", maxLength: 120 },
     { column: "preferred_name", label: "Preferred name", kind: "text", maxLength: 60 },
+    { column: "phone", label: "Phone", kind: "text", maxLength: 32, prefill: "+60" },
     { column: "date_of_birth", label: "Date of birth", kind: "date" },
-    { column: "gender", label: "Gender", kind: "text", maxLength: 40 },
-    { column: "phone", label: "Phone", kind: "text", maxLength: 32 },
-    { column: "club", label: "Club", kind: "text", maxLength: 120 },
+    { column: "gender", label: "Gender", kind: "choice" },
     { column: "years_riding", label: "Years riding", kind: "number" },
-    { column: "kit_size", label: "Kit size", kind: "text", maxLength: 20 },
-    { column: "bike_type", label: "Bike type", kind: "text", maxLength: 60 },
+    { column: "kit_top_size", label: "Kit size (top)", kind: "choice" },
+    { column: "kit_bottom_size", label: "Kit size (bottom)", kind: "choice" },
+    { column: "bike_type", label: "Bike type", kind: "choice" },
     { column: "whatsapp_opt_in", label: "PPK may contact me on WhatsApp", kind: "checkbox" },
     { column: "email_opt_in", label: "PPK may contact me by email", kind: "checkbox" }
   ];
@@ -45,6 +48,9 @@
   var signedInEl = document.getElementById("account-signed-in");
   var userEmailEl = document.getElementById("account-user-email");
   var signOutButton = document.getElementById("account-signout");
+  var codeFormEl = document.getElementById("account-code-form");
+  var codeEl = document.getElementById("account-code");
+  var verifyButton = document.getElementById("account-verify");
   var errorEl = document.getElementById("account-error");
   var profileFormEl = document.getElementById("profile-form");
   var profileSaveButton = document.getElementById("profile-save");
@@ -87,18 +93,43 @@
     }
   }
 
+  // A magic link often opens in a new tab, and session storage belongs to
+  // one tab. localStorage is shared by the browser's tabs, so the target is
+  // kept there. It is used once and ignored after an hour, so an old one
+  // can't pull a member away from this page later.
+  var RETURN_TO_KEY = "ppkReturnTo";
+  var RETURN_TO_MAX_AGE_MS = 60 * 60 * 1000;
+
   var accountUrl = new URL(window.location.href);
   var returnTo = safeReturnTo(accountUrl.searchParams.get("returnTo"));
   accountUrl.searchParams.delete("returnTo");
-  if (returnTo) sessionStorage.setItem("ppkReturnTo", returnTo);
+  if (returnTo) {
+    try {
+      localStorage.setItem(RETURN_TO_KEY, JSON.stringify({ to: returnTo, at: Date.now() }));
+    } catch (error) {
+      // Blocked storage only means the member stays here after signing in.
+    }
+  }
+
+  function takeSavedReturnTo() {
+    var saved = null;
+    try {
+      var raw = localStorage.getItem(RETURN_TO_KEY);
+      localStorage.removeItem(RETURN_TO_KEY);
+      saved = JSON.parse(raw);
+    } catch (error) {
+      return null;
+    }
+    if (!saved || typeof saved.at !== "number" || Date.now() - saved.at > RETURN_TO_MAX_AGE_MS) {
+      return null;
+    }
+    return safeReturnTo(saved.to);
+  }
 
   function returnToSavedContext(session) {
     if (!session) return;
-    var savedReturnTo = safeReturnTo(sessionStorage.getItem("ppkReturnTo"));
-    if (savedReturnTo) {
-      sessionStorage.removeItem("ppkReturnTo");
-      window.location.assign(savedReturnTo);
-    }
+    var savedReturnTo = takeSavedReturnTo();
+    if (savedReturnTo) window.location.assign(savedReturnTo);
   }
 
   function render(session) {
@@ -114,6 +145,7 @@
     currentUser = user;
     formEl.hidden = true;
     sentEl.hidden = true;
+    codeFormEl.hidden = true;
     signedInEl.hidden = false;
     userEmailEl.textContent = user.email || "";
     // render() runs twice at start-up (getSession and INITIAL_SESSION), so
@@ -132,6 +164,8 @@
     signedInEl.hidden = true;
     formEl.hidden = false;
     sentEl.hidden = true;
+    codeFormEl.hidden = false;
+    codeEl.value = "";
     profileFormEl.reset();
     profileStatusEl.textContent = "";
     clearProfileError();
@@ -153,15 +187,20 @@
     profileErrorEl.hidden = false;
   }
 
-  // A null row means the member has no profile row yet: every field empty.
+  // A null row means the member has no profile row yet: every field empty,
+  // or showing its prefill.
   function fillProfileForm(row) {
     PROFILE_FIELDS.forEach(function (field) {
       var input = profileInput(field.column);
       var value = row ? row[field.column] : null;
       if (field.kind === "checkbox") {
         input.checked = value === true;
+      } else if (value === null || value === undefined || value === "") {
+        input.value = field.prefill || "";
       } else {
-        input.value = (value === null || value === undefined) ? "" : String(value);
+        input.value = String(value);
+        // An old free-text answer that isn't on the list shows as "Not given".
+        if (field.kind === "choice" && input.selectedIndex === -1) input.value = "";
       }
     });
   }
@@ -242,8 +281,8 @@
     return null;
   }
 
-  // Exactly the eleven profile columns plus user_id. The rest of the row is
-  // not the member's to set from this page.
+  // Exactly the eleven form columns plus user_id. 0011's column grants let a
+  // member write nothing else, and the upsert needs both grants on each one.
   function profilePayload(userId) {
     var payload = { user_id: userId };
     PROFILE_FIELDS.forEach(function (field) {
@@ -253,7 +292,8 @@
         return;
       }
       var value = input.value.trim();
-      if (value === "") {
+      // A bare prefill, the phone's "+60", means nothing was typed.
+      if (value === "" || value === field.prefill) {
         payload[field.column] = null;
       } else if (field.kind === "number") {
         payload[field.column] = Number(value);
@@ -264,8 +304,9 @@
     return payload;
   }
 
-  // Migration 0005 names each check profiles_<column>_<rule>, such as
-  // profiles_full_name_length, so the name tells us which field to point at.
+  // Migrations 0005 and 0011 name each check profiles_<column>_<rule>, such
+  // as profiles_kit_top_size_length, so the name tells us which field to
+  // point at.
   function saveErrorMessage(error) {
     var message = (error && error.message) ? error.message : "unknown error";
     for (var i = 0; i < PROFILE_FIELDS.length; i++) {
@@ -424,8 +465,26 @@
     });
   });
 
+  // The email has a 6-digit code as well as the link, for when the link
+  // opens in another browser. type "email" takes the code from either email:
+  // Magic Link, or Confirm signup for a first-time member.
+  verifyButton.addEventListener("click", function () {
+    var email = emailEl.value.trim();
+    var code = codeEl.value.replace(/\s+/g, "");
+    if (!email) { showError("enter your email address first"); return; }
+    if (!/^\d{6}$/.test(code)) { showError("enter the 6-digit code from the email"); return; }
+    verifyButton.disabled = true;
+    client.auth.verifyOtp({ email: email, token: code, type: "email" }).then(function (res) {
+      verifyButton.disabled = false;
+      // On success, onAuthStateChange shows the account and follows the return link.
+      if (res.error) showError(res.error.message);
+    });
+  });
+
+  // "local" ends this device's session only. The default, "global", signed
+  // the member out on every device.
   signOutButton.addEventListener("click", function () {
-    client.auth.signOut().then(function (res) {
+    client.auth.signOut({ scope: "local" }).then(function (res) {
       if (res.error) showError(res.error.message);
     });
   });

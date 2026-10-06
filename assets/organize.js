@@ -267,7 +267,10 @@
         showOrganizeError(res.error.message);
         return;
       }
-      places.textContent = (res.data || 0) + " of " + ride.capacity + " places taken";
+      var taken = res.data || 0;
+      places.textContent = ride.capacity === null
+        ? taken + " signed up (no limit)"
+        : taken + " of " + ride.capacity + " places taken";
     });
     item.appendChild(rideButtons(ride));
     return item;
@@ -409,10 +412,11 @@
     if (deadlineInput.value === "") {
       return { input: deadlineInput, message: "The sign-up deadline is required." };
     }
+    // An empty capacity means no limit (#96).
     var capacity = inputFor("capacity");
     var places = Number(capacity.value);
-    if (capacity.value === "" || !Number.isInteger(places) || places < 1) {
-      return { input: capacity, message: "Capacity must be a whole number of 1 or more." };
+    if (capacity.value !== "" && (!Number.isInteger(places) || places < 1)) {
+      return { input: capacity, message: "Capacity must be a whole number of 1 or more, or empty for no limit." };
     }
     if (departAtInput.value !== "" &&
         new Date(departAtInput.value).getTime() < new Date(meetAtInput.value).getTime()) {

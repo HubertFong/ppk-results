@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in - PPK Account · PPK SQDTT Results</title>
+<title>Sign in - PPK Account · PPK Pedal PenangKia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -47,6 +47,19 @@ nav a {
 }
 nav a.on { border-color: var(--orange); }
 nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
 
 main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
 h1 {
@@ -269,9 +282,9 @@ footer { background: var(--navy); color: #cfd3ea; }
 <header>
   <div class="head-inner">
     <a href="index.html" class="brand">
-      <span class="brand-main">PPK</span><span class="brand-sub">SQDTT Results</span>
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
     </a>
-    <nav><a href="index.html">Home</a><a href="events.html">Events</a><a href="leaderboard.html">Personal Bests</a><a href="standings.html">Standings</a><a href="records.html">Records</a><a href="compare.html">Compare</a><a href="rides.html">Group rides</a><a href="account.html" class="on">Account</a></nav>
+    <nav><a href="index.html">Home</a><a href="rides.html">Group rides</a><a href="sqdtt.html">SQDTT results</a><a href="account.html" class="on">Account</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
       <ul id="search-results" class="search-results" hidden></ul>
@@ -293,46 +306,93 @@ footer { background: var(--navy); color: #cfd3ea; }
     <input type="email" id="account-email" placeholder="you@example.com" autocomplete="email">
     <div class="cf-turnstile" data-sitekey="0x4AAAAAAE8-21h85YHdWYel" data-callback="ppkTurnstileSuccess" data-expired-callback="ppkTurnstileExpired"></div>
     <button id="account-send" class="btn">Send magic link</button>
-    <p class="note">No password needed - we'll email you a link to sign in.
-    It's valid for a short time, so use it soon after it arrives.</p>
+    <p class="note">No password needed - we'll email you a link and a 6-digit
+    code. They're valid for a short time, so use them soon after they arrive.</p>
   </div>
 
   <div id="account-sent" hidden>
-    <p><strong>Check your inbox.</strong> We've sent a sign-in link to
-    <span id="account-sent-email"></span>. Open it on this device to finish
-    signing in.</p>
+    <p><strong>Check your inbox.</strong> We've sent a sign-in link and a
+    6-digit code to <span id="account-sent-email"></span>. Open the link on
+    this device, or type the code below.</p>
+  </div>
+
+  <div id="account-code-form">
+    <label for="account-code">6-digit code from the email</label>
+    <input type="text" id="account-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+    <button id="account-verify" class="btn">Sign in with the code</button>
   </div>
 
   <div id="account-signed-in" hidden>
     <p>You're signed in as <strong id="account-user-email"></strong>.</p>
     <p class="note">More PPK member features are on the way. Ride with
     Passion. Ride with Power. Ride to Create Memories.</p>
-    <button id="account-signout" class="btn">Sign out</button>
+    <button id="account-signout" class="btn">Sign out on this device</button>
     <p id="account-organizer" hidden><a href="organize.html">Organize rides</a></p>
 
     <h2>Your profile</h2>
-    <p class="note">Every field is optional. If you sign up for a ride, its organizer
-    sees your name and phone number.</p>
+    <p class="note">If you sign up for a ride, its organizer sees your name and phone number.</p>
     <form id="profile-form" novalidate>
+      <h3 id="profile-basics">Basics</h3>
+      <p class="note">What PPK needs to know who you are and how to reach you.</p>
       <label for="profile-full_name">Full name</label>
       <input type="text" id="profile-full_name" name="full_name" maxlength="120" autocomplete="name">
       <label for="profile-preferred_name">Preferred name</label>
       <input type="text" id="profile-preferred_name" name="preferred_name" maxlength="60">
       <p class="note">Signed-in members see it on the rides you join. Leave it empty to show as "A rider".</p>
+      <label for="profile-phone">Phone</label>
+      <input type="tel" id="profile-phone" name="phone" maxlength="32" autocomplete="tel" value="+60">
+      <p class="note">Include the country code, like +60 12 345 6789.</p>
       <label for="profile-date_of_birth">Date of birth</label>
       <input type="date" id="profile-date_of_birth" name="date_of_birth" min="1900-01-01" autocomplete="bday">
+      <h3 id="profile-optional">More about you (optional)</h3>
+      <p class="note">These help PPK plan rides and kit. Rewards for filling them in are coming.</p>
       <label for="profile-gender">Gender</label>
-      <input type="text" id="profile-gender" name="gender" maxlength="40">
-      <label for="profile-phone">Phone</label>
-      <input type="tel" id="profile-phone" name="phone" maxlength="32" autocomplete="tel">
-      <label for="profile-club">Club</label>
-      <input type="text" id="profile-club" name="club" maxlength="120">
+      <select id="profile-gender" name="gender">
+        <option value="">Not given</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
       <label for="profile-years_riding">Years riding</label>
       <input type="number" id="profile-years_riding" name="years_riding" min="0" max="100" step="1">
-      <label for="profile-kit_size">Kit size</label>
-      <input type="text" id="profile-kit_size" name="kit_size" maxlength="20">
+      <label for="profile-kit_top_size">Kit size (top)</label>
+      <select id="profile-kit_top_size" name="kit_top_size">
+        <option value="">Not given</option>
+        <option value="2XS">2XS</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+        <option value="2XL">2XL</option>
+        <option value="3XL">3XL</option>
+        <option value="4XL">4XL</option>
+      </select>
+      <label for="profile-kit_bottom_size">Kit size (bottom)</label>
+      <select id="profile-kit_bottom_size" name="kit_bottom_size">
+        <option value="">Not given</option>
+        <option value="2XS">2XS</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+        <option value="2XL">2XL</option>
+        <option value="3XL">3XL</option>
+        <option value="4XL">4XL</option>
+      </select>
       <label for="profile-bike_type">Bike type</label>
-      <input type="text" id="profile-bike_type" name="bike_type" maxlength="60">
+      <select id="profile-bike_type" name="bike_type">
+        <option value="">Not given</option>
+        <option value="Road">Road</option>
+        <option value="Gravel">Gravel</option>
+        <option value="Mountain bike">Mountain bike</option>
+        <option value="Hybrid">Hybrid</option>
+        <option value="Folding">Folding</option>
+        <option value="TT or triathlon">TT or triathlon</option>
+        <option value="E-bike">E-bike</option>
+        <option value="Other">Other</option>
+        <option value="No bike yet">No bike yet</option>
+      </select>
       <div class="check-row">
         <input type="checkbox" id="profile-whatsapp_opt_in" name="whatsapp_opt_in">
         <label for="profile-whatsapp_opt_in">PPK may contact me on WhatsApp</label>
@@ -369,7 +429,7 @@ footer { background: var(--navy); color: #cfd3ea; }
   }
   .account-card input[type=email], .account-card input[type=text],
   .account-card input[type=date], .account-card input[type=tel],
-  .account-card input[type=number] {
+  .account-card input[type=number], .account-card select {
     width: 100%; box-sizing: border-box; padding: 10px 12px;
     border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
     margin-bottom: 10px;
@@ -378,12 +438,18 @@ footer { background: var(--navy); color: #cfd3ea; }
     font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
     font-size: 24px; color: #102060; margin: 30px 0 4px;
   }
+  .account-card h3 {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    font-size: 18px; color: #102060; margin: 22px 0 4px;
+  }
   .account-card .check-row {
     display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
   .account-card .check-row label { margin-bottom: 0; }
   .account-card input[type=checkbox] { accent-color: #102060; }
+  .account-card select { background: #fff; }
   .account-card #profile-status { margin-top: 10px; }
+  .account-card #account-code-form { margin-top: 18px; }
   .account-card #achievements-list { list-style: none; padding: 0; margin: 8px 0 0; }
   .account-card #achievements-list li { margin-top: 8px; }
   .account-card .btn { border: none; cursor: pointer; font-size: 16px; }
@@ -396,7 +462,7 @@ footer { background: var(--navy); color: #cfd3ea; }
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
-<script src="assets/account.js?v=4773aeff2630"></script>
+<script src="assets/account.js?v=0170db6b0c07"></script>
 
 </main>
 <script>
@@ -530,9 +596,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
-Pedal Penangkia (PPK) · results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
-· <a href="data.html">About this data</a>
-<p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
 </div></footer>
 </body>
 </html>

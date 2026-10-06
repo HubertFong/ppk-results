@@ -222,11 +222,21 @@
     return line;
   }
 
+  // A ride with no limit (#96) shows how many riders are joining instead of
+  // places left.
   function placesLine(ride, taken) {
+    if (ride.capacity === null) return textBlock("div", "Riders joining: " + taken);
     // An organizer can lower the capacity below the places already taken, so
     // the difference is never shown as a negative number.
     var left = Math.max(0, ride.capacity - taken);
     return textBlock("div", "Places left: " + left + " of " + ride.capacity);
+  }
+
+  // Hubert, 2026-09-30 (#93): most rides have no limit, and riders who
+  // haven't signed up are still welcome at the start.
+  function optionalLine(ride) {
+    if (ride.capacity !== null) return null;
+    return textBlock("div", "Sign-up is optional. You can still join us at the meeting point.", "note");
   }
 
   // -------------------------------------------------------------- sharing
@@ -390,7 +400,9 @@
     }
     if (ride.status !== "published") return null;
     if (!isBefore(ride.signup_deadline)) {
-      line.appendChild(textBlock("span", "Sign-up has closed."));
+      line.appendChild(textBlock("span", ride.capacity === null
+        ? "Sign-up has closed. You can still join us at the meeting point."
+        : "Sign-up has closed."));
       return line;
     }
     if (!currentUser) {
@@ -403,7 +415,7 @@
     // A count that could not be read is not proof the ride is full:
     // join_ride() counts again under the ride lock, and refuses with a
     // message this page shows.
-    if (placesTaken !== null && placesTaken >= ride.capacity) {
+    if (ride.capacity !== null && placesTaken !== null && placesTaken >= ride.capacity) {
       line.appendChild(textBlock("span", "This ride is full."));
       return line;
     }
@@ -478,6 +490,7 @@
     appendDetail(item, textLine("Pace", ride.pace_note));
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
     item.appendChild(closesLine);
+    appendDetail(item, optionalLine(ride));
     appendDetail(item, ridersLine(ride, version));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.

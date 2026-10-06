@@ -47,6 +47,19 @@ nav a {
 }
 nav a.on { border-color: var(--orange); }
 nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
 
 main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
 h1 {
@@ -269,15 +282,16 @@ footer { background: var(--navy); color: #cfd3ea; }
 <header>
   <div class="head-inner">
     <a href="../index.html" class="brand">
-      <span class="brand-main">PPK</span><span class="brand-sub">SQDTT Results</span>
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
     </a>
-    <nav><a href="../index.html">Home</a><a href="../events.html">Events</a><a href="../leaderboard.html">Personal Bests</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a><a href="../compare.html">Compare</a><a href="../rides.html">Group rides</a><a href="../account.html">Account</a></nav>
+    <nav><a href="../index.html">Home</a><a href="../rides.html">Group rides</a><a href="../sqdtt.html" class="on">SQDTT results</a><a href="../account.html">Account</a></nav>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
       <ul id="search-results" class="search-results" hidden></ul>
     </div>
   </div>
 </header>
+<div class="subnav"><nav class="subnav-inner" aria-label="SQDTT results"><a href="../sqdtt.html">Overview</a><a href="../events.html">Events</a><a href="../leaderboard.html">Personal Bests</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a><a href="../compare.html">Compare</a></nav></div>
 <main>
 <h1>Kiron Reyon</h1>
 <p class="sub"><span class="chip" style="background:#1B9590">Short</span></p>
@@ -431,7 +445,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 })();
 </script>
 <footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
-Pedal Penangkia (PPK) · results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a><br>Results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times
 · <a href="../data.html">About this data</a>
 <p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
 </div></footer>
