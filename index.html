@@ -139,6 +139,19 @@ tr.podium-3 td.rk { color: #B0672B; }
 .record-badge.r2 { background: #9AA5B1; }
 .record-badge.r3 { background: #B0672B; }
 .note { font-size: 14px; color: #5a5a6b; margin-top: 14px; }
+/* Spacing (#103). A heading's intro sits close under it. In the member
+   forms, help text belongs to the field above it, and each field group gets
+   room above its label, so one field's help never runs into the next. */
+h2 + .note, h3 + .note, .subhead + .note { margin-top: 4px; }
+.page-section { border-top: 1px solid #e3e5ee; margin-top: 36px; padding-top: 4px; }
+.page-section > h2:first-child, .page-section > .subhead:first-child { margin-top: 18px; }
+.account-card label { margin-top: 16px; }
+.account-card .check-row { margin-top: 12px; }
+.account-card .check-row label { margin-top: 0; }
+.account-card input + .note, .account-card select + .note,
+.account-card fieldset + .note { margin: -4px 0 0; }
+.account-card .form-group-break { border-top: 1px solid #e3e5ee; margin-top: 28px; padding-top: 2px; }
+.account-card form button[type=submit] { margin-top: 22px; }
 
 .statgrid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
 .stat {
@@ -295,6 +308,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <p class="kicker">Pedal Penangkia (PPK)</p>
 <h1>Ride with PPK</h1>
 <p class="sub">PPK is a cycling club in Penang. We ride together, and we time the Straits Quay Duathlon Time Trial (SQDTT). Ride with Passion. Ride with Power. Ride to Create Memories.</p>
+<section class="page-section" id="home-rides-section">
 <h2 class="subhead">Upcoming group rides</h2>
 <div id="home-rides" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW">
 <p id="home-rides-loading" class="note">Loading rides...</p>
@@ -303,6 +317,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <p id="home-rides-error" class="note" hidden>The rides could not be loaded. See them on the group rides page.</p>
 </div>
 <div class="home-actions"><a class="btn" href="rides.html">All group rides</a></div>
+</section>
 <script>
 (function () {
   var root = document.getElementById("home-rides");
@@ -353,10 +368,12 @@ footer { background: var(--navy); color: #cfd3ea; }
     });
 })();
 </script>
+<section class="page-section" id="home-sqdtt-section">
 <h2 class="subhead">Latest SQDTT event</h2>
 <p class="note">Event #121 · 2026-09-13</p>
 <div class="statgrid"><div class="stat"><b><a href="athletes/fish-lim.html">Fish Lim</a></b><span>Long event winner · 1:51:15</span></div><div class="stat"><b><a href="athletes/lee-ke-wynn.html">Lee Ke Wynn</a></b><span>Short event winner · 58:25</span></div></div>
 <div class="home-actions"><a class="btn" href="events.html#event-121-long">View Long Results</a><a class="btn" href="events.html#event-121-short">View Short Results</a><a class="btn" href="sqdtt.html">SQDTT results</a></div>
+</section>
 </main>
 <script>
 (function() {
