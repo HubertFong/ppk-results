@@ -756,23 +756,54 @@
     return item;
   }
 
+  // A typed name (0014) has no account behind it: no phone, attendance or
+  // contact, only the name, when it was added, and a way to remove it.
+  function nameRosterItem(ride, entry) {
+    var item = document.createElement("li");
+    item.appendChild(textBlock("strong", entry.rider_name));
+    item.appendChild(document.createTextNode(" "));
+    item.appendChild(textBlock("span", "(typed name, no account)", "note"));
+    item.appendChild(textBlock("div", "Added: " + formatMeetAt(entry.signed_up_at)));
+    var button = actionButton("Remove", function () { removeNameSignup(ride, entry, button); });
+    item.appendChild(button);
+    return item;
+  }
+
+  function removeNameSignup(ride, entry, button) {
+    if (!window.confirm("Remove " + entry.rider_name + " from this ride?")) return;
+    clearOrganizeError();
+    button.disabled = true;
+    client.rpc("remove_name_signup", { p_name_signup_id: entry.name_signup_id })
+      .then(function (res) {
+        button.disabled = false;
+        if (res.error) {
+          showOrganizeError(res.error.message);
+          return;
+        }
+        if (rosterRide !== ride) return;
+        loadRoster(ride);
+      });
+  }
+
   function loadRoster(ride) {
     clearOrganizeError();
     rosterVersion += 1;
     var version = rosterVersion;
     clearChildren(rosterListEl);
     rosterEmptyEl.hidden = true;
-    // One screen, three reads: the roster itself, the point each rider chose
-    // (ride_start_choices) and the ride's extra points. A failed choices or
-    // points read only drops the start line, never the roster, and is
-    // reported by the usual error banner.
+    // One screen, five reads: the roster itself, the point each rider chose
+    // (ride_start_choices), the ride's extra points, the ride-day emergency
+    // contacts and the typed names (0014). A failed choices or points read
+    // only drops the start line, and a failed typed-names read only drops
+    // those names, never the roster; the usual error banner reports both.
     Promise.all([
       client.rpc("ride_roster", { p_ride_id: ride.id }),
       client.rpc("ride_start_choices", { p_ride_id: ride.id }),
       loadStarts(ride.id),
       isRideDay(ride)
         ? client.rpc("ride_emergency_contacts", { p_ride_id: ride.id })
-        : Promise.resolve({ data: null, error: null })
+        : Promise.resolve({ data: null, error: null }),
+      client.rpc("ride_name_roster", { p_ride_id: ride.id })
     ]).then(function (results) {
       // A reply for a roster that has been closed or replaced is dropped.
       if (version !== rosterVersion || rosterRide !== ride) return;
@@ -814,7 +845,17 @@
       signups.forEach(function (signup) {
         rosterListEl.appendChild(rosterItem(ride, signup, joinInfo, contacts));
       });
-      rosterEmptyEl.hidden = signups.length > 0;
+      var namesRes = results[4];
+      var names = [];
+      if (namesRes.error) {
+        showOrganizeError(namesRes.error.message);
+      } else {
+        names = namesRes.data || [];
+      }
+      names.forEach(function (entry) {
+        rosterListEl.appendChild(nameRosterItem(ride, entry));
+      });
+      rosterEmptyEl.hidden = signups.length + names.length > 0;
     });
   }
 

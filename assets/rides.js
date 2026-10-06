@@ -1,5 +1,6 @@
 /* The PPK member rides page: the upcoming group rides and their meet-up
- * points, with sign-up, cancel and the join point for signed-in members.
+ * points, with sign-up, cancel and the join point for signed-in members; a
+ * signed-out visitor can sign up for a ride with no limit by typing a name.
  *
  * A classic script, loaded at the end of the body by site_rides.py, so every
  * element below already exists when it runs. Its only dependency is the
@@ -105,7 +106,9 @@
       sessionEl.textContent = "You're signed in as " + (user.email || "");
       return;
     }
-    sessionEl.appendChild(document.createTextNode("Sign in on your account page to sign up: "));
+    // Most rides also take just a name (0014), on the ride's own card.
+    sessionEl.appendChild(document.createTextNode(
+      "Sign up with just your name on a ride below, or as a member on your account page: "));
     var link = document.createElement("a");
     link.id = "rides-signin-link";
     link.href = returnToHref();
@@ -361,6 +364,61 @@
     });
   }
 
+  // A signed-out visitor types a name on a ride with no limit (0014, #108).
+  // join_ride_by_name() checks the name and the ride again, so its refusal
+  // is shown as it comes.
+  function nameForm(ride) {
+    var form = document.createElement("form");
+    form.className = "name-form";
+    form.noValidate = true;
+    var label = document.createElement("label");
+    label.htmlFor = "name-" + ride.id;
+    label.textContent = "Sign up with your name";
+    var input = document.createElement("input");
+    input.type = "text";
+    input.id = "name-" + ride.id;
+    input.maxLength = 60;
+    input.autocomplete = "name";
+    var button = document.createElement("button");
+    button.type = "submit";
+    button.className = "btn";
+    button.textContent = "Sign up";
+    var note = textBlock("div",
+      "Your name is shown to signed-in PPK members and the ride organizer, " +
+      "and deleted the day after the ride. Don't add a phone number or " +
+      "email. To take it off, ask the organizer.", "note");
+    var account = document.createElement("div");
+    account.appendChild(document.createTextNode("Have a PPK account? "));
+    var signInLink = document.createElement("a");
+    signInLink.href = returnToHref();
+    signInLink.textContent = "Sign in";
+    account.appendChild(signInLink);
+    account.appendChild(document.createTextNode(" so the ride counts for your awards."));
+    form.appendChild(label);
+    form.appendChild(input);
+    form.appendChild(button);
+    form.appendChild(note);
+    form.appendChild(account);
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      clearError();
+      button.disabled = true;
+      client.rpc("join_ride_by_name", { ride_id: ride.id, rider_name: input.value })
+        .then(function (res) {
+          button.disabled = false;
+          if (res.error) {
+            showError(refusalText(res.error.message));
+            return;
+          }
+          statusEl.textContent = res.data === "already_on_list"
+            ? "That name is already on the list for " + ride.title + "."
+            : "You're on the list: " + ride.title + ", " + formatTime(ride.meet_at) + ".";
+          loadRides();
+        });
+    });
+    return form;
+  }
+
   // A confirmed rider on a ride that has extra start points picks where
   // they start. choose_start() checks the ride, the sign-up and the point
   // again, so a refusal from the server is shown as it comes.
@@ -435,6 +493,12 @@
       return line;
     }
     if (!currentUser) {
+      // A ride with no limit takes a typed name (0014); one with a limit
+      // needs an account.
+      if (ride.capacity === null) {
+        line.appendChild(nameForm(ride));
+        return line;
+      }
       var signInLink = document.createElement("a");
       signInLink.href = returnToHref();
       signInLink.textContent = "Sign in to sign up";
@@ -472,7 +536,9 @@
   // Who's riding (#74): signed-in members see each confirmed rider's
   // preferred name, or "A rider" for one who set none. ride_riders() returns
   // names only and refuses a signed-out caller, so a visitor gets an invite
-  // to sign in instead. A long list is cut, so the card stays readable.
+  // to sign in instead. Typed names (0014) follow the members' names, from
+  // ride_typed_names(), which also refuses a signed-out caller. A long list
+  // is cut, so the card stays readable.
   var RIDERS_SHOWN = 12;
 
   function ridersText(names) {
@@ -486,16 +552,22 @@
     if (ride.status !== "published" && ride.status !== "postponed") return null;
     if (!currentUser) return textBlock("div", "Sign in to see who's riding.", "ride-riders");
     var line = textBlock("div", "Who's riding: ...", "ride-riders");
-    client.rpc("ride_riders", { ride_id: ride.id }).then(function (res) {
+    Promise.all([
+      client.rpc("ride_riders", { ride_id: ride.id }),
+      client.rpc("ride_typed_names", { ride_id: ride.id })
+    ]).then(function (results) {
       // A reply for a list that has been reloaded away is dropped.
       if (version !== listVersion) return;
-      if (res.error) {
+      if (results[0].error || results[1].error) {
         line.textContent = "Couldn't read who's riding.";
         return;
       }
-      line.textContent = ridersText((res.data || []).map(function (row) {
+      var names = (results[0].data || []).map(function (row) {
+        return row.display_name;
+      }).concat((results[1].data || []).map(function (row) {
         return row.display_name;
       }));
+      line.textContent = ridersText(names);
     });
     return line;
   }

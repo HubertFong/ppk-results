@@ -365,6 +365,17 @@ footer { background: var(--navy); color: #cfd3ea; }
   .rides-card #rides-list li .ride-share {
     margin-top: 10px;
   }
+  /* The name-only sign-up (0014): the field is full width on a phone. */
+  .rides-card .name-form label {
+    display: block; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+    font-size: 14px; color: #102060; margin-bottom: 4px;
+  }
+  .rides-card .name-form input[type=text] {
+    width: 100%; box-sizing: border-box; padding: 10px 12px;
+    border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
+  }
+  .rides-card .name-form .note { margin-top: 8px; }
   /* WhatsApp's own green, so members recognise the button at a glance. */
   .rides-card #rides-list li .share-btn {
     display: inline-block; font-size: 14px; padding: 6px 12px;
@@ -382,7 +393,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/rides.js?v=b3a740e185f2"></script>
+<script src="assets/rides.js?v=840830225dae"></script>
 
 </main>
 <script>
