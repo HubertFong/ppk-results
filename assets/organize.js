@@ -65,6 +65,8 @@
   var saveButton = document.getElementById("ride-save");
   var formCancelButton = document.getElementById("ride-form-cancel");
   var formErrorEl = document.getElementById("ride-form-error");
+  var gpxInput = document.getElementById("ride-gpx");
+  var gpxStatusEl = document.getElementById("ride-gpx-status");
   var startsEl = document.getElementById("ride-starts");
   var startAddButton = document.getElementById("ride-start-add");
   var listEl = document.getElementById("ride-list");
@@ -75,6 +77,7 @@
   var rosterListEl = document.getElementById("roster-list");
   var rosterEmptyEl = document.getElementById("roster-empty");
   var rosterCloseButton = document.getElementById("roster-close");
+  var rosterDownloadButton = document.getElementById("roster-download");
   var statusEl = document.getElementById("organize-status");
   var errorEl = document.getElementById("organize-error");
 
@@ -82,7 +85,7 @@
 
   var startedUserId = null;   // whose access check has already run
   var listVersion = 0;        // bumped on every rides reload, drops stale replies
-  var formVersion = 0;        // bumped on every form open or copy, drops stale replies
+  var formVersion = 0;        // bumped on every form open, copy or close, drops stale replies
   // False while a saved ride's extra points are loading into the form, or
   // after they failed to load. Saving then would send an empty list, and
   // set_ride_starts() would delete the points the form never showed.
@@ -91,6 +94,7 @@
   var deadlineEdited = false; // the deadline was typed by hand in this form
   var rosterRide = null;      // the ride whose roster is on screen, or null
   var rosterVersion = 0;      // bumped on every roster load, drops stale replies
+  var rosterData = null;      // the roster on screen, for its download; null while loading
 
   function clearChildren(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
@@ -373,6 +377,7 @@
     fillRideForm(editingRide);
     formTitleEl.textContent = editingRide ? "Edit ride" : "New ride";
     clearFormError();
+    showGpxStatus("");
     formEl.hidden = false;
     inputFor("title").focus();
     clearStartRows();
@@ -429,9 +434,13 @@
   }
 
   function closeForm() {
+    // A reply for the form that just closed (its start points, a route
+    // file still being read) must not fill a hidden form.
+    formVersion += 1;
     editingRide = null;
     formEl.hidden = true;
     clearFormError();
+    showGpxStatus("");
   }
 
   // The first problem in form order as { input, message }, or null when the
@@ -701,6 +710,186 @@
     placeInput.focus();
   });
 
+  // ---------------------------------------------------------------- route file
+
+  // A route file is far smaller; a bigger one is not a route.
+  var GPX_MAX_BYTES = 20 * 1024 * 1024;
+  var EARTH_RADIUS_M = 6371008.8;   // mean Earth radius, metres
+  // GPS heights jitter by a few metres, so a rise counts only once it passes
+  // this, which keeps noise out of the climbing total.
+  var CLIMB_THRESHOLD_M = 5;
+  var gpxPick = 0;   // bumped on every file pick, so only the latest read fills the form
+
+  // Track points come first; a file without them falls back to its route
+  // points. Poor positions are skipped, and a segment with fewer than two
+  // points is no route.
+  function gpxSegments(doc) {
+    function readPoints(parent, tag) {
+      var points = [];
+      var nodes = parent.getElementsByTagNameNS("*", tag);
+      for (var i = 0; i < nodes.length; i += 1) {
+        var lat = parseFloat(nodes[i].getAttribute("lat"));
+        var lon = parseFloat(nodes[i].getAttribute("lon"));
+        if (!Number.isFinite(lat) || lat < -90 || lat > 90) continue;
+        if (!Number.isFinite(lon) || lon < -180 || lon > 180) continue;
+        // Some apps write 0,0 when they lose the GPS fix: off West Africa,
+        // and never on a PPK ride.
+        if (lat === 0 && lon === 0) continue;
+        var eleNodes = nodes[i].getElementsByTagNameNS("*", "ele");
+        var ele = eleNodes.length > 0 ? parseFloat(eleNodes[0].textContent) : NaN;
+        points.push({ lat: lat, lon: lon, ele: Number.isFinite(ele) ? ele : null });
+      }
+      return points;
+    }
+
+    var segments = [];
+    var tracks = doc.getElementsByTagNameNS("*", "trkseg");
+    for (var i = 0; i < tracks.length; i += 1) {
+      segments.push(readPoints(tracks[i], "trkpt"));
+    }
+    var trackPoints = 0;
+    segments.forEach(function (segment) { trackPoints += segment.length; });
+    if (trackPoints === 0) {
+      segments = [];
+      var routes = doc.getElementsByTagNameNS("*", "rte");
+      for (var j = 0; j < routes.length; j += 1) {
+        segments.push(readPoints(routes[j], "rtept"));
+      }
+    }
+    return segments.filter(function (segment) { return segment.length >= 2; });
+  }
+
+  function haversineMetres(a, b) {
+    var lat1 = a.lat * Math.PI / 180;
+    var lat2 = b.lat * Math.PI / 180;
+    var dLat = (b.lat - a.lat) * Math.PI / 180;
+    var dLon = (b.lon - a.lon) * Math.PI / 180;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  // Distance never crosses a segment. Climbing counts each rise from a
+  // valley to the next peak. The reference follows the height up while
+  // rising and down while falling. The direction turns only after a move of
+  // CLIMB_THRESHOLD_M the other way, so jitter under it adds nothing, and no
+  // part of a real hill is lost at its top or bottom.
+  function routeSummary(segments) {
+    var distance = 0;
+    var climb = 0;
+    var climbingSeen = false;
+    var points = 0;
+    segments.forEach(function (segment) {
+      points += segment.length;
+      for (var i = 1; i < segment.length; i += 1) {
+        distance += haversineMetres(segment[i - 1], segment[i]);
+      }
+      // A segment starts as if falling, so its first climb needs a full
+      // threshold before it counts, from the lowest point before it.
+      var ref = null;
+      var rising = false;
+      for (var j = 0; j < segment.length; j += 1) {
+        var ele = segment[j].ele;
+        if (ele === null) continue;
+        climbingSeen = true;
+        if (ref === null) {
+          ref = ele;
+        } else if (rising) {
+          if (ele > ref) {
+            climb += ele - ref;
+            ref = ele;
+          } else if (ref - ele >= CLIMB_THRESHOLD_M) {
+            rising = false;
+            ref = ele;
+          }
+        } else if (ele < ref) {
+          ref = ele;
+        } else if (ele - ref >= CLIMB_THRESHOLD_M) {
+          rising = true;
+          climb += ele - ref;
+          ref = ele;
+        }
+      }
+    });
+    return {
+      distance_m: distance,
+      climbing_m: climbingSeen ? climb : null,
+      points: points
+    };
+  }
+
+  // The XML is parsed here, in the browser: the file never leaves it.
+  function readGpx(text) {
+    var doc = new DOMParser().parseFromString(text, "application/xml");
+    if (doc.getElementsByTagName("parsererror").length > 0 ||
+        !doc.documentElement ||
+        doc.documentElement.localName !== "gpx") {
+      return { error: "That file isn't a GPX file this page can read." };
+    }
+    var segments = gpxSegments(doc);
+    if (segments.length === 0) {
+      return { error: "That file has no route or track points." };
+    }
+    var summary = routeSummary(segments);
+    if (summary.distance_m < 100) {
+      return { error: "The route in that file is under 0.1 km." };
+    }
+    return { summary: summary };
+  }
+
+  function showGpxStatus(message) {
+    gpxStatusEl.textContent = message;
+  }
+
+  function gpxSummaryText(fileName, summary) {
+    var km = (summary.distance_m / 1000).toFixed(1);
+    if (summary.climbing_m === null) {
+      return "Read from " + fileName + ": " + km + " km. The file has no heights, " +
+        "so climbing is unchanged. Check the distance, then save.";
+    }
+    var metres = String(Math.round(summary.climbing_m));
+    return "Read from " + fileName + ": " + km + " km and " + metres +
+      " m of climbing. Check both, then save.";
+  }
+
+  // The read is local and never sent anywhere; the inputs stay editable.
+  function readGpxFile() {
+    var file = gpxInput.files && gpxInput.files[0];
+    gpxPick += 1;
+    var pick = gpxPick;
+    showGpxStatus("");
+    if (!file) return;
+    if (file.size > GPX_MAX_BYTES) {
+      showGpxStatus("That file is over 20 MB, too big for a route file.");
+      return;
+    }
+    var version = formVersion;
+    showGpxStatus("Reading " + file.name + "...");
+    var reader = new FileReader();
+    reader.onload = function () {
+      // The form was closed or reopened while the file was read, or another
+      // file was picked since, so this result is not the one on screen.
+      if (version !== formVersion || pick !== gpxPick) return;
+      var result = readGpx(String(reader.result));
+      if (result.error) {
+        showGpxStatus(result.error);
+        return;
+      }
+      inputFor("distance_km").value = (result.summary.distance_m / 1000).toFixed(1);
+      if (result.summary.climbing_m !== null) {
+        inputFor("climbing_m").value = String(Math.round(result.summary.climbing_m));
+      }
+      showGpxStatus(gpxSummaryText(file.name, result.summary));
+    };
+    reader.onerror = function () {
+      if (version !== formVersion || pick !== gpxPick) return;
+      showGpxStatus("Couldn't read that file.");
+    };
+    reader.readAsText(file);
+  }
+
+  gpxInput.addEventListener("change", readGpxFile);
+
   // ---------------------------------------------------------------- roster
 
   function attendanceText(attendance) {
@@ -855,6 +1044,8 @@
     var version = rosterVersion;
     clearChildren(rosterListEl);
     rosterEmptyEl.hidden = true;
+    rosterData = null;
+    rosterDownloadButton.disabled = true;
     // One screen, six reads: the roster itself, the point each rider chose
     // (ride_start_choices), the ride's extra points, the ride-day emergency
     // contacts, the typed names (0014) and a type 3 ride's details (0016).
@@ -883,6 +1074,9 @@
       var choicesRes = results[1];
       var startsRes = results[2];
       var joinInfo = null;
+      // A file from a partly read roster would put riders at the wrong start
+      // or leave typed names out, so it is offered only when both read.
+      var complete = !choicesRes.error && !startsRes.error && !results[4].error;
       if (choicesRes.error || startsRes.error) {
         showOrganizeError((choicesRes.error || startsRes.error).message);
       } else {
@@ -932,7 +1126,100 @@
         rosterListEl.appendChild(nameRosterItem(ride, entry));
       });
       rosterEmptyEl.hidden = signups.length + names.length > 0;
+      if (complete) {
+        rosterData = { ride: ride, signups: signups, names: names, joinInfo: joinInfo };
+        rosterDownloadButton.disabled = false;
+      }
     });
+  }
+
+  // ------------------------------------------------------- roster download
+
+  // Hubert, 2026-10-07 (#93, #125): the file holds names, start points,
+  // sign-up status and attendance only. Phone numbers, emergency contacts
+  // and a type 3 ride's details stay on screen, so a forwarded file shows
+  // little.
+  var CSV_HEADER = ["Name", "Signed up as", "Start point", "Start time (Malaysia)", "Sign-up",
+    "Attendance"];
+
+  // The file says Malaysia time, so its times are Malaysia time whatever
+  // zone the organizer's device is set to.
+  function malaysiaTime(value) {
+    return new Date(value).toLocaleString("en-GB", { timeZone: "Asia/Kuala_Lumpur",
+      dateStyle: "medium", timeStyle: "short" });
+  }
+
+  // Where a member starts, as the roster's start line works it out: position
+  // 1, or no choice, is the ride's own point.
+  function startOf(ride, signup, joinInfo) {
+    var position = joinInfo ? joinInfo.positions[signup.signup_id] || 1 : 1;
+    var point = position === 1 ? null : joinInfo.points[position];
+    if (position !== 1 && !point) return { place: "start point " + position, at: "" };
+    return point
+      ? { place: point.place, at: malaysiaTime(point.start_at) }
+      : { place: ride.meeting_point || "", at: malaysiaTime(ride.meet_at) };
+  }
+
+  // RFC 4180: every cell quoted, quotes doubled. A cell a spreadsheet would
+  // read as a formula (=, +, -, @, or a tab or return first) gets a leading
+  // apostrophe, so a typed name can't run anything when the file is opened.
+  function csvCell(value) {
+    var text = value === null || value === undefined ? "" : String(value);
+    if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+
+  function csvLine(cells) {
+    return cells.map(csvCell).join(",");
+  }
+
+  // The generation time for the file name, in UTC, as "20261010T0630Z": no
+  // character a file system refuses.
+  function fileStamp(date) {
+    return date.toISOString().slice(0, 16).replace(/[-:]/g, "") + "Z";
+  }
+
+  function rosterCsv(data, generated) {
+    var ride = data.ride;
+    var lines = [
+      csvLine(["Ride", ride.title]),
+      csvLine(["Meets", malaysiaTime(ride.meet_at) + " Malaysia time at " + (ride.meeting_point || "")]),
+      csvLine(["Generated", generated.toISOString().slice(0, 19) + "Z (UTC), " +
+        malaysiaTime(generated) + " Malaysia time"]),
+      "",
+      csvLine(CSV_HEADER)
+    ];
+    data.signups.forEach(function (signup) {
+      var start = startOf(ride, signup, data.joinInfo);
+      lines.push(csvLine([signup.rider_name || "Name not given", "member", start.place, start.at,
+        signup.status, attendanceText(signup.attendance)]));
+    });
+    // A typed name has no start choice, sign-up status or attendance (0014).
+    data.names.forEach(function (entry) {
+      lines.push(csvLine([entry.rider_name, "typed name", ride.meeting_point || "",
+        malaysiaTime(ride.meet_at), "typed name", ""]));
+    });
+    return lines.join("\r\n") + "\r\n";
+  }
+
+  // The file is made here, from the roster already on screen: nothing is
+  // sent anywhere. The byte order mark lets a spreadsheet read names in any
+  // script as UTF-8.
+  function downloadRoster() {
+    if (!rosterData) return;
+    var generated = new Date();
+    var text = String.fromCharCode(0xFEFF) + rosterCsv(rosterData, generated);
+    var blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "ppk-roster-" + malaysiaDate(rosterData.ride.meet_at) +
+      "-generated-" + fileStamp(generated) + ".csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // Safari fails a download whose URL is revoked at once, so it waits.
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
   }
 
   function openRoster(ride) {
@@ -948,12 +1235,15 @@
   function closeRoster() {
     rosterRide = null;
     rosterVersion += 1;
+    rosterData = null;
+    rosterDownloadButton.disabled = true;
     clearChildren(rosterListEl);
     rosterEmptyEl.hidden = true;
     rosterEl.hidden = true;
   }
 
   rosterCloseButton.addEventListener("click", closeRoster);
+  rosterDownloadButton.addEventListener("click", downloadRoster);
 
   // ---------------------------------------------------------------- wiring
 

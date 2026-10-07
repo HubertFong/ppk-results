@@ -330,7 +330,7 @@ footer { background: var(--navy); color: #cfd3ea; }
   <ul id="rides-list"></ul>
   <p id="rides-empty" hidden>No upcoming rides yet.</p>
 
-  <p id="rides-status" role="status"></p>
+  <p id="rides-announce" class="visually-hidden" role="status"></p>
   <p id="rides-error" class="account-error" hidden></p>
 </div>
 
@@ -365,6 +365,9 @@ footer { background: var(--navy); color: #cfd3ea; }
   .rides-card #rides-list li .ride-share {
     margin-top: 10px;
   }
+  /* A ride's own messages (#93), under its buttons. */
+  .rides-card #rides-list li .ride-note { margin-top: 8px; }
+  .rides-card #rides-list li .registered { font-weight: 600; }
   /* The name-only sign-up (0014): the field is full width on a phone. */
   .rides-card .name-form label {
     display: block; font-family: 'Barlow Condensed', sans-serif;
@@ -393,7 +396,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/rides.js?v=4e7cf13b116f"></script>
+<script src="assets/rides.js?v=c2a1aade572b"></script>
 
 </main>
 <script>

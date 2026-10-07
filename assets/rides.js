@@ -30,8 +30,8 @@
   var loadingEl = document.getElementById("rides-loading");
   var listEl = document.getElementById("rides-list");
   var emptyEl = document.getElementById("rides-empty");
-  var statusEl = document.getElementById("rides-status");
   var errorEl = document.getElementById("rides-error");
+  var announceEl = document.getElementById("rides-announce");
 
   var client = supabase.createClient(rootEl.dataset.supabaseUrl, rootEl.dataset.supabaseKey);
 
@@ -41,6 +41,14 @@
   var sharedRideShown = false; // the ?ride= card is found on the first list build only
   var sharedRideItem = null;    // that card, until the list around it stops growing
   var placesPending = 0;        // places reads still out for the current list
+
+  // A ride's messages go in its own card, beside the button that was pressed:
+  // a line under the whole list is off-screen on a phone (#93). There is one
+  // note at a time, as before, kept by ride id so that the reload after a
+  // save shows it again in the rebuilt card.
+  var cardNote = null; // { rideId, parts, isError, scroll }
+  var noteEls = {};    // ride id -> its card's note line, for the current list
+  var notedItem = null; // the rebuilt card to scroll back to, once the list settles
 
   function clearChildren(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
@@ -76,30 +84,71 @@
     errorEl.hidden = false;
   }
 
-  // join_ride() refuses an incomplete safety set with this hint (#97).
-  function showSafetyNeeded() {
-    clearChildren(errorEl);
-    errorEl.appendChild(document.createTextNode("Complete your safety details first: "));
+  function renderNote(el, note) {
+    clearChildren(el);
+    el.hidden = !note;
+    el.className = note && note.isError ? "ride-note account-error" : "ride-note";
+    if (!note) return;
+    note.parts.forEach(function (part) {
+      el.appendChild(typeof part === "string" ? document.createTextNode(part) : part);
+    });
+  }
+
+  // parts are strings and, at most, a link built for this note. The card's
+  // line is for the eye. A screen reader hears the note from one status line
+  // outside the list, which stays on the page: a rebuilt card's line is
+  // already filled when it appears, and is not read out.
+  function showCardNote(ride, parts, isError) {
+    cardNote = { rideId: ride.id, parts: parts, isError: !!isError, scroll: false };
+    Object.keys(noteEls).forEach(function (id) {
+      renderNote(noteEls[id], id === ride.id ? cardNote : null);
+    });
+    announceEl.textContent = parts.map(function (part) {
+      return typeof part === "string" ? part : part.textContent;
+    }).join("");
+  }
+
+  // For a save that reloads the list. Rebuilding the list loses the member's
+  // place on the page, so the rebuilt card is scrolled back into view.
+  function noteAfterReload(ride, text) {
+    showCardNote(ride, [text], false);
+    cardNote.scroll = true;
+  }
+
+  function clearCardNote() {
+    cardNote = null;
+    Object.keys(noteEls).forEach(function (id) { renderNote(noteEls[id], null); });
+  }
+
+  function accountLink() {
     var link = document.createElement("a");
     link.href = returnToHref();
     link.textContent = "go to your account page";
-    errorEl.appendChild(link);
-    errorEl.appendChild(document.createTextNode("."));
-    errorEl.hidden = false;
+    return link;
+  }
+
+  // join_ride() refuses an incomplete safety set with this hint (#97).
+  function showSafetyNeeded(ride) {
+    showCardNote(ride, ["Complete your safety details first: ", accountLink(), "."], true);
   }
 
   // join_ride() refuses a type 3 ride whose details the member hasn't
   // filled (0016). Its message names them: "Add your bike type on your
   // account page first".
-  function showDetailsNeeded(message) {
-    clearChildren(errorEl);
-    errorEl.appendChild(document.createTextNode(refusalText(message).replace(/\.$/, "") + ": "));
-    var link = document.createElement("a");
-    link.href = returnToHref();
-    link.textContent = "go to your account page";
-    errorEl.appendChild(link);
-    errorEl.appendChild(document.createTextNode("."));
-    errorEl.hidden = false;
+  function showDetailsNeeded(ride, message) {
+    showCardNote(ride, [refusalText(message).replace(/\.$/, "") + ": ", accountLink(), "."], true);
+  }
+
+  // A button says it is saving while its call runs (#93), and gets its own
+  // label back after.
+  function busy(button) {
+    var label = button.textContent;
+    button.disabled = true;
+    button.textContent = "Saving...";
+    return function () {
+      button.disabled = false;
+      button.textContent = label;
+    };
   }
 
   // The server words a refusal as "join_ride: this ride is full"; the member
@@ -108,6 +157,12 @@
     var reason = String(message || "something went wrong").replace(/^[a-z_]+: /, "");
     reason = reason.charAt(0).toUpperCase() + reason.slice(1);
     return /[.!?]$/.test(reason) ? reason : reason + ".";
+  }
+
+  // A full stop, unless the text already ends a sentence: a ride's title
+  // often ends with "!".
+  function sentence(text) {
+    return /[.!?]$/.test(text) ? text : text + ".";
   }
 
   // --------------------------------------------------------------- session
@@ -169,8 +224,9 @@
     var userId = user ? user.id : null;
     if (userId === loadedUserId) return;
     loadedUserId = userId;
-    // A result line for the member who just left is not this visitor's.
-    statusEl.textContent = "";
+    // A note for the member who just left is not this visitor's.
+    cardNote = null;
+    announceEl.textContent = "";
     loadRides();
   }
 
@@ -183,6 +239,21 @@
       return value === null || value === undefined ? "" : String(value);
     }
     return date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  // "Sat 10 Oct": the weekday tells a rider at a glance which Saturday they
+  // are registered for.
+  function dayText(value) {
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return formatTime(value);
+    return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  }
+
+  // "Sat 10 Oct, 06:30".
+  function whenText(value) {
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return formatTime(value);
+    return dayText(value) + ", " + date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   }
 
   function isBefore(value) {
@@ -300,10 +371,11 @@
   // -------------------------------------------------------------- sharing
 
   // What the WhatsApp message carries: the ride's own words, and a link the
-  // receiver can open.
+  // receiver can open. Where sign-up is optional, the message says so (#93).
   function shareText(ride, url) {
+    var optional = ride.capacity === null && ride.signup_type === "name";
     return ride.title + "\n" + formatTime(ride.meet_at) + " at " +
-      (ride.meeting_point || "") + "\nSign up: " + url;
+      (ride.meeting_point || "") + "\n" + (optional ? "RSVP (optional): " : "Sign up: ") + url;
   }
 
   // Only a published or postponed ride is worth sharing: a cancelled ride is
@@ -352,25 +424,30 @@
 
   function joinRide(ride, button) {
     clearError();
-    button.disabled = true;
+    clearCardNote();
+    var done = busy(button);
+    var caller = loadedUserId;
     client.rpc("join_ride", { ride_id: ride.id }).then(function (res) {
-      button.disabled = false;
+      done();
+      // A reply for a member who has since signed out is dropped.
+      if (loadedUserId !== caller) return;
       if (res.error) {
         if (res.error.hint === "safety_set_incomplete") {
-          showSafetyNeeded();
+          showSafetyNeeded(ride);
           return;
         }
         if (String(res.error.hint || "").indexOf("fields_missing:") === 0) {
-          showDetailsNeeded(res.error.message);
+          showDetailsNeeded(ride, res.error.message);
           return;
         }
-        showError(refusalText(res.error.message));
+        showCardNote(ride, [refusalText(res.error.message)], true);
         return;
       }
       // 'confirmed', or 'already_confirmed' for a member who was in already.
-      statusEl.textContent = res.data === "already_confirmed"
-        ? "You were already signed up."
-        : "You're signed up.";
+      // The rebuilt card's own line then gives the day, time and start.
+      noteAfterReload(ride, res.data === "already_confirmed"
+        ? sentence("You were already registered for " + ride.title)
+        : sentence("Saved: you're registered for " + ride.title));
       loadRides();
     });
   }
@@ -383,17 +460,20 @@
   function cancelSignup(ride, button) {
     if (!window.confirm("Cancel your place on this ride?")) return;
     clearError();
-    button.disabled = true;
+    clearCardNote();
+    var done = busy(button);
+    var caller = loadedUserId;
     client.rpc("cancel_ride_signup", { ride_id: ride.id }).then(function (res) {
-      button.disabled = false;
+      done();
+      if (loadedUserId !== caller) return;
       if (res.error) {
-        showError(refusalText(res.error.message));
+        showCardNote(ride, [refusalText(res.error.message)], true);
         return;
       }
       // 'cancelled', or 'not_signed_up' when there was no confirmed place.
-      statusEl.textContent = res.data === "not_signed_up"
+      noteAfterReload(ride, res.data === "not_signed_up"
         ? "You weren't signed up."
-        : "Your place is cancelled.";
+        : "Your place is cancelled.");
       loadRides();
     });
   }
@@ -436,29 +516,50 @@
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       clearError();
-      button.disabled = true;
+      clearCardNote();
+      var done = busy(button);
+      var caller = loadedUserId;
       client.rpc("join_ride_by_name", { ride_id: ride.id, rider_name: input.value })
         .then(function (res) {
-          button.disabled = false;
+          done();
+          if (loadedUserId !== caller) return;
           if (res.error) {
-            showError(refusalText(res.error.message));
+            showCardNote(ride, [refusalText(res.error.message)], true);
             return;
           }
-          statusEl.textContent = res.data === "already_on_list"
-            ? "That name is already on the list for " + ride.title + "."
-            : "You're on the list: " + ride.title + ", " + formatTime(ride.meet_at) + ".";
+          noteAfterReload(ride, res.data === "already_on_list"
+            ? sentence("That name is already on the list for " + ride.title)
+            : "You're on the list: " + ride.title + ", " + whenText(ride.meet_at) + ".");
           loadRides();
         });
     });
     return form;
   }
 
+  // What a confirmed member is registered for, at the start they chose
+  // (#93). No choice, or 1, is the ride's own point. A later choice with no
+  // matching point means the start points could not be read
+  // (set_ride_starts() clears a choice whose point goes), so its time and
+  // place are not guessed.
+  function registeredText(ride, points, chosen) {
+    var registered = "You're registered: " + ride.title + ", ";
+    if (!chosen || chosen === 1) {
+      return registered + whenText(ride.meet_at) + ", starting at " + (ride.meeting_point || "") + ".";
+    }
+    var start = null;
+    points.forEach(function (point) {
+      if (point.position === chosen) start = point;
+    });
+    if (!start) return registered + dayText(ride.meet_at) + ", at the start you chose.";
+    return registered + whenText(start.start_at) + ", starting at " + start.place + ".";
+  }
+
   // A confirmed rider on a ride that has extra start points picks where
   // they start. choose_start() checks the ride, the sign-up and the point
   // again, so a refusal from the server is shown as it comes.
-  function startChoice(ride, points, chosen) {
+  function startChoice(ride, points, chosen, registered) {
     var label = document.createElement("label");
-    label.appendChild(document.createTextNode("Starting at: "));
+    label.appendChild(document.createTextNode("Change start: "));
     var select = document.createElement("select");
     var mainOption = document.createElement("option");
     mainOption.value = "1";
@@ -480,17 +581,22 @@
       clearError();
       select.disabled = true;
       var wanted = Number(select.value);
+      // A select has no label to change, so its card says it is saving.
+      showCardNote(ride, ["Saving..."], false);
+      var caller = loadedUserId;
       client.rpc("choose_start", { ride_id: ride.id, start_point: wanted })
         .then(function (res) {
           select.disabled = false;
+          if (loadedUserId !== caller) return;
           if (res.error) {
-            showError(refusalText(res.error.message));
+            showCardNote(ride, [refusalText(res.error.message)], true);
             select.value = previous;
             return;
           }
           previous = select.value;
-          statusEl.textContent = "Saved: you're starting at " +
-            select.options[select.selectedIndex].textContent;
+          registered.textContent = registeredText(ride, points, wanted);
+          showCardNote(ride, ["Saved: you're starting at " +
+            select.options[select.selectedIndex].textContent + "."], false);
         });
     });
     label.appendChild(select);
@@ -506,23 +612,24 @@
     var line = document.createElement("div");
     line.className = "ride-actions";
     if (signupStatus === "confirmed") {
-      line.appendChild(textBlock("span", "You're signed up."));
+      var registered = textBlock("div", registeredText(ride, points, chosen), "registered");
+      line.appendChild(registered);
       // A ride that has started takes no change any more: cancel goes, and
       // so does the start choice, which choose_start() would refuse.
       if (isBefore(ride.depart_at)) {
-        line.appendChild(document.createTextNode(" "));
-        line.appendChild(cancelButton(ride));
         if (points.length > 0) {
-          line.appendChild(document.createTextNode(" "));
-          line.appendChild(startChoice(ride, points, chosen));
+          var change = document.createElement("div");
+          change.appendChild(startChoice(ride, points, chosen, registered));
+          line.appendChild(change);
         }
+        line.appendChild(cancelButton(ride));
       }
       return line;
     }
     if (ride.status !== "published") return null;
     if (!isBefore(ride.signup_deadline)) {
       line.appendChild(textBlock("span", ride.capacity === null
-        ? "Sign-up has closed. You can still join us at the meeting point."
+        ? "RSVPs are closed. You can still join us at the meeting point."
         : "Sign-up has closed."));
       return line;
     }
@@ -665,6 +772,11 @@
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.
     appendDetail(item, shareLine(ride));
+    // This card's messages, below its action line once that arrives.
+    var noteEl = document.createElement("div");
+    noteEls[ride.id] = noteEl;
+    renderNote(noteEl, cardNote && cardNote.rideId === ride.id ? cardNote : null);
+    item.appendChild(noteEl);
     // The places count is a second read, and the action line waits for it:
     // the count chooses between a sign-up button and "This ride is full."
     client.rpc("ride_places_taken", { ride_id: ride.id }).then(function (res) {
@@ -678,9 +790,13 @@
       }
       if (taken !== null) item.insertBefore(placesLine(ride, taken), closesLine);
       var actions = actionLine(ride, signupStatus, taken, points, chosen);
-      if (actions) item.appendChild(actions);
+      if (actions) item.insertBefore(actions, noteEl);
+      if (cardNote && cardNote.rideId === ride.id && cardNote.scroll) notedItem = item;
       placesPending -= 1;
-      if (placesPending === 0) settleSharedRide();
+      if (placesPending === 0) {
+        settleSharedRide();
+        settleNotedRide();
+      }
     });
     return item;
   }
@@ -710,6 +826,18 @@
       sharedRideItem.scrollIntoView({ behavior: "smooth", block: "center" });
     }
     sharedRideItem = null;
+  }
+
+  // After a save, the list is rebuilt and the member's place on the page is
+  // lost. Once every card has its count, and so its full height, the card
+  // they acted on is brought back into view.
+  function settleNotedRide() {
+    if (!notedItem) return;
+    if (cardNote) cardNote.scroll = false;
+    if (document.body.contains(notedItem)) {
+      notedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    notedItem = null;
   }
 
   function appendRides(rides, statuses, choices, pointsByRide, version) {
@@ -752,6 +880,7 @@
     listVersion += 1;
     var version = listVersion;
     clearChildren(listEl);
+    noteEls = {};
     emptyEl.hidden = true;
     loadingEl.hidden = false;
     client.from("sessions")

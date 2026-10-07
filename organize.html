@@ -360,6 +360,10 @@ footer { background: var(--navy); color: #cfd3ea; }
       <p class="note">Leave it empty for no limit.</p>
       <label for="ride-route_link">Route link</label>
       <input type="url" id="ride-route_link" maxlength="500">
+      <label for="ride-gpx">Route file (GPX, optional)</label>
+      <input type="file" id="ride-gpx">
+      <p class="note">Fills in distance and climbing from the route's GPX file. The file stays on your device: it is read here, not uploaded.</p>
+      <p id="ride-gpx-status" role="status"></p>
       <label for="ride-distance_km">Distance (km)</label>
       <input type="number" id="ride-distance_km" min="0.1" step="0.1">
       <label for="ride-climbing_m">Climbing (m)</label>
@@ -384,6 +388,8 @@ footer { background: var(--navy); color: #cfd3ea; }
       <p id="roster-note" class="note"></p>
       <ul id="roster-list"></ul>
       <p id="roster-empty" hidden>Nobody has signed up yet.</p>
+      <button type="button" id="roster-download" class="btn" disabled>Download roster (CSV)</button>
+      <p class="note" id="roster-download-note">The download has names, start points, sign-up status and attendance. It has no phone numbers or contacts.</p>
       <button type="button" id="roster-close" class="btn">Close roster</button>
     </section>
 
@@ -408,6 +414,12 @@ footer { background: var(--navy); color: #cfd3ea; }
     border: 1px solid #d8d8e0; border-radius: 6px; font-size: 16px;
     margin-bottom: 10px;
   }
+  /* The route's GPX file (#126): read here, never uploaded. */
+  .organize-card input[type=file] {
+    display: block; max-width: 100%; font-size: 15px; margin-bottom: 4px;
+  }
+  /* What the file gave, or why it gave nothing: a status line, not a help note. */
+  .organize-card #ride-gpx-status { font-size: 14px; color: #5a5a6b; margin: 4px 0 10px; }
   .organize-card h2 {
     font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
     font-size: 24px; color: #102060; margin: 30px 0 4px;
@@ -423,6 +435,10 @@ footer { background: var(--navy); color: #cfd3ea; }
   .organize-card #ride-list li button, .organize-card #roster-list li button {
     font-size: 13px; padding: 4px 10px; margin: 4px 0 0 6px;
   }
+  /* The roster download (#125) sits apart from the last rider, with its note. */
+  .organize-card #roster-download { margin-top: 14px; }
+  .organize-card #roster-download:disabled { opacity: .5; cursor: default; }
+  .organize-card #roster-download-note { margin: 6px 0 14px; }
   /* The extra start points: one bordered row each, with its own Remove. */
   .organize-card #ride-starts-fieldset {
     border: 1px solid #d8d8e0; border-radius: 6px; padding: 10px 12px 12px;
@@ -465,7 +481,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/organize.js?v=509a3d98aa15"></script>
+<script src="assets/organize.js?v=8ca8ac70b449"></script>
 
 </main>
 <script>
