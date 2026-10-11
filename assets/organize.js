@@ -322,6 +322,32 @@
 
   // ------------------------------------------------------------- ride form
 
+  // The regroup policy is a list since #136. A ride saved before then may
+  // hold other text; it shows as an extra choice, so an edit keeps it unless
+  // the organizer picks another. Only one such choice exists at a time.
+  function keepSavedRegroup(value) {
+    var select = inputFor("regroup_policy");
+    var old = select.querySelector("option[data-saved]");
+    if (old) select.removeChild(old);
+    var text = typeof value === "string" ? value.trim() : "";
+    if (text === "") {
+      select.value = "";
+      return;
+    }
+    for (var i = 0; i < select.options.length; i += 1) {
+      if (select.options[i].value.toLowerCase() === text.toLowerCase()) {
+        select.value = select.options[i].value;
+        return;
+      }
+    }
+    var option = document.createElement("option");
+    option.value = text;
+    option.textContent = text + " (saved text)";
+    option.setAttribute("data-saved", "");
+    select.appendChild(option);
+    select.value = text;
+  }
+
   function fillRideForm(ride) {
     RIDE_FIELDS.forEach(function (field) {
       var input = inputFor(field.column);
@@ -339,6 +365,7 @@
         input.value = String(value);
       }
     });
+    keepSavedRegroup(ride ? ride.regroup_policy : null);
     // A new ride starts as type 1, the ordinary ride (Hubert, 2026-09-30).
     if (signupTypeInput.value === "") signupTypeInput.value = "name";
     var required = (ride && ride.required_fields) || [];

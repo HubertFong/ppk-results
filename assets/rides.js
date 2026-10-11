@@ -271,6 +271,77 @@
     return textBlock("div", "Climbing: " + ride.climbing_m + " m");
   }
 
+  // The regroup policies the organizer picks from (#136), with the meaning a
+  // rider reads. Hubert approved the wording on 9 Oct (Ascent D206). Older
+  // rides keep their free text, so a saved value is matched without case and
+  // shown as it is when it matches none.
+  var REGROUP_POLICIES = [
+    { label: "No drop",
+      meaning: "No one is left behind. The group waits for the last rider, and the sweep stays with anyone who falls back." },
+    { label: "Regroup at set points",
+      meaning: "The group may split on the road and waits at named points." },
+    { label: "Self-supported",
+      meaning: "No regroup. Riders ride at their own pace and are responsible for themselves." }
+  ];
+
+  function regroupPolicy(value) {
+    if (typeof value !== "string") return null;
+    var key = value.trim().toLowerCase().replace(/[\s-]+/g, " ");
+    for (var i = 0; i < REGROUP_POLICIES.length; i += 1) {
+      if (REGROUP_POLICIES[i].label.toLowerCase().replace(/-/g, " ") === key) return REGROUP_POLICIES[i];
+    }
+    return null;
+  }
+
+  // "Regroup: No drop. <meaning>", or the saved text as it is.
+  function regroupText(value) {
+    if (typeof value !== "string" || value.trim() === "") return null;
+    var policy = regroupPolicy(value);
+    return "Regroup: " + (policy ? policy.label + ". " + policy.meaning : value.trim());
+  }
+
+  function regroupLine(ride) {
+    var text = regroupText(ride.regroup_policy);
+    return text ? textBlock("div", text) : null;
+  }
+
+  // The same notes on every ride (#139), in the words Hubert approved on
+  // 9 Oct (Ascent D206). Note 7 follows the regroup policy; with no known
+  // policy it keeps only the part that holds on every ride.
+  var RIDE_NOTES = [
+    "Bring a spare tube, a pump or CO2, tyre levers and a multi-tool. Others will help, but bring your own.",
+    "Bring enough to drink. Check the route for refill stops, and carry at least two bottles if there are none.",
+    "Wear sunscreen and sunglasses. Rides often finish in full sun.",
+    "We ride on open roads. Stop at red lights and junctions. Don't try to beat an amber light.",
+    "This is a group ride, not a race. Stay with the group and don't break away.",
+    "Leaving early? Message the captain, and the sweep if there is one."
+  ];
+  var TROUBLE_NOTE = "Puncture, fall or other trouble: call it out and raise a hand.";
+  var TROUBLE_BY_POLICY = {
+    "No drop": " On a no-drop ride, the group waits for you.",
+    "Self-supported": " On a self-supported ride, you deal with it, with help from whoever is near."
+  };
+
+  function rideNotes(value) {
+    var policy = regroupPolicy(value);
+    var extra = policy ? TROUBLE_BY_POLICY[policy.label] || "" : "";
+    return RIDE_NOTES.concat([TROUBLE_NOTE + extra]);
+  }
+
+  // A closed block under each card, so the list stays short on a phone.
+  function rideNotesBlock(ride) {
+    var block = document.createElement("details");
+    block.className = "ride-notes";
+    block.id = "ride-notes-" + ride.id;
+    block.appendChild(textBlock("summary", "Ride notes"));
+    var list = document.createElement("ol");
+    rideNotes(ride.regroup_policy).forEach(function (note) {
+      list.appendChild(textBlock("li", note));
+    });
+    block.appendChild(list);
+    return block;
+  }
+
   // A "Label: value" line, or null when the ride has nothing to say there.
   function textLine(label, value) {
     if (value === null || value === undefined || String(value).trim() === "") return null;
@@ -370,12 +441,15 @@
 
   // -------------------------------------------------------------- sharing
 
-  // What the WhatsApp message carries: the ride's own words, and a link the
-  // receiver can open. Where sign-up is optional, the message says so (#93).
+  // What the WhatsApp message carries: the ride's own words, the regroup
+  // policy with its meaning, and a link to the card, where the ride notes are
+  // (#136, #139). Where sign-up is optional, the message says so (#93).
   function shareText(ride, url) {
     var optional = ride.capacity === null && ride.signup_type === "name";
+    var regroup = regroupText(ride.regroup_policy);
     return ride.title + "\n" + formatTime(ride.meet_at) + " at " +
-      (ride.meeting_point || "") + "\n" + (optional ? "RSVP (optional): " : "Sign up: ") + url;
+      (ride.meeting_point || "") + "\n" + (regroup ? regroup + "\n" : "") +
+      "Ride notes are on the ride page.\n" + (optional ? "RSVP (optional): " : "Sign up: ") + url;
   }
 
   // Only a published or postponed ride is worth sharing: a cancelled ride is
@@ -762,13 +836,14 @@
     appendDetail(item, routeLine(ride));
     appendDetail(item, distanceLine(ride));
     appendDetail(item, climbingLine(ride));
-    appendDetail(item, textLine("Regroup", ride.regroup_policy));
+    appendDetail(item, regroupLine(ride));
     appendDetail(item, textLine("Pace", ride.pace_note));
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
     item.appendChild(closesLine);
     appendDetail(item, optionalLine(ride));
     appendDetail(item, typeLine(ride));
     appendDetail(item, ridersLine(ride, version));
+    appendDetail(item, rideNotesBlock(ride));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.
     appendDetail(item, shareLine(ride));

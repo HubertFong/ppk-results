@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annisa Yusri · PPK SQDTT Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #102060; --orange: #E64D24; --mustard: #FAB615;
+  --cyan: #1B9590; --paper: #F7F6F2;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: 'Barlow', system-ui, sans-serif;
+  background: var(--paper); color: #1c1c28;
+  font-size: 16px; line-height: 1.55;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+
+header { background: var(--navy); color: #fff; }
+.head-inner {
+  max-width: 960px; margin: 0 auto; padding: 26px 20px 22px;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.brand {
+  font-family: 'Barlow Condensed', sans-serif; color: #fff;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.brand:hover { text-decoration: none; }
+.brand-main {
+  font-weight: 700; font-size: 32px; letter-spacing: .04em; color: var(--mustard);
+}
+.brand-sub {
+  font-weight: 600; font-size: 16px; letter-spacing: .03em;
+  text-transform: uppercase; color: #cfd3ea;
+}
+nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; row-gap: 6px; }
+nav a {
+  color: #fff; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 3px solid transparent; padding-bottom: 2px;
+}
+nav a.on { border-color: var(--orange); }
+nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
+
+main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
+h1 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 42px; letter-spacing: .02em; color: var(--navy);
+  line-height: 1.1;
+}
+.kicker {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
+}
+.sub { color: #5a5a6b; margin: 6px 0 26px; }
+h2 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--navy); margin: 38px 0 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.subhead {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 32px; color: var(--navy); margin-top: 34px;
+}
+.subhead .dim { color: #5a5a6b; font-size: 20px; }
+.catdot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff;
+         border-radius: 10px;
+         box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
+td.t { font-variant-numeric: tabular-nums; }
+tbody th[scope="row"], tr th[scope="row"] {
+  font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
+  letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
+  color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+  position: static;
+}
+.split-note { display: block; font-size: 11px; font-weight: 400;
+               color: #5a5a6b; font-variant-numeric: tabular-nums; }
+tr:nth-child(even) td, tr:nth-child(even) th[scope="row"] { background: #fafaf7; }
+td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+         font-size: 18px; color: var(--navy); width: 40px; }
+tr.podium-1 td.rk { color: #D4A017; }
+tr.podium-2 td.rk { color: #9AA5B1; }
+tr.podium-3 td.rk { color: #B0672B; }
+.pb { font-weight: 600; }
+/* .tablewrap (no overflow) is for results-table pages, which hide their
+   run1/bike/run2/set-at columns below 620px instead - so their sticky
+   headers can stick to the viewport (position:sticky needs every ancestor
+   up to the viewport to have overflow:visible; overflow-x:auto on a
+   scrolling ancestor would otherwise pin the header to that ancestor's own
+   box instead). Tables with more columns than that trick can hide (Standings,
+   Records, Compare, Data) use .tablewrap-x for horizontal scroll instead -
+   their headers just don't stick, same as before this feature existed. */
+.tablewrap-x { overflow-x: auto; }
+
+.chip {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+  color: #fff; border-radius: 20px; padding: 1px 10px 2px;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.chip.badge { background: var(--navy); font-size: 13px; padding: 5px 12px 6px; cursor: help; }
+.record-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; margin-left: 5px;
+  font-size: 10px; font-weight: 700; color: #fff; vertical-align: middle;
+}
+.record-badge.r1 { background: #D4A017; }
+.record-badge.r2 { background: #9AA5B1; }
+.record-badge.r3 { background: #B0672B; }
+.note { font-size: 14px; color: #5a5a6b; margin-top: 14px; }
+/* Spacing (#103). A heading's intro sits close under it. In the member
+   forms, help text belongs to the field above it, and each field group gets
+   room above its label, so one field's help never runs into the next. */
+h2 + .note, h3 + .note, .subhead + .note { margin-top: 4px; }
+.page-section { border-top: 1px solid #e3e5ee; margin-top: 36px; padding-top: 4px; }
+.page-section > h2:first-child, .page-section > .subhead:first-child { margin-top: 18px; }
+.account-card label { margin-top: 16px; }
+.account-card .check-row { margin-top: 12px; }
+.account-card .check-row label { margin-top: 0; }
+.account-card input + .note, .account-card select + .note,
+.account-card fieldset + .note { margin: -4px 0 0; }
+.account-card .form-group-break { border-top: 1px solid #e3e5ee; margin-top: 28px; padding-top: 2px; }
+.account-card form button[type=submit] { margin-top: 22px; }
+
+.statgrid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
+.stat {
+  background: #fff; border-radius: 10px; padding: 12px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); min-width: 130px;
+}
+.stat b {
+  display: block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; color: var(--navy); font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 13px; color: #5a5a6b; text-transform: uppercase;
+              letter-spacing: .06em; }
+.chart { background: #fff; border-radius: 10px; padding: 16px;
+          box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 10px 0 24px; }
+
+.home-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; }
+.btn {
+  display: inline-block; background: var(--navy); color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+  letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px;
+}
+.btn:hover { background: #1a2f80; text-decoration: none; }
+.highlight-list { list-style: none; background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.cmp-controls { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 18px 0; }
+.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px; border: 0; padding: 0;
+  font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+  letter-spacing: .04em; font-size: 15px; }
+.cmp-cats label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#cmp-filter { font: inherit; font-size: 15px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #d6d9e6; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.cmp-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px; max-height: 260px; overflow-y: auto; }
+.cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
+  padding: 3px 0; cursor: pointer; }
+.cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+.cmp-ineligible { opacity: .55; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 1px; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-chip-remove {
+  background: none; border: none; color: #fff; font-size: 15px; line-height: 1;
+  cursor: pointer; padding: 0 0 0 2px;
+}
+#cmp-baseline { margin: 16px 0; background: #fff; border-radius: 10px;
+  padding: 12px 18px; box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+#cmp-baseline label { margin-right: 14px; cursor: pointer; }
+#cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
+.highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
+.highlight-list li:first-child { border-top: none; }
+
+.search-wrap { position: relative; margin-left: 18px; }
+#athlete-search {
+  font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 8px;
+  border: none; width: 190px; background: rgba(255,255,255,.14); color: #fff;
+}
+#athlete-search::placeholder { color: #c7cce3; }
+#athlete-search:focus { outline: 2px solid var(--mustard); background: #fff; color: #1c1c28; }
+.search-results {
+  position: absolute; top: calc(100% + 6px); right: 0; width: 260px;
+  background: #fff; border-radius: 8px; list-style: none;
+  box-shadow: 0 4px 16px rgba(16,32,96,.25); z-index: 10; overflow: hidden;
+}
+.search-results li { border-top: 1px solid #ececf2; }
+.search-results li:first-child { border-top: none; }
+.search-results a { display: block; padding: 9px 14px; color: #1c1c28; }
+.search-results a:hover, .search-results a:focus { background: #f2f2f7; text-decoration: none; }
+.search-empty { padding: 9px 14px; color: #5a5a6b; font-size: 14px; }
+@media (max-width: 620px) {
+  .search-wrap { margin-left: 0; width: 100%; }
+  #athlete-search { width: 100%; box-sizing: border-box; }
+  .search-results { width: 100%; }
+}
+
+.splits-toggle {
+  display: none; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin-bottom: 8px;
+}
+@media (max-width: 620px) {
+  .splits-toggle { display: inline-block; }
+  .results-table .col-run1, .results-table .col-bike,
+  .results-table .col-run2, .results-table .col-setat { display: none; }
+  .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
+  .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+  /* Revealing splits can make the table wider than the screen again - give
+     .tablewrap (results-table pages only; .tablewrap-x already scrolls)
+     its horizontal scroll back here, contained to the table instead of the
+     whole page. This is also why sticky headers are desktop-only: a sticky
+     ancestor can't have a scrolling ancestor between it and the viewport. */
+  .tablewrap { overflow-x: auto; }
+}
+
+.highlights-toggle {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin: 4px 0 10px;
+}
+
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end;
+  background: #fff; border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.filter-field { display: flex; flex-direction: column; gap: 4px; }
+.filter-field label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .06em; color: #5a5a6b; }
+.filter-field select, .filter-field input[type="text"] {
+  font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid #d6d9e6; background: #fff; min-width: 150px; }
+.filter-field input[type="text"] { min-width: 200px; }
+.filter-note { font-size: 13px; color: #5a5a6b; margin: -4px 0 12px; }
+.no-results { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); color: #5a5a6b; margin: 16px 0; }
+th[data-sort] { cursor: pointer; user-select: none; }
+th[data-sort]:hover, th[data-sort]:focus-visible { background: #1a2f80; }
+th[data-sort] .sort-arrow { font-size: 11px; opacity: .55; margin-left: 4px; }
+th[data-sort][aria-sort] .sort-arrow { opacity: 1; }
+
+footer { background: var(--navy); color: #cfd3ea; }
+.foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
+               font-size: 14px; }
+.foot-inner b { color: var(--mustard); font-weight: 600; }
+.foot-inner a { color: #8fd8d3; }
+.foot-note { margin-top: 10px; font-size: 13px; color: #9aa0c4; }
+@media (max-width: 620px) {
+  h1 { font-size: 32px; }
+  .head-inner { padding-top: 18px; }
+  nav { width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
+    </a>
+    <nav><a href="../index.html">Home</a><a href="../rides.html">Group rides</a><a href="../sqdtt.html" class="on">SQDTT results</a><a href="../account.html">Account</a></nav>
+    <div class="search-wrap">
+      <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
+      <ul id="search-results" class="search-results" hidden></ul>
+    </div>
+  </div>
+</header>
+<div class="subnav"><nav class="subnav-inner" aria-label="SQDTT results"><a href="../sqdtt.html">Overview</a><a href="../events.html">Events</a><a href="../leaderboard.html">Personal Bests</a><a href="../standings.html">Standings</a><a href="../records.html">Records</a><a href="../compare.html">Compare</a></nav></div>
+<main>
+<h1>Annisa Yusri</h1>
+<p class="sub"><span class="chip" style="background:#1B9590">Short</span></p>
+<div class="statgrid">
+<div class="stat"><b>1</b><span>races</span></div>
+<div class="stat"><b>0</b><span>wins</span></div>
+<div class="stat"><b>0</b><span>podiums</span></div>
+<div class="stat"><b><a href="../events.html#event-122">1:23:14</a></b><span>Short PB</span></div>
+<div class="stat"><b>#43</b><span>2026 Short · 1 pts</span></div>
+<div class="stat"><b>—</b><span>Short vs previous race - first race</span></div>
+</div>
+<h2>2026 points breakdown</h2>
+<p class="note">Short: <a href="../events.html#event-122">#122</a> (10th) → 1 = <strong>1 pts</strong> (#43 in the Short standings)</p>
+<h2>Achievements</h2>
+<div class="badge-row"><span class="chip badge" title="Completed your first SQDTT">First SQDTT</span></div>
+<p class="note">Next up: 4 more races for 5 Races · 23:14 off Sub-60 Short · 3 more wins for 3× Winner</p>
+<h2>Race history</h2>
+<div class="tablewrap"><button class="splits-toggle" type="button" aria-expanded="false">Show splits</button><table class="results-table"><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Course</th><th scope='col' class='col-run1'>Run 1</th><th scope='col' class='col-bike'>Bike</th><th scope='col' class='col-run2'>Run 2</th><th scope='col'>Total</th><th scope='col'>Place</th></tr><tr><td class='t'><a href="../events.html#event-122">#122</a></td><td class='t'>2026-10-11</td><td><span class="chip" style="background:#1B9590">Short</span></td><td class='t col-run1'>20:40<span class="split-note">6:53/km</span></td><td class='t col-bike'>39:22<span class="split-note">22.9 km/h</span></td><td class='t col-run2'>23:12<span class="split-note">7:44/km</span></td><td class='t pb'>1:23:14 <span class="chip" style="background:#FAB615;color:#102060">PB</span></td><td class='t'>10</td></tr></table></div>
+</main>
+<script>
+(function() {
+  var ATHLETES = [{"name": "Aaron Wong", "href": "../athletes/aaron-wong.html"}, {"name": "Abby Rahn", "href": "../athletes/abby-rahn.html"}, {"name": "Adrian Kang", "href": "../athletes/adrian-kang.html"}, {"name": "Adrian Koay Hun Yi", "href": "../athletes/adrian-koay-hun-yi.html"}, {"name": "Adriana Álvarez", "href": "../athletes/adriana-alvarez.html"}, {"name": "Ahmad Adli", "href": "../athletes/ahmad-adli.html"}, {"name": "Ahmad Luthfi bin Ahmad Azhari", "href": "../athletes/ahmad-luthfi-bin-ahmad-azhari.html"}, {"name": "Aidan Chan", "href": "../athletes/aidan-chan.html"}, {"name": "Alice Cheah", "href": "../athletes/alice-cheah.html"}, {"name": "Alishia Lim", "href": "../athletes/alishia-lim.html"}, {"name": "Annisa Yusri", "href": "../athletes/annisa-yusri.html"}, {"name": "Barry", "href": "../athletes/barry.html"}, {"name": "Cadmon Ho", "href": "../athletes/cadmon-ho.html"}, {"name": "Calvin Lee", "href": "../athletes/calvin-lee.html"}, {"name": "Chan Hock Yin", "href": "../athletes/chan-hock-yin.html"}, {"name": "Clarabelle Yii Jia Tong", "href": "../athletes/clarabelle-yii-jia-tong.html"}, {"name": "Dominic Loke", "href": "../athletes/dominic-loke.html"}, {"name": "Dr. K", "href": "../athletes/dr-k.html"}, {"name": "Dysen Leong Chat Shen", "href": "../athletes/dysen-leong-chat-shen.html"}, {"name": "Edison", "href": "../athletes/edison.html"}, {"name": "Eric Ooi", "href": "../athletes/eric-ooi.html"}, {"name": "Fish Lim", "href": "../athletes/fish-lim.html"}, {"name": "Gabrielle", "href": "../athletes/gabrielle.html"}, {"name": "Henry Cheang", "href": "../athletes/henry-cheang.html"}, {"name": "Hubert Fong", "href": "../athletes/hubert-fong.html"}, {"name": "Jack Ng", "href": "../athletes/jack-ng.html"}, {"name": "Jacky Fong", "href": "../athletes/jacky-fong.html"}, {"name": "Jian Shen", "href": "../athletes/jian-shen.html"}, {"name": "Jorge Chaves", "href": "../athletes/jorge-chaves.html"}, {"name": "Joy Cheong", "href": "../athletes/joy-cheong.html"}, {"name": "Kan Khai Wei", "href": "../athletes/kan-khai-wei.html"}, {"name": "Khaw Lek Ming", "href": "../athletes/khaw-lek-ming.html"}, {"name": "Kiron Reyon", "href": "../athletes/kiron-reyon.html"}, {"name": "Ko Khye Chun", "href": "../athletes/ko-khye-chun.html"}, {"name": "Lee Ke Wynn", "href": "../athletes/lee-ke-wynn.html"}, {"name": "Lee Xin Lam", "href": "../athletes/lee-xin-lam.html"}, {"name": "Lee Xin Yong", "href": "../athletes/lee-xin-yong.html"}, {"name": "Leo Ng", "href": "../athletes/leo-ng.html"}, {"name": "Lim Shin Tzen, Jonathan", "href": "../athletes/lim-shin-tzen-jonathan.html"}, {"name": "Louis A. Saramuthu", "href": "../athletes/louis-a-saramuthu.html"}, {"name": "Lu Ee Chen", "href": "../athletes/lu-ee-chen.html"}, {"name": "Marcus Sherwood", "href": "../athletes/marcus-sherwood.html"}, {"name": "Marlon", "href": "../athletes/marlon.html"}, {"name": "Michelle Ding Sook Xin", "href": "../athletes/michelle-ding-sook-xin.html"}, {"name": "Mitchell Glodowski", "href": "../athletes/mitchell-glodowski.html"}, {"name": "Muhammad Ikbal Ismail", "href": "../athletes/muhammad-ikbal-ismail.html"}, {"name": "Muhammad Syawal bin Naseer Khan", "href": "../athletes/muhammad-syawal-bin-naseer-khan.html"}, {"name": "Ng Kok Chee", "href": "../athletes/ng-kok-chee.html"}, {"name": "Ng Wei Liang", "href": "../athletes/ng-wei-liang.html"}, {"name": "Omar", "href": "../athletes/omar.html"}, {"name": "Paul Hinchliffe", "href": "../athletes/paul-hinchliffe.html"}, {"name": "Penny Ooi", "href": "../athletes/penny-ooi.html"}, {"name": "Poh Zhen-E", "href": "../athletes/poh-zhen-e.html"}, {"name": "Rasyidi Bakar", "href": "../athletes/rasyidi-bakar.html"}, {"name": "Rebecca", "href": "../athletes/rebecca.html"}, {"name": "Richard Khor", "href": "../athletes/richard-khor.html"}, {"name": "Ryan Ganose", "href": "../athletes/ryan-ganose.html"}, {"name": "Ryan Hoa", "href": "../athletes/ryan-hoa.html"}, {"name": "Saw Jia Wei", "href": "../athletes/saw-jia-wei.html"}, {"name": "Syafiq Monaer", "href": "../athletes/syafiq-monaer.html"}, {"name": "Syed Faisal", "href": "../athletes/syed-faisal.html"}, {"name": "Tan Chern Wuay", "href": "../athletes/tan-chern-wuay.html"}, {"name": "Tan Hoay Thing", "href": "../athletes/tan-hoay-thing.html"}, {"name": "Tan Huay Vern", "href": "../athletes/tan-huay-vern.html"}, {"name": "Tan Joo Ong", "href": "../athletes/tan-joo-ong.html"}, {"name": "Tan Tze Taq", "href": "../athletes/tan-tze-taq.html"}, {"name": "Tao", "href": "../athletes/tao.html"}, {"name": "Teh Kai Li", "href": "../athletes/teh-kai-li.html"}, {"name": "Theo Hurford", "href": "../athletes/theo-hurford.html"}, {"name": "Tio Shi Jie", "href": "../athletes/tio-shi-jie.html"}, {"name": "Wan Mohamad Zaki bin Wan Mohamad Sofian", "href": "../athletes/wan-mohamad-zaki-bin-wan-mohamad-sofian.html"}, {"name": "Wayne Tan", "href": "../athletes/wayne-tan.html"}, {"name": "Winson Khoo", "href": "../athletes/winson-khoo.html"}, {"name": "Wong Yit Hao", "href": "../athletes/wong-yit-hao.html"}, {"name": "Zulkiflee Ibrahim", "href": "../athletes/zulkiflee-ibrahim.html"}];
+  var input = document.getElementById('athlete-search');
+  var list = document.getElementById('search-results');
+
+  function render(matches, query) {
+    list.innerHTML = '';
+    if (!query) { list.hidden = true; return; }
+    if (matches.length === 0) {
+      var empty = document.createElement('li');
+      empty.className = 'search-empty';
+      empty.textContent = 'No athlete found matching "' + query + '"';
+      list.appendChild(empty);
+    } else {
+      matches.slice(0, 8).forEach(function(a) {
+        var li = document.createElement('li');
+        var link = document.createElement('a');
+        link.href = a.href;
+        link.textContent = a.name;
+        li.appendChild(link);
+        list.appendChild(li);
+      });
+    }
+    list.hidden = false;
+  }
+
+  input.addEventListener('input', function() {
+    var q = input.value.trim().toLowerCase();
+    var matches = q ? ATHLETES.filter(function(a) {
+      return a.name.toLowerCase().indexOf(q) !== -1;
+    }) : [];
+    render(matches, q);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      var first = list.querySelector('a');
+      if (first) { e.preventDefault(); first.focus(); }
+    } else if (e.key === 'Escape') {
+      list.hidden = true;
+    }
+  });
+
+  list.addEventListener('keydown', function(e) {
+    var items = Array.prototype.slice.call(list.querySelectorAll('a'));
+    var i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' && i < items.length - 1) { e.preventDefault(); items[i + 1].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); i > 0 ? items[i - 1].focus() : input.focus(); }
+    else if (e.key === 'Escape') { list.hidden = true; input.focus(); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!list.contains(e.target) && e.target !== input) list.hidden = true;
+    if (e.target.classList.contains('splits-toggle')) {
+      var table = e.target.nextElementSibling;
+      var expanded = table.classList.toggle('show-splits');
+      e.target.setAttribute('aria-expanded', expanded);
+      e.target.textContent = expanded ? 'Hide splits' : 'Show splits';
+    }
+    if (e.target.classList.contains('highlights-toggle')) {
+      var btn = e.target;
+      var moreList = btn.nextElementSibling;
+      var nowHidden = !moreList.hasAttribute('hidden');
+      if (nowHidden) {
+        moreList.setAttribute('hidden', '');
+        btn.textContent = 'Show ' + btn.dataset.count + ' more';
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        moreList.removeAttribute('hidden');
+        btn.textContent = 'Show fewer';
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+  });
+})();
+</script>
+<script>
+(function() {
+  function visibleBody(table) {
+    return table.querySelector('tbody:not([hidden])') || table.tBodies[0];
+  }
+  function cellVal(td) {
+    var v = td.getAttribute('data-val');
+    return (v === null || v === '') ? null : parseFloat(v);
+  }
+  function sortRows(table, colIndex, ascending) {
+    var tbody = visibleBody(table);
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.rows);
+    rows.sort(function(a, b) {
+      var av = cellVal(a.cells[colIndex]), bv = cellVal(b.cells[colIndex]);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return ascending ? av - bv : bv - av;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+  document.querySelectorAll('table.sortable').forEach(function(table) {
+    var headRow = table.tHead ? table.tHead.rows[0] : table.rows[0];
+    Array.prototype.forEach.call(headRow.cells, function(th, i) {
+      if (!th.hasAttribute('data-sort')) return;
+      var arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↕';
+      th.appendChild(document.createTextNode(' '));
+      th.appendChild(arrow);
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('role', 'button');
+      function activate() {
+        var ascending = th.getAttribute('aria-sort') !== 'ascending';
+        Array.prototype.forEach.call(headRow.cells, function(other) {
+          other.removeAttribute('aria-sort');
+          var a = other.querySelector('.sort-arrow');
+          if (a) a.textContent = '↕';
+        });
+        th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+        arrow.textContent = ascending ? '↑' : '↓';
+        sortRows(table, i, ascending);
+      }
+      th.addEventListener('click', activate);
+      th.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
+  });
+})();
+</script>
+<footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a><br>Results for the Straits Quay Duathlon Time Trial (SQDTT), one of the events PPK times
+· <a href="../data.html">About this data</a>
+<p class="foot-note">Help us time you accurately: call out your bib number clearly at every timing mat - start, splits, and finish.</p>
+</div></footer>
+</body>
+</html>
