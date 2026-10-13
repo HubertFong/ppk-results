@@ -9,12 +9,13 @@
 (function () {
   "use strict";
 
-  // Exactly the columns 0006_rides.sql and 0016 grant. select("*") is
+  // Exactly the columns 0006_rides.sql, 0016 and 0018 grant. select("*") is
   // refused, because created_by is not readable.
   var RIDE_SELECT =
     "id, title, meeting_point, meeting_map_link, meet_at, depart_at, " +
     "route_link, distance_m, climbing_m, regroup_policy, pace_note, " +
-    "capacity, signup_deadline, status, signup_type, required_fields";
+    "capacity, signup_deadline, status, signup_type, required_fields, " +
+    "difficulty, speed_low_kmh, speed_high_kmh";
 
   // Who can sign up (#110), as the ride list says it, and the details a
   // type 3 ride may ask for, as 0016 allows them.
@@ -44,6 +45,9 @@
     { column: "route_link", param: "p_route_link", kind: "text" },
     { column: "distance_km", param: "p_distance_m", kind: "km" },
     { column: "climbing_m", param: "p_climbing_m", kind: "integer" },
+    { column: "difficulty", param: "p_difficulty", kind: "integer" },
+    { column: "speed_low_kmh", param: "p_speed_low_kmh", kind: "integer" },
+    { column: "speed_high_kmh", param: "p_speed_high_kmh", kind: "integer" },
     { column: "regroup_policy", param: "p_regroup_policy", kind: "text" },
     { column: "pace_note", param: "p_pace_note", kind: "text" }
   ];
@@ -409,7 +413,7 @@
     inputFor("title").focus();
     clearStartRows();
     updateStartAddButton();
-    // A saved ride's points 2..10 load after the form is up.
+    // A saved ride's points 2 to 20 load after the form is up.
     startsReady = !editingRide;
     if (!editingRide) return;
     loadStarts(editingRide.id).then(function (res) {
@@ -454,7 +458,7 @@
         return;
       }
       (res.data || []).forEach(function (point) {
-        addStartRow({ place: point.place, map_link: point.map_link, start_at: null });
+        addStartRow({ kind: point.kind, place: point.place, map_link: point.map_link, start_at: null });
       });
       updateStartAddButton();
     });
@@ -508,6 +512,29 @@
     }
     if (new Date(deadlineInput.value).getTime() > new Date(meetAtInput.value).getTime()) {
       return { input: deadlineInput, message: "Sign-up must close by the meet-up time." };
+    }
+    return speedProblem();
+  }
+
+  // 0018's rules for the average speed, checked again by create_ride() and
+  // update_ride(): both ends or neither, whole km/h from 5 to 60, low first.
+  function speedProblem() {
+    var low = inputFor("speed_low_kmh");
+    var high = inputFor("speed_high_kmh");
+    if ((low.value === "") !== (high.value === "")) {
+      var empty = low.value === "" ? low : high;
+      return { input: empty, message: "Give both ends of the average speed, or neither." };
+    }
+    if (low.value === "") return null;
+    var bad = [low, high].filter(function (input) {
+      var speed = Number(input.value);
+      return !Number.isInteger(speed) || speed < 5 || speed > 60;
+    })[0];
+    if (bad) {
+      return { input: bad, message: "The average speed is a whole number of km/h from 5 to 60." };
+    }
+    if (Number(low.value) > Number(high.value)) {
+      return { input: low, message: "The low average speed can't be above the high one." };
     }
     return null;
   }
@@ -615,9 +642,15 @@
   // ---------------------------------------------------- extra start points
 
   // Point 1 is the ride's own meeting point, map link and meet-up time;
-  // points 2 to 10 live in session_starts (0009_ride_starts.sql), at most
-  // nine rows here.
-  var MAX_EXTRA_STARTS = 9;
+  // points 2 to 20 live in session_starts (0009, 0019), at most 19 rows
+  // here. Each has a kind (#137); riders choose among the starts.
+  var MAX_EXTRA_STARTS = 19;
+  var POINT_KINDS = [
+    { value: "start", label: "Start" },
+    { value: "regroup", label: "Regroup point" },
+    { value: "refuel", label: "Refuel stop" },
+    { value: "end", label: "End (time optional)" }
+  ];
 
   // A label wraps its own text and input, so a row needs no ids and every
   // label points at exactly the input it holds.
@@ -628,13 +661,24 @@
     return label;
   }
 
-  // One row in the order the points are numbered: place, map link, time,
-  // then Remove. `point` is null for a new row, or { place, map_link,
-  // start_at } from session_starts (start_at an ISO string or null). Returns
-  // the place input so the caller can focus it.
+  // One row in the order the points are numbered: kind, place, map link,
+  // time, then Remove. `point` is null for a new row, or { kind, place,
+  // map_link, start_at } from session_starts (start_at an ISO string or
+  // null). Returns the place input so the caller can focus it.
   function addStartRow(point) {
     var row = document.createElement("div");
     row.className = "start-row";
+
+    var kindSelect = document.createElement("select");
+    kindSelect.className = "start-kind";
+    POINT_KINDS.forEach(function (kind) {
+      var option = document.createElement("option");
+      option.value = kind.value;
+      option.textContent = kind.label;
+      kindSelect.appendChild(option);
+    });
+    kindSelect.value = (point && point.kind) || "start";
+    row.appendChild(startLabel("Type", kindSelect));
 
     var placeInput = document.createElement("input");
     placeInput.type = "text";
@@ -675,6 +719,7 @@
     var nodes = startsEl.querySelectorAll(".start-row");
     for (var i = 0; i < nodes.length; i += 1) {
       rows.push({
+        kind: nodes[i].querySelector(".start-kind"),
         place: nodes[i].querySelector(".start-place"),
         map: nodes[i].querySelector(".start-map"),
         time: nodes[i].querySelector(".start-time")
@@ -688,26 +733,37 @@
     startAddButton.hidden = startRowInputs().length >= MAX_EXTRA_STARTS;
   }
 
-  // Reads a ride's points 2..10 in point order. The caller keeps the promise
+  // Reads a ride's points 2 to 20 in point order. The caller keeps the promise
   // so it can act on the rows once they arrive.
   function loadStarts(rideId) {
     return client.from("session_starts")
-      .select("position, place, map_link, start_at")
+      .select("position, kind, place, map_link, start_at")
       .eq("session_id", rideId)
       .order("position", { ascending: true });
   }
 
-  // The first bad row in point order as { input, message }, or null. The
-  // database checks the same places and times again (set_ride_starts).
+  // The first problem as { input, message }, or null: a second end, then
+  // the first bad row in point order, as the server checks them. The
+  // database checks the same rules again (set_ride_starts, 0019): every
+  // point needs a place, every point but the end a time, and a ride has at
+  // most one end, as its last point.
   function firstStartProblem() {
     var rows = startRowInputs();
+    var ends = rows.filter(function (row) { return row.kind.value === "end"; });
+    if (ends.length > 1) {
+      return { input: ends[1].kind, message: "A ride has one end point." };
+    }
     for (var i = 0; i < rows.length; i += 1) {
       var number = i + 2;
+      var isEnd = rows[i].kind.value === "end";
       if (rows[i].place.value.trim() === "") {
-        return { input: rows[i].place, message: "Start point " + number + " needs a place." };
+        return { input: rows[i].place, message: "Point " + number + " needs a place." };
       }
-      if (rows[i].time.value === "") {
-        return { input: rows[i].time, message: "Start point " + number + " needs a time." };
+      if (!isEnd && rows[i].time.value === "") {
+        return { input: rows[i].time, message: "Point " + number + " needs a time." };
+      }
+      if (isEnd && i !== rows.length - 1) {
+        return { input: rows[i].kind, message: "The end must be the last point." };
       }
     }
     return null;
@@ -720,9 +776,11 @@
     return startRowInputs().map(function (row) {
       var mapLink = row.map.value.trim();
       return {
+        kind: row.kind.value,
         place: row.place.value.trim(),
         map_link: mapLink === "" ? null : mapLink,
-        start_at: new Date(row.time.value).toISOString()
+        // Only the end may have no time.
+        start_at: row.time.value === "" ? null : new Date(row.time.value).toISOString()
       };
     });
   }

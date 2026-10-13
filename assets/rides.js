@@ -10,12 +10,13 @@
 (function () {
   "use strict";
 
-  // Exactly the columns 0006_rides.sql grants. select("*") is refused,
+  // Exactly the columns 0006_rides.sql, 0016 and 0018 grant. select("*") is refused,
   // because created_by is not readable.
   var RIDE_SELECT =
     "id, title, meeting_point, meeting_map_link, meet_at, depart_at, " +
     "route_link, distance_m, climbing_m, regroup_policy, pace_note, " +
-    "capacity, signup_deadline, status, signup_type, required_fields";
+    "capacity, signup_deadline, status, signup_type, required_fields, " +
+    "difficulty, speed_low_kmh, speed_high_kmh";
 
   // The details a type 3 ride may ask for (0016), as a rider reads them.
   var DETAIL_TEXT = { bike_type: "bike type", gender: "gender" };
@@ -271,6 +272,43 @@
     return textBlock("div", "Climbing: " + ride.climbing_m + " m");
   }
 
+  // Difficulty 1 to 4 (#140), in Hubert's labels (Ascent D206, 9 Oct).
+  var DIFFICULTY_LABELS = { 1: "Easy", 2: "Moderate", 3: "Hard", 4: "Very hard" };
+
+  // "Difficulty: ★★ Moderate", or null for a ride with no level set.
+  function difficultyText(level) {
+    var label = DIFFICULTY_LABELS[level];
+    if (!label) return null;
+    return "Difficulty: " + "\u2605\u2605\u2605\u2605".slice(0, level) + " " + label;
+  }
+
+  // "Average speed: 25–28 km/h", or one number when both ends match.
+  function speedText(ride) {
+    if (ride.speed_low_kmh === null || ride.speed_low_kmh === undefined ||
+        ride.speed_high_kmh === null || ride.speed_high_kmh === undefined) return null;
+    var range = ride.speed_low_kmh === ride.speed_high_kmh
+      ? String(ride.speed_low_kmh) : ride.speed_low_kmh + "\u2013" + ride.speed_high_kmh;
+    return "Average speed: " + range + " km/h";
+  }
+
+  // The riding time from the distance at the lower speed (#140), so a new
+  // rider plans for the longer time. Rounded to the half hour, never under
+  // half an hour. Stops are not counted. An end point with a time is the
+  // organizer's own finish, which wins (Hubert, D206), so then there is none.
+  function rideTimeText(ride, points) {
+    var end = endPoint(points);
+    if (end && end.start_at) return null;
+    if (!ride.distance_m || !ride.speed_low_kmh) return null;
+    var halves = Math.max(1, Math.round(ride.distance_m / 1000 / ride.speed_low_kmh * 2));
+    var hours = Math.floor(halves / 2);
+    var time = (hours ? hours + " h" : "") + (hours && halves % 2 ? " " : "") + (halves % 2 ? "30 min" : "");
+    return "Ride time: about " + time + " riding, not counting stops";
+  }
+
+  function lineOf(text) {
+    return text ? textBlock("div", text) : null;
+  }
+
   // The regroup policies the organizer picks from (#136), with the meaning a
   // rider reads. Hubert approved the wording on 9 Oct (Ascent D206). Older
   // rides keep their free text, so a saved value is matched without case and
@@ -367,8 +405,33 @@
     return link;
   }
 
-  // One line per start point: the ride's own point (1) first, then each
-  // extra point in position order, with its own Map link. The lines are
+  // The kinds of point on a route (0019, #137). Rows saved before then
+  // have no other kind than start.
+  var POINT_LABELS = { regroup: "Regroup point", refuel: "Refuel stop", end: "Ends" };
+  var END_NOTE = "Riders go their own ways here.";
+
+  function isStart(point) {
+    return !point.kind || point.kind === "start";
+  }
+
+  function endPoint(points) {
+    return (points || []).filter(function (point) { return point.kind === "end"; })[0] || null;
+  }
+
+  // "Or start: <time> at <place>", "Refuel stop: <time> at <place>", or for
+  // the end "Ends: <time> at <place>. Riders go their own ways here." The
+  // end's time is optional (Hubert, D206): without it, "Ends at <place>."
+  function pointText(point) {
+    if (isStart(point)) return "Or start: " + formatTime(point.start_at) + " at " + point.place;
+    var label = POINT_LABELS[point.kind] || point.kind;
+    var text = point.start_at
+      ? label + ": " + formatTime(point.start_at) + " at " + point.place
+      : label + " at " + point.place;
+    return point.kind === "end" ? text + ". " + END_NOTE : text;
+  }
+
+  // One line per point: the ride's own point (1) first, then each extra
+  // point in route (position) order, with its own Map link. The lines are
   // siblings, so they come back as an array for the caller to append.
   function meetLine(ride, points) {
     var lines = [];
@@ -381,8 +444,7 @@
     }
     lines.push(line);
     (points || []).forEach(function (point) {
-      var also = textBlock("div",
-        "Or start: " + formatTime(point.start_at) + " at " + point.place);
+      var also = textBlock("div", pointText(point));
       var pointMap = externalLink(point.map_link, "Map");
       if (pointMap) {
         also.appendChild(document.createTextNode(" "));
@@ -441,14 +503,18 @@
 
   // -------------------------------------------------------------- sharing
 
-  // What the WhatsApp message carries: the ride's own words, the regroup
-  // policy with its meaning, and a link to the card, where the ride notes are
-  // (#136, #139). Where sign-up is optional, the message says so (#93).
-  function shareText(ride, url) {
+  // What the WhatsApp message carries: the ride's own words, where it ends
+  // and the finish time if set (#137), its difficulty and average speed
+  // (#140), the regroup policy with its meaning, and a link to the card,
+  // where the ride notes are (#136, #139). Where sign-up is optional, the
+  // message says so (#93).
+  function shareText(ride, url, points) {
     var optional = ride.capacity === null && ride.signup_type === "name";
-    var regroup = regroupText(ride.regroup_policy);
+    var end = endPoint(points);
+    var lines = [end ? pointText(end) : null, difficultyText(ride.difficulty), speedText(ride),
+      regroupText(ride.regroup_policy)].filter(function (line) { return line; });
     return ride.title + "\n" + formatTime(ride.meet_at) + " at " +
-      (ride.meeting_point || "") + "\n" + (regroup ? regroup + "\n" : "") +
+      (ride.meeting_point || "") + "\n" + lines.map(function (line) { return line + "\n"; }).join("") +
       "Ride notes are on the ride page.\n" + (optional ? "RSVP (optional): " : "Sign up: ") + url;
   }
 
@@ -457,7 +523,7 @@
   // first; the per-ride share page (r/<ride id>.html) is written only when
   // the site is published, so a HEAD asks whether it exists and, if so, it
   // becomes the link. A failed HEAD leaves the fallback in place.
-  function shareLink(ride) {
+  function shareLink(ride, points) {
     var link = document.createElement("a");
     link.className = "btn share-btn";
     link.textContent = "Share on WhatsApp";
@@ -465,12 +531,12 @@
     link.rel = "noopener noreferrer";
     var url = new URL("rides.html?ride=" + encodeURIComponent(ride.id),
       window.location.href).href;
-    link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, url));
+    link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, url, points));
     var sharePage = new URL("r/" + ride.id.toLowerCase() + ".html",
       window.location.href).href;
     fetch(sharePage, { method: "HEAD", cache: "no-store" }).then(function (res) {
       if (!res.ok) return;
-      link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, sharePage));
+      link.href = "https://wa.me/?text=" + encodeURIComponent(shareText(ride, sharePage, points));
     }).catch(function () {
       // Offline, or the page was never written: keep the card link.
     });
@@ -478,11 +544,11 @@
   }
 
   // The share link's own line, or null for a ride that cannot be shared.
-  function shareLine(ride) {
+  function shareLine(ride, points) {
     if (ride.status !== "published" && ride.status !== "postponed") return null;
     var line = document.createElement("div");
     line.className = "ride-share";
-    line.appendChild(shareLink(ride));
+    line.appendChild(shareLink(ride, points));
     return line;
   }
 
@@ -836,6 +902,9 @@
     appendDetail(item, routeLine(ride));
     appendDetail(item, distanceLine(ride));
     appendDetail(item, climbingLine(ride));
+    appendDetail(item, lineOf(difficultyText(ride.difficulty)));
+    appendDetail(item, lineOf(speedText(ride)));
+    appendDetail(item, lineOf(rideTimeText(ride, points)));
     appendDetail(item, regroupLine(ride));
     appendDetail(item, textLine("Pace", ride.pace_note));
     var closesLine = textBlock("div", "Sign-up closes: " + formatTime(ride.signup_deadline));
@@ -846,7 +915,7 @@
     appendDetail(item, rideNotesBlock(ride));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.
-    appendDetail(item, shareLine(ride));
+    appendDetail(item, shareLine(ride, points));
     // This card's messages, below its action line once that arrives.
     var noteEl = document.createElement("div");
     noteEls[ride.id] = noteEl;
@@ -864,7 +933,8 @@
         taken = Number(res.data || 0);
       }
       if (taken !== null) item.insertBefore(placesLine(ride, taken), closesLine);
-      var actions = actionLine(ride, signupStatus, taken, points, chosen);
+      // Riders choose among the starts only; choose_start() refuses the rest.
+      var actions = actionLine(ride, signupStatus, taken, points.filter(isStart), chosen);
       if (actions) item.insertBefore(actions, noteEl);
       if (cardNote && cardNote.rideId === ride.id && cardNote.scroll) notedItem = item;
       placesPending -= 1;
@@ -978,7 +1048,7 @@
         // choose_start() refuses any point it does not know.
         var ids = rides.map(function (ride) { return ride.id; });
         client.from("session_starts")
-          .select("session_id, position, place, map_link, start_at")
+          .select("session_id, position, kind, place, map_link, start_at")
           .in("session_id", ids)
           .order("position", { ascending: true })
           .then(function (pointsRes) {

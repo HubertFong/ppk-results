@@ -332,10 +332,10 @@ footer { background: var(--navy); color: #cfd3ea; }
       <label for="ride-meet_at">Meet-up time</label>
       <input type="datetime-local" id="ride-meet_at" required>
       <fieldset id="ride-starts-fieldset">
-        <legend>Other start points</legend>
-        <p class="note">Optional. For riders who join along the route. Riders choose their start when they sign up.</p>
+        <legend>Other points on the route</legend>
+        <p class="note">Optional, in route order. Starts are for riders who join along the route; riders choose their start when they sign up. Regroup points, refuel stops and the end show on the ride page. Every point needs a time except the end, which goes last.</p>
         <div id="ride-starts"></div>
-        <button type="button" id="ride-start-add" class="btn">Add a start point</button>
+        <button type="button" id="ride-start-add" class="btn">Add a point</button>
       </fieldset>
       <label for="ride-depart_at">Departure time (optional)</label>
       <input type="datetime-local" id="ride-depart_at">
@@ -368,6 +368,19 @@ footer { background: var(--navy); color: #cfd3ea; }
       <input type="number" id="ride-distance_km" min="0.1" step="0.1">
       <label for="ride-climbing_m">Climbing (m)</label>
       <input type="number" id="ride-climbing_m" min="0" step="1">
+      <label for="ride-difficulty">Difficulty</label>
+      <select id="ride-difficulty">
+        <option value="">Not set</option>
+        <option value="1">1 Easy</option>
+        <option value="2">2 Moderate</option>
+        <option value="3">3 Hard</option>
+        <option value="4">4 Very hard</option>
+      </select>
+      <label for="ride-speed_low_kmh">Average speed from (km/h, optional)</label>
+      <input type="number" id="ride-speed_low_kmh" min="5" max="60" step="1">
+      <label for="ride-speed_high_kmh">Average speed to (km/h)</label>
+      <input type="number" id="ride-speed_high_kmh" min="5" max="60" step="1">
+      <p class="note">For example 25 to 28. The ride page works out the riding time from the distance and the lower speed.</p>
       <label for="ride-regroup_policy">Regroup policy</label>
       <select id="ride-regroup_policy">
         <option value="">Not set</option>
@@ -487,7 +500,7 @@ footer { background: var(--navy); color: #cfd3ea; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
         integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
         crossorigin="anonymous"></script>
-<script src="assets/organize.js?v=8a37986cc173"></script>
+<script src="assets/organize.js?v=4cb173e1f182"></script>
 
 </main>
 <script>
