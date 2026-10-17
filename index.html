@@ -289,6 +289,13 @@ footer { background: var(--navy); color: #cfd3ea; }
   .head-inner { padding-top: 18px; }
   nav { width: 100%; margin-left: 0; }
 }
+
+.nav-away { color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 18px;
+  letter-spacing: .06em; text-transform: uppercase; border: 2px solid var(--orange);
+  border-radius: 8px; padding: 6px 12px; min-height: 44px; display: inline-flex;
+  align-items: center; }
+.nav-away:hover, .nav-away.on { text-decoration: none; background: var(--orange); }
+@media (max-width: 620px) { .nav-away { display: none; } }
 </style>
 </head>
 <body>
@@ -298,6 +305,7 @@ footer { background: var(--navy); color: #cfd3ea; }
       <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
     </a>
     <nav><a href="index.html" class="on">Home</a><a href="rides.html">Group rides</a><a href="sqdtt.html">SQDTT results</a><a href="account.html">Account</a></nav>
+    <a class="nav-away" href="trips/heritage-ride-taiping-2026.html">Taiping trip</a>
     <div class="search-wrap">
       <input type="text" id="athlete-search" placeholder="Find athlete..." autocomplete="off" aria-label="Search for an athlete">
       <ul id="search-results" class="search-results" hidden></ul>
@@ -308,6 +316,27 @@ footer { background: var(--navy); color: #cfd3ea; }
 <p class="kicker">Pedal Penangkia (PPK)</p>
 <h1>Ride with PPK</h1>
 <p class="sub">PPK is a cycling club in Penang. We ride together, and we time the Straits Quay Duathlon Time Trial (SQDTT). Ride with Passion. Ride with Power. Ride to Create Memories.</p>
+<style>
+.trip-home { background: #fff; border-radius: 12px; padding: 16px 18px; margin-top: 12px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); border-top: 6px solid var(--orange); }
+.trip-home h2 { font-size: 28px; margin: 2px 0 6px; }
+.trip-home-kicker { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--navy); margin: 0; }
+.trip-home .ride-when { color: #4f5268; font-weight: 600; margin: 4px 0 0; }
+.trip-home-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0;
+  margin: 10px 0 0; }
+.trip-home-chips li { border: 1.5px solid #7f849b; border-radius: 20px; padding: 2px 12px;
+  font-size: 14px; font-weight: 600; }
+.trip-home .btn { min-height: 44px; display: inline-flex; align-items: center; }
+</style>
+<aside class="trip-home" id="home-trip" aria-labelledby="home-trip-title">
+<p class="trip-home-kicker">Away trip</p>
+<p class="ride-when">Sun 25 Oct · 07:00 start</p>
+<h2 id="home-trip-title">Heritage Ride Taiping</h2>
+<p>It&#x27;s always better to ride with PPK: carpools from Penang, one meeting point, and makan after.</p>
+<ul class="trip-home-chips"><li>90 km · 60 km · 20 km</li><li>Kit collection to be confirmed</li></ul>
+<div class="home-actions"><a class="btn" href="trips/heritage-ride-taiping-2026.html">Trip details</a></div>
+</aside>
 <section class="page-section" id="home-rides-section">
 <h2 class="subhead">Upcoming group rides</h2>
 <div id="home-rides" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW">
