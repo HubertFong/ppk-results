@@ -30,6 +30,7 @@
 .trip-away { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px;
   line-height: 1.2; text-transform: uppercase; letter-spacing: .02em; margin: 12px 0 0; }
 .trip-hero p.trip-intro { color: #e6e8f3; margin: 10px 0 0; }
+.trip-hero p.trip-updated { color: #cfd3ea; font-size: 14px; margin: 12px 0 0; }
 .trip-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0;
   list-style: none; }
 .trip-chips li { border: 1.5px solid #cfd3ea; border-radius: 20px; padding: 3px 12px;
@@ -37,29 +38,63 @@
 .trip-band { height: 14px; background: var(--navy) url("ppk-pattern-2025-v1.png") center 40% / cover no-repeat;
   border-radius: 0 0 14px 14px; margin-bottom: 8px; }
 @media (min-width: 960px) { .trip-band { height: 18px; } }
-.trip a.tap { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
 .trip .btn { min-height: 44px; display: inline-flex; align-items: center; }
 .trip-hero .btn { background: #fff; color: var(--navy); }
 .trip-hero .btn.btn-accent { background: var(--orange); color: #fff; }
 .trip-hero .btn.btn-whatsapp { background: #25D366; color: #0B2B16; }
+.trip .btn-line { background: #fff; color: var(--navy); border: 1.5px solid var(--navy); }
+.trip .btn-line:hover { background: var(--paper); }
+.trip .btn-small { font-size: 15px; padding: 0 14px; }
+.trip .btn-accent { background: var(--orange); color: #fff; }
+.trip .btn-block { display: flex; justify-content: center; width: 100%; }
+.trip-jump { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 4px 0 0; }
+.trip .trip-jump a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--navy); text-decoration: none;
+  border-bottom: 2px solid transparent; }
+.trip .trip-jump a:hover { border-color: var(--orange); }
 .trip-card { background: #fff; border-radius: 12px; padding: 18px 18px 16px; margin: 16px 0 0;
   box-shadow: 0 1px 4px rgba(16,32,96,.10); }
 .trip-card h2 { margin: 0 0 10px; }
-.trip-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: var(--navy);
-  margin: 14px 0 6px; }
-.trip-facts { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.trip-facts b { display: block; }
-.trip-facts small, .trip-src { display: block; color: #4f5268; font-size: 14px; }
+.trip-day { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin: 0 0 12px; }
+.trip-card .trip-day h2 { margin: 0; }
+.trip-day span, .trip-kt h3, .trip-sub { font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.trip-day span { font-size: 16px; color: #4f5268; }
+.trip-kt { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.trip-kt h3 { font-size: 17px; color: var(--navy); margin: 0 0 8px; }
+.trip-kt ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.trip-kt li { display: grid; grid-template-columns: 52px 1fr; gap: 6px; font-size: 15px;
+  line-height: 1.35; }
+.trip-kt .at, .trip-steps .at { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  color: var(--navy); text-transform: uppercase; }
+.trip-kt .at { font-size: 16px; }
+.trip-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.trip-steps li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; }
+.trip-steps .at { font-size: 18px; line-height: 1.25; }
+.trip-steps b { display: block; }
+.trip-steps p { margin: 2px 0 0; font-size: 15px; color: #4f5268; }
+.trip-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+.trip-warn, .trip-note { border-radius: 10px; padding: 12px 14px; margin: 16px 0 0; }
+.trip-warn { background: rgba(250,182,21,.16); border-left: 6px solid var(--mustard); }
+.trip-note { background: #dee0e9; }
+.trip-warn b, .trip-note b { display: block; }
+.trip-sub { font-size: 17px; color: var(--navy); margin: 16px 0 8px; }
+.trip-card .trip-sub:first-of-type { margin-top: 0; }
+.trip ul.trip-list { padding-left: 20px; margin: 0; }
+.trip-rows { list-style: none; padding: 0; margin: 0; border: 1px solid #e3e5ee; border-radius: 10px; }
+.trip-rows li { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; }
+.trip-rows li + li { border-top: 1px solid #e3e5ee; }
+.trip-rows b, .trip-contact b { display: block; }
+.trip-rows small, .trip-src { display: block; color: #4f5268; font-size: 14px; }
 .trip-src { margin-top: 12px; }
+.trip-contact { padding: 12px 0 0; margin-top: 12px; border-top: 1px solid #e3e5ee; }
+.trip-contact p { margin: 2px 0 0; font-size: 15px; color: #4f5268; }
+.trip-muted { color: #4f5268; font-size: 15px; margin: 8px 0 0; }
 .tbc { display: inline-block; border: 1.5px solid #7f849b; border-radius: 20px;
   padding: 0 10px; font-size: 14px; font-weight: 600; color: #1c1c28; margin-left: 4px; }
-.trip-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.trip-steps li { display: grid; grid-template-columns: 72px 1fr; gap: 12px; }
-.trip-steps .at { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px;
-  color: var(--navy); text-transform: uppercase; }
-.trip-note { background: #dee0e9; border-radius: 10px; padding: 12px 14px; margin: 12px 0 0; }
-.trip-note b { display: block; }
-.trip ul.trip-list { padding-left: 20px; margin: 0; }
 .trip-faq dt { font-weight: 600; margin-top: 12px; }
 .trip-faq dd { margin: 2px 0 0; }
 </style>
@@ -370,66 +405,91 @@ footer { background: var(--navy); color: #cfd3ea; }
 <main>
 <div class="trip">
 <section class="trip-hero">
-<p class="trip-kicker">PPK away trip · Sun 25 Oct</p>
+<p class="trip-kicker">PPK away trip · Sat 24 to Sun 25 Oct</p>
 <h1>Heritage Ride <em>Taiping</em></h1>
 <p class="trip-away">It&#x27;s always better to ride with PPK</p>
-<p class="trip-intro">PPK members travel up together: carpools from Penang, one meeting point at the start, and a meal after the ride.</p>
+<p class="trip-intro">Drive up on Saturday, collect your race pack, stay the night. Race on Sunday morning, then makan.</p>
 <ul class="trip-chips" aria-label="Distances"><li>90 km</li><li>65 km</li><li>17 km fun ride</li></ul>
 <div class="home-actions"><a class="btn btn-accent" href="../rides.html">See trip listings</a><a class="btn btn-whatsapp" href="https://wa.me/?text=PPK%20%40%20Heritage%20Ride%20Taiping%202026%3A%20https%3A%2F%2Fhubertfong.github.io%2Fppk-results%2Ftrips%2Fheritage-ride-taiping-2026.html">Share on WhatsApp</a></div>
+<p class="trip-updated">Updated Sun 18 Oct</p>
 </section>
 <div class="trip-band" aria-hidden="true"></div>
-<section class="trip-card" id="event">
-<h2>The event</h2>
-<ul class="trip-facts">
-<li><b>Sun 25 Oct 2026 · 06:45 start</b><small>Entries closed on 17 September 2026. Riders without an entry are not allowed on the routes. There is no sign-up for the event on this page.</small></li>
-<li><b>Dataran Warisan Taiping, Perak</b> <a class="tap" href="https://www.google.com/maps/search/?api=1&amp;query=Dataran%20Warisan%20Taiping%2C%20Perak">Map</a><small>Start and finish</small></li>
-<li><b>90 km and 65 km races · 17 km fun ride</b><small>Flag-off: 90 km 06:45 · 65 km 07:10 · 17 km 07:25</small><small>Cut-off: 90 km 5 hours · 65 km 3.5 hours</small></li>
-<li><b>90 km route: 90.0 km and 383 m of climbing</b> <a class="tap" href="heritage-ride-taiping-2026-90km.gpx" download>Download the GPX</a><small>Load it on your bike computer before the ride.</small></li>
-<li><b>On the day</b><small>Arrive by 05:30. Riders gather at the starting arch at 06:30 for the technical briefing. Prizes at 11:00, the lucky draw at 11:30, and the event ends at 12:00.</small></li>
-<li><b>Kit collection</b><small>Sat 24 Oct only, 11:00 to 18:00, at Taiping Mall, Level G concourse. Bring your IC and your confirmation slip (a soft copy is fine). To collect for someone else, bring their completed authorisation form from the organiser.</small></li>
-<li><b>Road closures</b><small>Around Dataran Warisan Taiping, from Dewan MPT to Public Bank from Sat 24 Oct at 17:00, and from Dewan MPT to Kedai Elektrik Singer from Sat 24 Oct at 23:00, both until Sun 25 Oct at 12:00. Jalan Taming Sari is closed from 07:00 to 12:00 on Sunday.</small></li>
-</ul>
-<p class="trip-src">Run by <a href="https://www.facebook.com/GoSportzEvent/">GoSportz, with Kelab Berbasikal Elit and the office of the Member of Parliament for Taiping</a>. PPK does not run this event.</p>
-<p class="trip-src">Checked 17 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0Knnib56T1KiZBsRFSVZbRHVdYYrrYmS1Tgg6Q176YRZvfwMbVZUuj8QUg5d1zoB8l" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0MNdmXWpumLLA9L4SHr5Gh41u8Tm7riJnGEAbfyGCYCqKdbjy5PEWDidjAt8MPBxWl" aria-label="facebook.com source 2">2</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0ytsfqhJgG35GwHZgueSPhbGzirk5EQ22mNZPXnZTMFto2PeuJL79z3mMt4qUZKvdl" aria-label="facebook.com source 3">3</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid02gGLbjfBafSsk71GP4eBphQwGxyK1rzwfa7x3iJPi2SvvS3VshkcehG89rtnt5zmVl" aria-label="facebook.com source 4">4</a>, <a href="https://www.facebook.com/photo/?fbid=1692699242856838&amp;set=a.496464139147027" aria-label="facebook.com source 5">5</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0LiC8nBAEyg2nVUEA33zWJy2R7hhADotAgZYJt7vxkWAkb5pyAVALgjgWoHhCpVr7l" aria-label="facebook.com source 6">6</a>), <a href="https://www.utusan.com.my/terkini/2026/07/heritage-ride-taiping-sasar-2000-peserta/">utusan.com.my</a>, <a href="https://www.sinarharian.com.my/article/790300/">sinarharian.com.my</a>, <a href="https://allevents.in/taiping-pk">allevents.in</a>.</p>
+<nav class="trip-jump" aria-label="On this page"><a href="#key-times">Key times</a><a href="#saturday">Saturday</a><a href="#sunday">Sunday</a><a href="#ride">The ride</a><a href="#food">Food</a><a href="#emergency">Emergency</a></nav>
+<section class="trip-card" id="key-times">
+<h2>Key times</h2>
+<div class="trip-kt"><div><h3>Sat 24</h3><ul><li><span class="at"><span aria-hidden="true">–</span></span><span>Convoy leaves <span class="tbc">To be confirmed</span></span></li><li><span class="at">17:00</span><span>At Taiping Mall</span></li><li><span class="at"><span aria-hidden="true">–</span></span><span>Dinner <span class="tbc">To be confirmed</span></span></li></ul></div><div><h3>Sun 25</h3><ul><li><span class="at">05:30</span><span>At the start</span></li><li><span class="at">06:45</span><span>First flag-off</span></li><li><span class="at"><span aria-hidden="true">–</span></span><span>Makan <span class="tbc">To be confirmed</span></span></li></ul></div></div>
 </section>
-<section class="trip-card" id="plan">
-<h2>PPK's plan</h2>
+<div class="trip-warn" role="note"><b>Race packs: Saturday only, until 6 pm</b>Be at Taiping Mall by 5 pm. Each rider collects their own. No pack, no race.</div>
+<section class="trip-card" id="saturday">
+<div class="trip-day"><h2>Saturday</h2><span>24 Oct</span></div>
 <ol class="trip-steps">
-<li><span class="at">Sat 24</span><span>Kit collection: Sat 24 Oct only, 11:00 to 18:00, at Taiping Mall, Level G concourse. Bring your IC and your confirmation slip (a soft copy is fine). To collect for someone else, bring their completed authorisation form from the organiser. Overnight stay <span class="tbc">To be confirmed</span>.</span></li>
-<li><span class="at">Sun 25</span><span>Convoy leaves Penang <span class="tbc">Time to be confirmed</span>. Pickup points: <span class="tbc">To be confirmed</span>.</span></li>
-<li><span class="at">Before</span><span>PPK meets at the start: <span class="tbc">To be confirmed</span>. Group photo before the start.</span></li>
-<li><span class="at">06:45</span><span>Flag-off: 90 km 06:45 · 65 km 07:10 · 17 km 07:25, at Dataran Warisan Taiping, Perak.</span></li>
-<li><span class="at">After</span><span>PPK meets at the finish: <span class="tbc">To be confirmed</span>. Headcount, then the meal.</span></li>
+<li><span class="at"><span aria-hidden="true">–</span></span><div><b>Convoy leaves Penang <span class="tbc">Time to be confirmed</span></b><p>From <span class="tbc">To be confirmed</span>. Rest stop at <span class="tbc">To be confirmed</span>. Your car is a listing on <a href="../rides.html">Group rides</a>, titled "Taiping trip · Car 1 · …".</p><div class="trip-acts"><a class="btn btn-line btn-small" href="../rides.html">See the cars</a></div></div></li>
+<li><span class="at">By 17:00</span><div><b>Race pack, Taiping Mall</b><p>Sat 24 Oct only, 11:00 to 18:00, at Taiping Mall, Level G concourse. Bring your IC and your confirmation slip (a soft copy is fine). To collect for someone else, bring their completed authorisation form from the organiser.</p><div class="trip-acts"><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Taiping%20Mall%2C%20Taiping%2C%20Perak" aria-label="Map: Taiping Mall, Taiping, Perak">Map</a></div></div></li>
+<li><span class="at">Then</span><div><b>Check in</b><p>At your own hotel. Keep your bike in your room.</p></div></li>
+<li><span class="at"><span aria-hidden="true">–</span></span><div><b>Dinner together <span class="tbc">Time to be confirmed</span></b><p><span class="tbc">To be confirmed</span>. Sign up on <a href="../rides.html">Group rides</a> so we keep a table.</p></div></li>
+<li><span class="at">Night</span><div><b>Early night</b><p>Buy breakfast for 4:30 am. Charge your lights.</p></div></li>
 </ol>
-<h3>Getting there</h3>
-<p>Each car is a listing on <a href="../rides.html">Group rides</a>, titled <b>"Taiping trip · Car 1 · …"</b>. Book a seat with your PPK account. Pickup points are public places, never a member's home.</p>
-<div class="trip-note" role="note"><b>Share tolls and petrol with your driver.</b>Cars are arranged between members. PPK's ride terms cover the cycling, not the drive.</div>
+<div class="trip-note" role="note"><b>Share tolls and petrol with your driver.</b>Cars are arranged between members. PPK's ride terms cover the cycling, not the drive. Pickup points are public places, never a member's home.</div>
+<p class="trip-src">Checked 18 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0ytsfqhJgG35GwHZgueSPhbGzirk5EQ22mNZPXnZTMFto2PeuJL79z3mMt4qUZKvdl" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0Knnib56T1KiZBsRFSVZbRHVdYYrrYmS1Tgg6Q176YRZvfwMbVZUuj8QUg5d1zoB8l" aria-label="facebook.com source 2">2</a>).</p>
 </section>
-<section class="trip-card" id="race-day">
-<h2>Race day</h2>
-<h3>Bring</h3>
-<ul class="trip-list"><li>Helmet, and front and rear lights</li><li>Your bib and ID</li><li>Spare tube, pump and tools</li><li>Water and food for your distance</li><li>PPK kit for the group photo</li></ul>
-<h3>The organiser's rules</h3>
-<p>Your rider bib and bike flag number are compulsory at check-in. On the 90 and 65 km, fix the bike bib with the timing chip to the front of the bike, 1 cm clear of any carbon. Wear a helmet and gloves. The 90 and 65 km routes split at the 4.8 km junction: follow the route signs and the marshals.</p>
+<section class="trip-card" id="sunday">
+<div class="trip-day"><h2>Sunday</h2><span>25 Oct · race day</span></div>
+<ol class="trip-steps">
+<li><span class="at">04:30</span><div><b>Wake up and eat</b><p>Hotel breakfast won't be open yet.</p></div></li>
+<li><span class="at">05:30</span><div><b>At the start</b><p>Dataran Warisan Taiping, Perak. Park at <span class="tbc">To be confirmed</span>.</p><div class="trip-acts"><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Dataran%20Warisan%20Taiping%2C%20Perak" aria-label="Map: start: Dataran Warisan Taiping, Perak">Map: start</a></div></div></li>
+<li><span class="at"><span aria-hidden="true">–</span></span><div><b>PPK meets <span class="tbc">Time to be confirmed</span></b><p><span class="tbc">To be confirmed</span>. Group photo.</p></div></li>
+<li><span class="at">06:30</span><div><b>Briefing at the starting arch</b></div></li>
+<li><span class="at">06:45</span><div><b>Flag-off</b><p>90 km 06:45 · 65 km 07:10 · 17 km 07:25</p></div></li>
+<li><span class="at">After</span><div><b>PPK meets at the finish</b><p><span class="tbc">To be confirmed</span>. Headcount before anyone leaves.</p></div></li>
+<li><span class="at">11:00</span><div><b>Prizes</b></div></li>
+<li><span class="at">11:30</span><div><b>Lucky draw</b></div></li>
+<li><span class="at">12:00</span><div><b>The event ends</b></div></li>
+<li><span class="at"><span aria-hidden="true">–</span></span><div><b>Makan <span class="tbc">Time to be confirmed</span></b><p><span class="tbc">To be confirmed</span>. Sign up on <a href="../rides.html">Group rides</a>.</p></div></li>
+<li><span class="at">Later</span><div><b>See Taiping, then home</b><p>Optional. PPK's picks are under Food and sightseeing.</p></div></li>
+</ol>
+<p class="trip-src">Checked 17 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0MNdmXWpumLLA9L4SHr5Gh41u8Tm7riJnGEAbfyGCYCqKdbjy5PEWDidjAt8MPBxWl" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0Knnib56T1KiZBsRFSVZbRHVdYYrrYmS1Tgg6Q176YRZvfwMbVZUuj8QUg5d1zoB8l" aria-label="facebook.com source 2">2</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0ytsfqhJgG35GwHZgueSPhbGzirk5EQ22mNZPXnZTMFto2PeuJL79z3mMt4qUZKvdl" aria-label="facebook.com source 3">3</a>), <a href="https://www.utusan.com.my/terkini/2026/07/heritage-ride-taiping-sasar-2000-peserta/">utusan.com.my</a>, <a href="https://www.sinarharian.com.my/article/790300/">sinarharian.com.my</a>, <a href="https://allevents.in/taiping-pk">allevents.in</a>.</p>
+</section>
+<section class="trip-card" id="ride">
+<h2>The ride</h2>
+<ul class="trip-rows"><li><div><b>90 km race</b><small>Flag-off 06:45</small><small>Cut-off 5 hours</small></div></li><li><div><b>65 km race</b><small>Flag-off 07:10</small><small>Cut-off 3.5 hours</small></div></li><li><div><b>17 km fun ride</b><small>Flag-off 07:25</small></div></li></ul>
+<ul class="trip-list" style="margin-top:12px"><li>Ride your own pace. PPK regroups at the finish, not on the road.</li></ul>
+<div class="trip-warn" role="note"><b>Official GPX: to be confirmed</b>The file below is from Garmin Connect, not the organiser, and may differ from the race route. Have the organiser&#x27;s GPX? Please share it in the PPK WhatsApp group.</div>
+<ul class="trip-rows" style="margin-top:12px"><li><div><b>90 km route file (unofficial)</b><small>90.0 km · 383 m of climbing</small></div><a class="btn btn-line btn-small" href="heritage-ride-taiping-2026-90km.gpx" download>Download</a></li></ul>
+<p class="trip-src">Checked 17 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0Knnib56T1KiZBsRFSVZbRHVdYYrrYmS1Tgg6Q176YRZvfwMbVZUuj8QUg5d1zoB8l" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid02gGLbjfBafSsk71GP4eBphQwGxyK1rzwfa7x3iJPi2SvvS3VshkcehG89rtnt5zmVl" aria-label="facebook.com source 2">2</a>).</p>
+</section>
+<section class="trip-card" id="before">
+<h2>Before you go</h2>
+<p class="trip-sub">The organiser's rules</p>
+<ul class="trip-list"><li>Your rider bib and bike flag number are compulsory at check-in.</li><li>On the 90 and 65 km, fix the bike bib with the timing chip to the front of the bike, 1 cm clear of any carbon.</li><li>Wear a helmet and gloves.</li><li>The 90 and 65 km routes split at the 4.8 km junction: follow the route signs and the marshals.</li></ul>
 <p class="trip-src">Checked 17 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid02LAdX7cnK64MXjSitQL2tYQF7tiw4XZnPe9BajnGpoueSnemdZWrGoNzkJPmUZnYql" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid02gGLbjfBafSsk71GP4eBphQwGxyK1rzwfa7x3iJPi2SvvS3VshkcehG89rtnt5zmVl" aria-label="facebook.com source 2">2</a>).</p>
-<h3>The 90 km and 65 km are races</h3>
-<p>Ride your own race. PPK regroups at the finish meeting point, not on the road.</p>
+<p class="trip-sub">Bring</p>
+<ul class="trip-list"><li>Helmet, gloves, front and rear lights (it&#x27;s dark at the start)</li><li>IC, confirmation slip, bib</li><li>Spare tube, pump and tools</li><li>Water and food for your distance</li><li>A rain jacket</li><li>Breakfast for 4:30 am</li><li>PPK kit for the group photo</li></ul>
 </section>
-<section class="trip-card" id="meals">
-<h2>Meals and sightseeing</h2>
-<ul class="trip-facts">
-<li><b>Makan after the ride</b> <span class="tbc">To be confirmed</span><small>Sign up on <a href="../rides.html">Group rides</a> so we can book a table. Family welcome.</small></li>
-<li><b>Sightseeing</b> <span class="tbc">To be confirmed</span><small>Optional, before the drive home.</small></li>
-</ul>
+<section class="trip-card" id="closures">
+<h2>Road closures</h2>
+<ul class="trip-rows"><li><div><b>Dewan MPT to Public Bank</b><small>Sat 24 Oct 17:00 to Sun 25 Oct 12:00</small></div></li><li><div><b>Dewan MPT to Kedai Elektrik Singer</b><small>Sat 24 Oct 23:00 to Sun 25 Oct 12:00</small></div></li><li><div><b>Jalan Taming Sari</b><small>Sun 25 Oct 07:00 to 12:00</small></div></li></ul>
+<p class="trip-muted">Park outside these roads.</p>
+<p class="trip-src">Checked 17 Oct 2026 against <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0MNdmXWpumLLA9L4SHr5Gh41u8Tm7riJnGEAbfyGCYCqKdbjy5PEWDidjAt8MPBxWl">facebook.com</a>.</p>
+</section>
+<section class="trip-card" id="food">
+<h2>Food and sightseeing</h2>
+<p class="trip-muted" style="margin-top:0">PPK&#x27;s suggestions, not the organiser&#x27;s. Check the hours before you go.</p>
+<p class="trip-sub">Saturday dinner</p>
+<ul class="trip-rows"><li><div><b>Larut Matang Hawker Centre</b><small>Many stalls, no booking</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Larut%20Matang%20Hawker%20Centre%2C%20Jalan%20Iskandar%2C%20Taiping" aria-label="Map: Larut Matang Hawker Centre, Jalan Iskandar, Taiping">Map</a></li><li><div><b>MJ&#x27;s Cuisine</b><small>Sit-down; book a table</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=MJ%27s%20Cuisine%2C%2036A%20Jalan%20Kota%2C%20Taiping" aria-label="Map: MJ&#x27;s Cuisine, 36A Jalan Kota, Taiping">Map</a></li></ul>
+<p class="trip-sub">Sunday makan</p>
+<ul class="trip-rows"><li><div><b>Yat Sun Restaurant</b><small>Hainanese chicken chop</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Yat%20Sun%20Restaurant%2C%2063%20Jalan%20Pasar%2C%20Taiping" aria-label="Map: Yat Sun Restaurant, 63 Jalan Pasar, Taiping">Map</a></li><li><div><b>Tai Chien</b><small>Curry mee; until 3:30 pm</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Tai%20Chien%2C%2079%20Jalan%20Pasar%2C%20Taiping" aria-label="Map: Tai Chien, 79 Jalan Pasar, Taiping">Map</a></li><li><div><b>Ansari Famous Cendol</b><small>Dessert</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Ansari%20Famous%20Cendol%2C%20Jalan%20Barrack%2C%20Taiping" aria-label="Map: Ansari Famous Cendol, Jalan Barrack, Taiping">Map</a></li></ul>
+<p class="trip-sub">See</p>
+<ul class="trip-rows"><li><div><b>Taiping Lake Gardens</b><small>The Raintree Walk; easy on tired legs</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Taiping%20Lake%20Gardens%2C%20Taiping" aria-label="Map: Taiping Lake Gardens, Taiping">Map</a></li><li><div><b>Zoo Taiping</b><small>Some bibs hold a free ticket</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Zoo%20Taiping%2C%20Taiping" aria-label="Map: Zoo Taiping, Taiping">Map</a></li><li><div><b>Perak Museum</b><small>Indoors, if it rains</small></div><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Perak%20Museum%2C%20Taiping" aria-label="Map: Perak Museum, Taiping">Map</a></li></ul>
 </section>
 <section class="trip-card" id="emergency">
 <h2>If something goes wrong</h2>
-<ul class="trip-facts">
-<li><b>Emergency: <a class="tap" href="tel:999">999</a></b><small>Then tell the race marshals and the PPK group.</small></li>
-<li><b>Race HQ</b> <span class="tbc">To be confirmed</span></li>
-<li><b>Nearest hospital</b> <span class="tbc">To be confirmed</span></li>
-</ul>
-<p class="trip-src">Checked 17 Oct 2026 against <a href="https://www.malaysia.gov.my/en/topics/mers-999-emergency-line">malaysia.gov.my</a>.</p>
+<a class="btn btn-accent btn-block" href="tel:999">Call 999</a>
+<p class="trip-muted">Then tell a marshal and the PPK group.</p>
+<div class="trip-warn" role="note"><b>Jalan Taming Sari is closed 7 am to 12 pm on Sunday</b>Call 999 or tell a marshal. Don&#x27;t drive a hurt rider through closed roads.</div>
+<div class="trip-contact"><b>Race HQ</b><p>At the start and finish, Dataran Warisan Taiping.</p><div class="trip-acts"><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Dataran%20Warisan%20Taiping%2C%20Perak" aria-label="Map: Dataran Warisan Taiping, Perak">Map</a></div></div>
+<div class="trip-contact"><b>The organiser: GoSportz</b><p>03-9057 0222 · enquiry@gosportz.my</p><div class="trip-acts"><a class="btn btn-line btn-small" href="https://m.me/GoSportzEvent">Message GoSportz on Facebook</a><a class="btn btn-line btn-small" href="tel:+60390570222">Call</a><a class="btn btn-line btn-small" href="mailto:enquiry@gosportz.my">Email</a></div></div>
+<div class="trip-contact"><b>Nearest hospital</b><p>Hospital Taiping, Jalan Taming Sari, 34000 Taiping. The government hospital, with an emergency department.</p><div class="trip-acts"><a class="btn btn-line btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=Hospital%20Taiping%2C%20Jalan%20Taming%20Sari%2C%20Taiping" aria-label="Map: Hospital Taiping, Jalan Taming Sari, Taiping">Map</a><a class="btn btn-line btn-small" href="tel:+6058204000">Call 05-8204000</a></div></div>
+<p class="trip-src">Checked 18 Oct 2026 against <a href="https://www.malaysia.gov.my/en/topics/mers-999-emergency-line">malaysia.gov.my</a>, facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0MNdmXWpumLLA9L4SHr5Gh41u8Tm7riJnGEAbfyGCYCqKdbjy5PEWDidjAt8MPBxWl" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/about" aria-label="facebook.com source 2">2</a>), <a href="https://jknperak.moh.gov.my/htaiping/v2/index.php/hubungi-kami/alamat-lokasi">jknperak.moh.gov.my</a>.</p>
 </section>
 <section class="trip-card" id="faq">
 <h2>Questions</h2>
@@ -439,15 +499,12 @@ footer { background: var(--navy); color: #cfd3ea; }
 <dt>Can I still enter?</dt>
 <dd>Entries closed on 17 September 2026. Riders without an entry are not allowed on the routes.</dd>
 <dt>Can family come?</dt>
-<dd>Yes, in the cars and at the meal. Arrange their seats with your driver.</dd>
+<dd>Yes, in the cars and at meals. Arrange their seats with your driver.</dd>
 <dt>Who do I ask?</dt>
-<dd>Ask in the PPK WhatsApp group.</dd>
+<dd>The PPK WhatsApp group.</dd>
 </dl>
-</section>
-<section class="trip-card" id="join">
-<h2>How to join</h2>
-<p>Car seats, the meal and meetups are listings on <a href="../rides.html">Group rides</a>, titled "Taiping trip · …". Sign up there with your PPK account.</p>
-<div class="home-actions"><a class="btn" href="../rides.html">Group rides</a></div>
+<p class="trip-src">Run by <a href="https://www.facebook.com/GoSportzEvent/">GoSportz, with Kelab Berbasikal Elit and the office of the Member of Parliament for Taiping</a>. PPK does not run this event.</p>
+<p class="trip-src">Checked 17 Oct 2026 against facebook.com (<a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0Knnib56T1KiZBsRFSVZbRHVdYYrrYmS1Tgg6Q176YRZvfwMbVZUuj8QUg5d1zoB8l" aria-label="facebook.com source 1">1</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0MNdmXWpumLLA9L4SHr5Gh41u8Tm7riJnGEAbfyGCYCqKdbjy5PEWDidjAt8MPBxWl" aria-label="facebook.com source 2">2</a>, <a href="https://www.facebook.com/photo/?fbid=1692699242856838&amp;set=a.496464139147027" aria-label="facebook.com source 3">3</a>, <a href="https://www.facebook.com/GoSportzEvent/posts/pfbid0LiC8nBAEyg2nVUEA33zWJy2R7hhADotAgZYJt7vxkWAkb5pyAVALgjgWoHhCpVr7l" aria-label="facebook.com source 4">4</a>), <a href="https://www.utusan.com.my/terkini/2026/07/heritage-ride-taiping-sasar-2000-peserta/">utusan.com.my</a>, <a href="https://www.sinarharian.com.my/article/790300/">sinarharian.com.my</a>, <a href="https://allevents.in/taiping-pk">allevents.in</a>.</p>
 </section>
 </div>
 </main>
