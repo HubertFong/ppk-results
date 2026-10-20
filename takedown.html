@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deleting your data and taking pages down - PPK · PPK Pedal PenangKia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #102060; --orange: #E64D24; --mustard: #FAB615;
+  --cyan: #1B9590; --paper: #F7F6F2;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: 'Barlow', system-ui, sans-serif;
+  background: var(--paper); color: #1c1c28;
+  font-size: 16px; line-height: 1.55;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+
+header { background: var(--navy); color: #fff; }
+.head-inner {
+  max-width: 960px; margin: 0 auto; padding: 26px 20px 22px;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.brand {
+  font-family: 'Barlow Condensed', sans-serif; color: #fff;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.brand:hover { text-decoration: none; }
+.brand-main {
+  font-weight: 700; font-size: 32px; letter-spacing: .04em; color: var(--mustard);
+}
+.brand-sub {
+  font-weight: 600; font-size: 16px; letter-spacing: .03em;
+  text-transform: uppercase; color: #cfd3ea;
+}
+nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; row-gap: 6px; }
+nav a {
+  color: #fff; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 3px solid transparent; padding-bottom: 2px;
+}
+nav a.on { border-color: var(--orange); }
+nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
+
+main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
+h1 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 42px; letter-spacing: .02em; color: var(--navy);
+  line-height: 1.1;
+}
+.kicker {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
+}
+.sub { color: #5a5a6b; margin: 6px 0 26px; }
+h2 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--navy); margin: 38px 0 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.subhead {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 32px; color: var(--navy); margin-top: 34px;
+}
+.subhead .dim { color: #5a5a6b; font-size: 20px; }
+.catdot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff;
+         border-radius: 10px;
+         box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
+td.t { font-variant-numeric: tabular-nums; }
+tbody th[scope="row"], tr th[scope="row"] {
+  font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
+  letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
+  color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+  position: static;
+}
+.split-note { display: block; font-size: 11px; font-weight: 400;
+               color: #5a5a6b; font-variant-numeric: tabular-nums; }
+tr:nth-child(even) td, tr:nth-child(even) th[scope="row"] { background: #fafaf7; }
+td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+         font-size: 18px; color: var(--navy); width: 40px; }
+tr.podium-1 td.rk { color: #D4A017; }
+tr.podium-2 td.rk { color: #9AA5B1; }
+tr.podium-3 td.rk { color: #B0672B; }
+.pb { font-weight: 600; }
+/* .tablewrap (no overflow) is for results-table pages, which hide their
+   run1/bike/run2/set-at columns below 620px instead - so their sticky
+   headers can stick to the viewport (position:sticky needs every ancestor
+   up to the viewport to have overflow:visible; overflow-x:auto on a
+   scrolling ancestor would otherwise pin the header to that ancestor's own
+   box instead). Tables with more columns than that trick can hide (Standings,
+   Records, Compare, Data) use .tablewrap-x for horizontal scroll instead -
+   their headers just don't stick, same as before this feature existed. */
+.tablewrap-x { overflow-x: auto; }
+
+.chip {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+  color: #fff; border-radius: 20px; padding: 1px 10px 2px;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.chip.badge { background: var(--navy); font-size: 13px; padding: 5px 12px 6px; cursor: help; }
+.record-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; margin-left: 5px;
+  font-size: 10px; font-weight: 700; color: #fff; vertical-align: middle;
+}
+.record-badge.r1 { background: #D4A017; }
+.record-badge.r2 { background: #9AA5B1; }
+.record-badge.r3 { background: #B0672B; }
+.note { font-size: 14px; color: #5a5a6b; margin-top: 14px; }
+/* Spacing (#103). A heading's intro sits close under it. In the member
+   forms, help text belongs to the field above it, and each field group gets
+   room above its label, so one field's help never runs into the next. */
+h2 + .note, h3 + .note, .subhead + .note { margin-top: 4px; }
+.page-section { border-top: 1px solid #e3e5ee; margin-top: 36px; padding-top: 4px; }
+.page-section > h2:first-child, .page-section > .subhead:first-child { margin-top: 18px; }
+.account-card label { margin-top: 16px; }
+.account-card .check-row { margin-top: 12px; }
+.account-card .check-row label { margin-top: 0; }
+.account-card input + .note, .account-card select + .note,
+.account-card fieldset + .note { margin: -4px 0 0; }
+.account-card .form-group-break { border-top: 1px solid #e3e5ee; margin-top: 28px; padding-top: 2px; }
+.account-card form button[type=submit] { margin-top: 22px; }
+
+.statgrid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
+.stat {
+  background: #fff; border-radius: 10px; padding: 12px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); min-width: 130px;
+}
+.stat b {
+  display: block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; color: var(--navy); font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 13px; color: #5a5a6b; text-transform: uppercase;
+              letter-spacing: .06em; }
+.chart { background: #fff; border-radius: 10px; padding: 16px;
+          box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 10px 0 24px; }
+
+.home-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; }
+.btn {
+  display: inline-block; background: var(--navy); color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+  letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px;
+}
+.btn:hover { background: #1a2f80; text-decoration: none; }
+.highlight-list { list-style: none; background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.cmp-controls { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 18px 0; }
+.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px; border: 0; padding: 0;
+  font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+  letter-spacing: .04em; font-size: 15px; }
+.cmp-cats label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#cmp-filter { font: inherit; font-size: 15px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #d6d9e6; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.cmp-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px; max-height: 260px; overflow-y: auto; }
+.cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
+  padding: 3px 0; cursor: pointer; }
+.cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+.cmp-ineligible { opacity: .55; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 1px; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-chip-remove {
+  background: none; border: none; color: #fff; font-size: 15px; line-height: 1;
+  cursor: pointer; padding: 0 0 0 2px;
+}
+#cmp-baseline { margin: 16px 0; background: #fff; border-radius: 10px;
+  padding: 12px 18px; box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+#cmp-baseline label { margin-right: 14px; cursor: pointer; }
+#cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
+.highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
+.highlight-list li:first-child { border-top: none; }
+
+.search-wrap { position: relative; margin-left: 18px; }
+#athlete-search {
+  font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 8px;
+  border: none; width: 190px; background: rgba(255,255,255,.14); color: #fff;
+}
+#athlete-search::placeholder { color: #c7cce3; }
+#athlete-search:focus { outline: 2px solid var(--mustard); background: #fff; color: #1c1c28; }
+.search-results {
+  position: absolute; top: calc(100% + 6px); right: 0; width: 260px;
+  background: #fff; border-radius: 8px; list-style: none;
+  box-shadow: 0 4px 16px rgba(16,32,96,.25); z-index: 10; overflow: hidden;
+}
+.search-results li { border-top: 1px solid #ececf2; }
+.search-results li:first-child { border-top: none; }
+.search-results a { display: block; padding: 9px 14px; color: #1c1c28; }
+.search-results a:hover, .search-results a:focus { background: #f2f2f7; text-decoration: none; }
+.search-empty { padding: 9px 14px; color: #5a5a6b; font-size: 14px; }
+@media (max-width: 620px) {
+  .search-wrap { margin-left: 0; width: 100%; }
+  #athlete-search { width: 100%; box-sizing: border-box; }
+  .search-results { width: 100%; }
+}
+
+.splits-toggle {
+  display: none; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin-bottom: 8px;
+}
+@media (max-width: 620px) {
+  .splits-toggle { display: inline-block; }
+  .results-table .col-run1, .results-table .col-bike,
+  .results-table .col-run2, .results-table .col-setat { display: none; }
+  .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
+  .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+  /* Revealing splits can make the table wider than the screen again - give
+     .tablewrap (results-table pages only; .tablewrap-x already scrolls)
+     its horizontal scroll back here, contained to the table instead of the
+     whole page. This is also why sticky headers are desktop-only: a sticky
+     ancestor can't have a scrolling ancestor between it and the viewport. */
+  .tablewrap { overflow-x: auto; }
+}
+
+.highlights-toggle {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin: 4px 0 10px;
+}
+
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end;
+  background: #fff; border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.filter-field { display: flex; flex-direction: column; gap: 4px; }
+.filter-field label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .06em; color: #5a5a6b; }
+.filter-field select, .filter-field input[type="text"] {
+  font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid #d6d9e6; background: #fff; min-width: 150px; }
+.filter-field input[type="text"] { min-width: 200px; }
+.filter-note { font-size: 13px; color: #5a5a6b; margin: -4px 0 12px; }
+.no-results { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); color: #5a5a6b; margin: 16px 0; }
+th[data-sort] { cursor: pointer; user-select: none; }
+th[data-sort]:hover, th[data-sort]:focus-visible { background: #1a2f80; }
+th[data-sort] .sort-arrow { font-size: 11px; opacity: .55; margin-left: 4px; }
+th[data-sort][aria-sort] .sort-arrow { opacity: 1; }
+
+footer { background: var(--navy); color: #cfd3ea; }
+.foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
+               font-size: 14px; }
+.foot-inner b { color: var(--mustard); font-weight: 600; }
+.foot-inner a { color: #8fd8d3; }
+.foot-note { margin-top: 10px; font-size: 13px; color: #9aa0c4; }
+@media (max-width: 620px) {
+  h1 { font-size: 32px; }
+  .head-inner { padding-top: 18px; }
+  nav { width: 100%; margin-left: 0; }
+}
+
+.nav-away { color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 18px;
+  letter-spacing: .06em; text-transform: uppercase; border: 2px solid var(--orange);
+  border-radius: 8px; padding: 6px 12px; min-height: 44px; display: inline-flex;
+  align-items: center; }
+.nav-away:hover, .nav-away.on { text-decoration: none; background: var(--orange); }
+@media (max-width: 620px) { .nav-away { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
+    </a>
+    <nav><a href="index.html">Home</a><a href="rides.html">Group rides</a><a href="sqdtt.html">SQDTT results</a><a href="account.html">Account</a></nav>
+    <a class="nav-away" href="trips/heritage-ride-taiping-2026.html">Taiping trip</a>
+  </div>
+</header>
+<main>
+<section class="page-section policy"><h1>Deleting your data and taking pages down</h1>
+<p>PPK is run by volunteers. This page says how to ask us to delete your account or take a page down, how long it takes, and what we can&#x27;t remove.</p>
+<h2>Delete your PPK account</h2>
+<ul><li><strong>How to ask:</strong> message PPK through <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>, or ask a ride organiser. Tell us the email address you sign in with. We email that address to check the request is yours.</li><li><strong>What goes:</strong> your sign-in, your profile, your safety details (your emergency contact), your ride sign-ups, your roles and your achievements. Rides you organised stay, without your name.</li><li><strong>How long:</strong> within 21 days of your reply to our email. We tell you when it&#x27;s done.</li><li><strong>Backups:</strong> our encrypted backups keep a copy until they are deleted. Each time we make a new backup, we delete the ones more than 30 days old.</li></ul>
+<h2>Take a page down</h2>
+<ul><li><strong>How to ask:</strong> the same way. Send us the page&#x27;s link and tell us what you want removed.</li><li><strong>What we do:</strong> we remove your athlete page and your name from the results pages. Your times may stay, without your name, so other riders&#x27; places stay right.</li><li><strong>How long:</strong> within 21 days.</li></ul>
+<h2>What stays</h2>
+<ul><li>The site is published from a public repository on GitHub, and its history keeps earlier versions of every page. Removing a page from that history is possible, but it can&#x27;t be undone, so PPK&#x27;s site admin decides each case.</li><li>Search engines and web archives may keep copies for a while. We can ask Google to drop a removed page from its results.</li></ul>
+<h2>Who decides</h2>
+<p>PPK&#x27;s site admin decides each request and replies within the times above. If we can&#x27;t do what you ask, we say why.</p></section>
+</main>
+<script>
+(function() {
+  function visibleBody(table) {
+    return table.querySelector('tbody:not([hidden])') || table.tBodies[0];
+  }
+  function cellVal(td) {
+    var v = td.getAttribute('data-val');
+    return (v === null || v === '') ? null : parseFloat(v);
+  }
+  function sortRows(table, colIndex, ascending) {
+    var tbody = visibleBody(table);
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.rows);
+    rows.sort(function(a, b) {
+      var av = cellVal(a.cells[colIndex]), bv = cellVal(b.cells[colIndex]);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return ascending ? av - bv : bv - av;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+  document.querySelectorAll('table.sortable').forEach(function(table) {
+    var headRow = table.tHead ? table.tHead.rows[0] : table.rows[0];
+    Array.prototype.forEach.call(headRow.cells, function(th, i) {
+      if (!th.hasAttribute('data-sort')) return;
+      var arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↕';
+      th.appendChild(document.createTextNode(' '));
+      th.appendChild(arrow);
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('role', 'button');
+      function activate() {
+        var ascending = th.getAttribute('aria-sort') !== 'ascending';
+        Array.prototype.forEach.call(headRow.cells, function(other) {
+          other.removeAttribute('aria-sort');
+          var a = other.querySelector('.sort-arrow');
+          if (a) a.textContent = '↕';
+        });
+        th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+        arrow.textContent = ascending ? '↑' : '↓';
+        sortRows(table, i, ascending);
+      }
+      th.addEventListener('click', activate);
+      th.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
+  });
+})();
+</script>
+<footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+</div></footer>
+</body>
+</html>

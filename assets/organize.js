@@ -73,6 +73,7 @@
   var gpxStatusEl = document.getElementById("ride-gpx-status");
   var startsEl = document.getElementById("ride-starts");
   var startAddButton = document.getElementById("ride-start-add");
+  var startsOrderEl = document.getElementById("ride-starts-order");
   var listEl = document.getElementById("ride-list");
   var listEmptyEl = document.getElementById("ride-list-empty");
   var rosterEl = document.getElementById("roster");
@@ -429,6 +430,7 @@
         addStartRow(point);
       });
       updateStartAddButton();
+      showRouteOrderWarning();
       startsReady = true;
     });
   }
@@ -634,6 +636,7 @@
   deadlineInput.addEventListener("change", function () { deadlineEdited = true; });
   meetAtInput.addEventListener("input", function () {
     if (!deadlineEdited) deadlineInput.value = defaultDeadline(meetAtInput.value);
+    showRouteOrderWarning();
   });
 
   newButton.addEventListener("click", function () { openForm(null); });
@@ -704,6 +707,7 @@
     row.appendChild(actionButton("Remove", function () {
       startsEl.removeChild(row);
       updateStartAddButton();
+      showRouteOrderWarning();
     }));
     startsEl.appendChild(row);
     return placeInput;
@@ -711,6 +715,7 @@
 
   function clearStartRows() {
     clearChildren(startsEl);
+    showRouteOrderWarning();
   }
 
   // The rows' inputs in display order, which is point order.
@@ -784,6 +789,41 @@
       };
     });
   }
+
+  // The first point whose time comes before the point above it, as a
+  // sentence, or "" when the times run in route order. Point 1 is the
+  // meet-up. An untimed point (the end) is skipped. This only warns, and
+  // set_ride_starts() (0019) does not check the order either (Hubert,
+  // 12 Oct, on #162). `meetValue` and `times` are the inputs' values, ""
+  // when empty.
+  function routeOrderWarning(meetValue, times) {
+    var before = meetValue === "" ? NaN : new Date(meetValue).getTime();
+    var beforeName = "the meet-up time";
+    for (var i = 0; i < times.length; i += 1) {
+      if (times[i] === "") continue;
+      var at = new Date(times[i]).getTime();
+      if (Number.isNaN(at)) continue;
+      if (!Number.isNaN(before) && at < before) {
+        return "Point " + (i + 2) + "'s time is before " + beforeName +
+          ". Check the points are in route order. You can still save.";
+      }
+      before = at;
+      beforeName = "point " + (i + 2) + "'s";
+    }
+    return "";
+  }
+
+  function showRouteOrderWarning() {
+    var warning = routeOrderWarning(meetAtInput.value,
+      startRowInputs().map(function (row) { return row.time.value; }));
+    startsOrderEl.textContent = warning;
+    startsOrderEl.hidden = warning === "";
+  }
+
+  // Any change to a point or to the meet-up time checks the order again.
+  startsEl.addEventListener("input", showRouteOrderWarning);
+  startsEl.addEventListener("change", showRouteOrderWarning);
+  meetAtInput.addEventListener("change", showRouteOrderWarning);
 
   startAddButton.addEventListener("click", function () {
     if (startRowInputs().length >= MAX_EXTRA_STARTS) {
