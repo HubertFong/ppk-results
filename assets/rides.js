@@ -295,7 +295,10 @@
   // rider plans for the longer time. Rounded to the half hour, never under
   // half an hour. Stops are not counted. An end point with a time is the
   // organizer's own finish, which wins (Hubert, D206), so then there is none.
+  // Points that didn't load (null) may hide that finish, so then there is
+  // none either (REV-016).
   function rideTimeText(ride, points) {
+    if (points === null) return null;
     var end = endPoint(points);
     if (end && end.start_at) return null;
     if (!ride.distance_m || !ride.speed_low_kmh) return null;
@@ -311,8 +314,8 @@
 
   // The regroup policies the organizer picks from (#136), with the meaning a
   // rider reads. Hubert approved the wording on 9 Oct (Ascent D206). Older
-  // rides keep their free text, so a saved value is matched without case and
-  // shown as it is when it matches none.
+  // rides keep their free text, so a saved value is matched by regroupKey()
+  // and shown as it is when it matches none.
   var REGROUP_POLICIES = [
     { label: "No drop",
       meaning: "No one is left behind. The group waits for the last rider, and the sweep stays with anyone who falls back." },
@@ -322,11 +325,18 @@
       meaning: "No regroup. Riders ride at their own pace and are responsible for themselves." }
   ];
 
+  // A saved policy matches whatever its case, spaces or hyphens: "no-drop"
+  // is "No drop". organize.js's form has the same function, and a test keeps
+  // the two the same, so the form and the card always agree (REV-012).
+  function regroupKey(value) {
+    return value.toLowerCase().replace(/[\s-]+/g, " ").trim();
+  }
+
   function regroupPolicy(value) {
     if (typeof value !== "string") return null;
-    var key = value.trim().toLowerCase().replace(/[\s-]+/g, " ");
+    var key = regroupKey(value);
     for (var i = 0; i < REGROUP_POLICIES.length; i += 1) {
-      if (REGROUP_POLICIES[i].label.toLowerCase().replace(/-/g, " ") === key) return REGROUP_POLICIES[i];
+      if (regroupKey(REGROUP_POLICIES[i].label) === key) return REGROUP_POLICIES[i];
     }
     return null;
   }
@@ -543,9 +553,13 @@
     return link;
   }
 
+  function canShare(ride) {
+    return ride.status === "published" || ride.status === "postponed";
+  }
+
   // The share link's own line, or null for a ride that cannot be shared.
   function shareLine(ride, points) {
-    if (ride.status !== "published" && ride.status !== "postponed") return null;
+    if (!canShare(ride)) return null;
     var line = document.createElement("div");
     line.className = "ride-share";
     line.appendChild(shareLink(ride, points));
@@ -864,7 +878,7 @@
   }
 
   function ridersLine(ride, version) {
-    if (ride.status !== "published" && ride.status !== "postponed") return null;
+    if (!canShare(ride)) return null;
     if (!currentUser) return publicRidersLine(ride, version);
     var line = textBlock("div", "Who's riding: ...", "ride-riders");
     Promise.all([
@@ -887,8 +901,18 @@
     return line;
   }
 
+  // A card whose points didn't load says so (REV-016). A cancelled ride has
+  // no share button to come back, so its line doesn't promise one.
+  function pointsNotLoadedLine(ride) {
+    return textBlock("div", "This ride's other starts, stops and end didn't load. Reload the page to see them" +
+      (canShare(ride) ? " and to share the ride." : "."), "note");
+  }
+
   function rideItem(ride, signupStatus, version, pointsByRide, choices) {
-    var points = pointsByRide[ride.id] || [];
+    // pointsByRide is null when the points didn't load. The card then leaves
+    // out what they decide: the worked-out ride time, the WhatsApp message
+    // and the start choice (REV-016).
+    var points = pointsByRide ? pointsByRide[ride.id] || [] : null;
     var chosen = choices[ride.id] || null;
     var item = document.createElement("li");
     // A stable id lets a shared link (rides.html?ride=<id>) find this card.
@@ -898,6 +922,7 @@
     meetLine(ride, points).forEach(function (line) {
       appendDetail(item, line);
     });
+    if (points === null) appendDetail(item, pointsNotLoadedLine(ride));
     appendDetail(item, departsLine(ride));
     appendDetail(item, routeLine(ride));
     appendDetail(item, distanceLine(ride));
@@ -915,7 +940,7 @@
     appendDetail(item, rideNotesBlock(ride));
     // Sharing does not depend on the places count, so its line is here from
     // the start rather than waiting for the second read below.
-    appendDetail(item, shareLine(ride, points));
+    if (points !== null) appendDetail(item, shareLine(ride, points));
     // This card's messages, below its action line once that arrives.
     var noteEl = document.createElement("div");
     noteEls[ride.id] = noteEl;
@@ -934,7 +959,7 @@
       }
       if (taken !== null) item.insertBefore(placesLine(ride, taken), closesLine);
       // Riders choose among the starts only; choose_start() refuses the rest.
-      var actions = actionLine(ride, signupStatus, taken, points.filter(isStart), chosen);
+      var actions = actionLine(ride, signupStatus, taken, (points || []).filter(isStart), chosen);
       if (actions) item.insertBefore(actions, noteEl);
       if (cardNote && cardNote.rideId === ride.id && cardNote.scroll) notedItem = item;
       placesPending -= 1;
@@ -1044,7 +1069,8 @@
         emptyEl.hidden = rides.length > 0;
         if (rides.length === 0) return;
         // The rides' extra start points, by ride id. A failed read costs
-        // only those points: point 1 is part of the ride itself, and
+        // only those points and what they decide (null, not empty: see
+        // rideItem()): point 1 is part of the ride itself, and
         // choose_start() refuses any point it does not know.
         var ids = rides.map(function (ride) { return ride.id; });
         client.from("session_starts")
@@ -1057,6 +1083,7 @@
             if (pointsRes.error) {
               showError("Couldn't read the start points: " +
                 pointsRes.error.message);
+              pointsByRide = null;
             } else {
               (pointsRes.data || []).forEach(function (point) {
                 if (!pointsByRide[point.session_id]) pointsByRide[point.session_id] = [];

@@ -327,6 +327,14 @@
 
   // ------------------------------------------------------------- ride form
 
+  // A saved policy matches a choice whatever its case, spaces or hyphens:
+  // "no-drop" is "No drop". rides.js's card has the same function, and a
+  // test keeps the two the same, so the form and the card always agree
+  // (REV-012).
+  function regroupKey(value) {
+    return value.toLowerCase().replace(/[\s-]+/g, " ").trim();
+  }
+
   // The regroup policy is a list since #136. A ride saved before then may
   // hold other text; it shows as an extra choice, so an edit keeps it unless
   // the organizer picks another. Only one such choice exists at a time.
@@ -339,8 +347,10 @@
       select.value = "";
       return;
     }
+    // The empty choice is "none set", so saved text such as "-", which folds
+    // to nothing, is kept as it is, as the card shows it.
     for (var i = 0; i < select.options.length; i += 1) {
-      if (select.options[i].value.toLowerCase() === text.toLowerCase()) {
+      if (select.options[i].value !== "" && regroupKey(select.options[i].value) === regroupKey(text)) {
         select.value = select.options[i].value;
         return;
       }
