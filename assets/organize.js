@@ -853,6 +853,11 @@
   // GPS heights jitter by a few metres, so a rise counts only once it passes
   // this, which keeps noise out of the climbing total.
   var CLIMB_THRESHOLD_M = 5;
+  // Heights in whole metres come from a coarse height map, where neighbouring
+  // points can differ by 20 m on flat ground. Such a segment's heights are
+  // averaged over this many points either side before the climb is counted.
+  // The same rule as site_trips.py.
+  var SMOOTH_POINTS = 2;
   var gpxPick = 0;   // bumped on every file pick, so only the latest read fills the form
 
   // Track points come first; a file without them falls back to its route
@@ -904,6 +909,20 @@
     return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
   }
 
+  // The window narrows at each end, so the ends keep their heights and a
+  // steady slope is unchanged. Heights finer than a metre stay as they are.
+  function smoothedHeights(heights) {
+    if (!heights.every(function (ele) { return Number.isInteger(ele); })) return heights;
+    var smoothed = [];
+    for (var i = 0; i < heights.length; i += 1) {
+      var reach = Math.min(SMOOTH_POINTS, i, heights.length - 1 - i);
+      var sum = 0;
+      for (var k = i - reach; k <= i + reach; k += 1) sum += heights[k];
+      smoothed.push(sum / (2 * reach + 1));
+    }
+    return smoothed;
+  }
+
   // Distance never crosses a segment. Climbing counts each rise from a
   // valley to the next peak. The reference follows the height up while
   // rising and down while falling. The direction turns only after a move of
@@ -923,9 +942,11 @@
       // threshold before it counts, from the lowest point before it.
       var ref = null;
       var rising = false;
-      for (var j = 0; j < segment.length; j += 1) {
-        var ele = segment[j].ele;
-        if (ele === null) continue;
+      var heights = smoothedHeights(segment
+        .map(function (point) { return point.ele; })
+        .filter(function (ele) { return ele !== null; }));
+      for (var j = 0; j < heights.length; j += 1) {
+        var ele = heights[j];
         climbingSeen = true;
         if (ref === null) {
           ref = ele;
