@@ -185,6 +185,7 @@
     deniedEl.hidden = true;
     appEl.hidden = true;
     signedOutEl.hidden = false;
+    rootEl.dispatchEvent(new CustomEvent("ppk-organizer-out"));
     statusEl.textContent = "";
     clearOrganizeError();
     signInLink.href = "account.html?returnTo=" +
@@ -209,6 +210,9 @@
       }
       appEl.hidden = false;
       loadRides();
+      // The away-trips section (organize-trips.js) starts from this event,
+      // with the same signed-in client.
+      rootEl.dispatchEvent(new CustomEvent("ppk-organizer", { detail: { client: client } }));
     });
   }
 
