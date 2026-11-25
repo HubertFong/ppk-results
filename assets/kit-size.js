@@ -10,23 +10,29 @@
   var FIELDS = ["height", "weight", "size2025", "fit", "shoe"];
   var SHIFT = { tight: 1, right: 0, loose: -1 };
 
-  // The labels nearest to v on one axis of a chart: one index, or two when
-  // v sits exactly halfway between two labels. Beyond the first or last
-  // label by more than half a step, the chart says nothing.
-  function nearest(axis, v) {
-    if (typeof v !== "number" || !isFinite(v) || !axis.length) return [];
-    var n = axis.length;
-    var first = n > 1 ? axis[1] - axis[0] : 0, last = n > 1 ? axis[n - 1] - axis[n - 2] : 0;
-    if (v < axis[0]) return axis[0] - v <= first / 2 ? [0] : [];
-    if (v > axis[n - 1]) return v - axis[n - 1] <= last / 2 ? [n - 1] : [];
-    for (var i = 0; i < n; i++) {
-      if (v === axis[i]) return [i];
-      if (v < axis[i + 1]) {
-        var mid = (axis[i] + axis[i + 1]) / 2;
-        return v < mid ? [i] : v > mid ? [i + 1] : [i, i + 1];
-      }
+  // How far a body may sit from a filled cell, in rows plus columns, and
+  // still get a suggestion (Hubert, 25 Nov: the skinsuit tables fill only a
+  // diagonal band).
+  var REACH = 2;
+
+  // Where v falls on one axis of a chart, in label steps: the nearest label,
+  // or the two either side when v sits exactly halfway. Past either end the
+  // end step carries on, so a body just off the table gets an index such as
+  // -1 or n. Not a number: nothing.
+  function place(axis, v) {
+    if (typeof v !== "number" || !isFinite(v) || axis.length < 2) return [];
+    var n = axis.length, f;
+    if (v <= axis[0]) {
+      f = -(axis[0] - v) / (axis[1] - axis[0]);
+    } else if (v >= axis[n - 1]) {
+      f = n - 1 + (v - axis[n - 1]) / (axis[n - 1] - axis[n - 2]);
+    } else {
+      for (var i = 0; v > axis[i + 1]; i++) { /* find the band v is in */ }
+      f = i + (v - axis[i]) / (axis[i + 1] - axis[i]);
     }
-    return [];
+    var low = Math.floor(f);
+    if (f - low === 0.5) return [low, low + 1];
+    return [Math.round(f)];
   }
 
   function inOrder(found, sizes) {
@@ -34,15 +40,43 @@
                 .sort(function (a, b) { return sizes.indexOf(a) - sizes.indexOf(b); });
   }
 
-  // The chart's sizes for a height and weight: [] off the chart or in a gap.
+  // One size, or two that are next to each other. A wider spread gives the
+  // size in its middle (or the middle two), never two sizes apart.
+  function settle(found, sizes) {
+    var at = found.map(function (s) { return sizes.indexOf(s); }).filter(function (i) { return i >= 0; });
+    if (!at.length) return [];
+    var lo = Math.min.apply(null, at), hi = Math.max.apply(null, at);
+    if (hi - lo <= 1) return sizes.slice(lo, hi + 1);
+    var mid = (lo + hi) / 2;
+    return mid % 1 ? [sizes[Math.floor(mid)], sizes[Math.ceil(mid)]] : [sizes[mid]];
+  }
+
+  // The chart's sizes for a height and weight: the nearest filled cells, up
+  // to REACH rows plus columns away. A gap or a body just off the table
+  // borrows from its neighbours; further off, nothing.
   function lookup(chart, height, weight, sizes) {
-    var found = [];
-    nearest(chart.heights, height).forEach(function (r) {
-      nearest(chart.weights, weight).forEach(function (c) {
-        if (chart.cells[r][c]) found.push(chart.cells[r][c]);
+    var rows = place(chart.heights, height), cols = place(chart.weights, weight);
+    if (!rows.length || !cols.length) return [];
+    var best = Infinity, found = [];
+    chart.cells.forEach(function (line, r) {
+      line.forEach(function (cell, c) {
+        if (!cell) return;
+        var d = Infinity;
+        rows.forEach(function (ri) {
+          cols.forEach(function (ci) { d = Math.min(d, Math.abs(r - ri) + Math.abs(c - ci)); });
+        });
+        if (d < best) { best = d; found = [cell]; } else if (d === best) { found.push(cell); }
       });
     });
-    return inOrder(found, sizes);
+    return best > REACH ? [] : settle(found, sizes);
+  }
+
+  // Race-fit items run one size up from the maker's chart, capped at the
+  // largest size.
+  function raceFit(found, sizes) {
+    return inOrder(found.filter(function (s) { return sizes.indexOf(s) >= 0; }).map(function (s) {
+      return sizes[Math.min(sizes.indexOf(s) + 1, sizes.length - 1)];
+    }), sizes);
   }
 
   // A 2025 jersey that fit right is the size; tight moves one up, loose one down.
@@ -74,14 +108,16 @@
     if (!finder) return [];
     if (finder.shoe) return fromShoe(finder.shoe, input.shoe, item.sizes);
     var chart = finder[cut];
-    return chart ? lookup(chart, input.height, input.weight, item.sizes) : [];
+    if (!chart) return [];
+    var found = lookup(chart, input.height, input.weight, item.sizes);
+    return item.race_fit ? raceFit(found, item.sizes) : found;
   }
 
   function words(found) {
     return found.join(" or ");
   }
 
-  var api = { nearest: nearest, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
+  var api = { place: place, settle: settle, raceFit: raceFit, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
               suggest: suggest, words: words, KEY: KEY };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
@@ -155,6 +191,11 @@
       }
       slot.textContent = parts.length ? "Suggested: " + parts.join(" · ") : "";
       slot.hidden = !parts.length;
+      // The race line only beside a size from the chart: a 2025 jersey is
+      // already the race cut, so its size takes no step.
+      var race = document.querySelector('.kit-race[data-item="' + item.code + '"]');
+      var from2025 = item.fit_from_2025 && input.size2025 && input.fit && fromFit(item.sizes, input.size2025, input.fit);
+      if (race) race.hidden = slot.hidden || !!from2025;
     });
     document.dispatchEvent(new Event("ppk-size-finder"));
   }

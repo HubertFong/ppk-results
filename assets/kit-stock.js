@@ -44,11 +44,17 @@
     return out;
   }
 
+  function sellerShown(seller, own) {
+    // "Sdn. Bhd." and "Sdn Bhd" are the same seller.
+    var norm = function (x) { return (x || "").toLowerCase().replace(/[.,]/g, "").replace(/\s+/g, " ").trim(); };
+    return !!norm(seller) && norm(seller) !== norm(own);
+  }
+
   function variant(cut, size) {
     return [cut, size].filter(function (x) { return x; }).join(" · ") || "One size";
   }
 
-  var api = { money: money, sen: sen, details: details, variant: variant, REASONS: REASONS,
+  var api = { money: money, sen: sen, details: details, variant: variant, sellerShown: sellerShown, REASONS: REASONS,
               MOVE_WORDS: MOVE_WORDS, PICTURE: PICTURE };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
@@ -60,6 +66,7 @@
   var client = supabase.createClient(root.getAttribute("data-supabase-url"),
                                      root.getAttribute("data-supabase-key"));
   var manage = document.getElementById("kit-stock-manage");
+  var ownSeller = root.getAttribute("data-own-seller");
   var user = null;
 
   function el(tag, text, className) {
@@ -130,7 +137,10 @@
     if (item.one_of_a_kind) facts.push("One of a kind");
     Object.keys(item.details || {}).forEach(function (k) { facts.push(k + ": " + item.details[k]); });
     card.appendChild(el("p", facts.join(" · "), "kit-meta"));
-    card.appendChild(el("p", "Sold by " + item.seller + (/\.$/.test(item.seller) ? "" : "."), "kit-meta"));
+    // The club's own seller isn't named (Hubert, 25 Nov); a third party is.
+    if (sellerShown(item.seller, ownSeller)) {
+      card.appendChild(el("p", "Sold by " + item.seller + (/\.$/.test(item.seller) ? "" : "."), "kit-meta"));
+    }
     var slot = el("div");
     card.appendChild(slot);
     if (!user) {
