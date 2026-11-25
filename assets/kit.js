@@ -36,7 +36,6 @@
     count.querySelector(".kit-paid").textContent = paid + " paid";
     count.querySelector(".kit-meter span").style.width = Math.min(100, Math.round(paid / go * 100)) + "%";
     count.querySelector(".kit-chip").textContent = paid >= go ? "Going ahead" : "Needs " + (go - paid) + " more";
-    count.hidden = false;
 
     var items = card.querySelectorAll(".kit-steps li");
     if (!items.length) return;
