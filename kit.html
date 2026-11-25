@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPK kit round 1 · PPK Pedal PenangKia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #102060; --orange: #E64D24; --mustard: #FAB615;
+  --cyan: #1B9590; --paper: #F7F6F2;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: 'Barlow', system-ui, sans-serif;
+  background: var(--paper); color: #1c1c28;
+  font-size: 16px; line-height: 1.55;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+
+header { background: var(--navy); color: #fff; }
+.head-inner {
+  max-width: 960px; margin: 0 auto; padding: 26px 20px 22px;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.brand {
+  font-family: 'Barlow Condensed', sans-serif; color: #fff;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.brand:hover { text-decoration: none; }
+.brand-main {
+  font-weight: 700; font-size: 32px; letter-spacing: .04em; color: var(--mustard);
+}
+.brand-sub {
+  font-weight: 600; font-size: 16px; letter-spacing: .03em;
+  text-transform: uppercase; color: #cfd3ea;
+}
+nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; row-gap: 6px; }
+nav a {
+  color: #fff; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 3px solid transparent; padding-bottom: 2px;
+}
+nav a.on { border-color: var(--orange); }
+nav a:hover { text-decoration: none; border-color: var(--mustard); }
+.subnav { background: #1a2f80; }
+.subnav-inner { max-width: 960px; margin: 0 auto; padding: 8px 20px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.subnav a { color: #cfd3ea; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; letter-spacing: .05em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; }
+.subnav a.on { color: #fff; border-color: var(--orange); }
+.subnav a:hover { text-decoration: none; color: #fff; }
+.ride-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 10px; }
+.ride-list li { background: #fff; border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.ride-list a { font-weight: 600; }
+.ride-list .ride-when { display: block; color: #5a5a6b; font-size: 14px; }
+
+main { max-width: 960px; margin: 0 auto; padding: 30px 20px 56px; }
+h1 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 42px; letter-spacing: .02em; color: var(--navy);
+  line-height: 1.1;
+}
+.kicker {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
+}
+.sub { color: #5a5a6b; margin: 6px 0 26px; }
+h2 {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--navy); margin: 38px 0 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.subhead {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 32px; color: var(--navy); margin-top: 34px;
+}
+.subhead .dim { color: #5a5a6b; font-size: 20px; }
+.catdot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.dist { color: #5a5a6b; font-size: 14px; margin-bottom: 12px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff;
+         border-radius: 10px;
+         box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-align: left; padding: 10px 12px; background: var(--navy); color: #fff;
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+td { padding: 9px 12px; border-top: 1px solid #ececf2; white-space: nowrap; }
+td.t { font-variant-numeric: tabular-nums; }
+tbody th[scope="row"], tr th[scope="row"] {
+  font-family: inherit; font-size: inherit; font-weight: 400; text-transform: none;
+  letter-spacing: normal; text-align: left; padding: 9px 12px; background: #fff;
+  color: inherit; border-top: 1px solid #ececf2; white-space: nowrap;
+  position: static;
+}
+.split-note { display: block; font-size: 11px; font-weight: 400;
+               color: #5a5a6b; font-variant-numeric: tabular-nums; }
+tr:nth-child(even) td, tr:nth-child(even) th[scope="row"] { background: #fafaf7; }
+td.rk { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+         font-size: 18px; color: var(--navy); width: 40px; }
+tr.podium-1 td.rk { color: #D4A017; }
+tr.podium-2 td.rk { color: #9AA5B1; }
+tr.podium-3 td.rk { color: #B0672B; }
+.pb { font-weight: 600; }
+/* .tablewrap (no overflow) is for results-table pages, which hide their
+   run1/bike/run2/set-at columns below 620px instead - so their sticky
+   headers can stick to the viewport (position:sticky needs every ancestor
+   up to the viewport to have overflow:visible; overflow-x:auto on a
+   scrolling ancestor would otherwise pin the header to that ancestor's own
+   box instead). Tables with more columns than that trick can hide (Standings,
+   Records, Compare, Data) use .tablewrap-x for horizontal scroll instead -
+   their headers just don't stick, same as before this feature existed. */
+.tablewrap-x { overflow-x: auto; }
+
+.chip {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+  color: #fff; border-radius: 20px; padding: 1px 10px 2px;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.chip.badge { background: var(--navy); font-size: 13px; padding: 5px 12px 6px; cursor: help; }
+.record-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; margin-left: 5px;
+  font-size: 10px; font-weight: 700; color: #fff; vertical-align: middle;
+}
+.record-badge.r1 { background: #D4A017; }
+.record-badge.r2 { background: #9AA5B1; }
+.record-badge.r3 { background: #B0672B; }
+.note { font-size: 14px; color: #5a5a6b; margin-top: 14px; }
+/* Spacing (#103). A heading's intro sits close under it. In the member
+   forms, help text belongs to the field above it, and each field group gets
+   room above its label, so one field's help never runs into the next. */
+h2 + .note, h3 + .note, .subhead + .note { margin-top: 4px; }
+.page-section { border-top: 1px solid #e3e5ee; margin-top: 36px; padding-top: 4px; }
+.page-section > h2:first-child, .page-section > .subhead:first-child { margin-top: 18px; }
+.account-card label { margin-top: 16px; }
+.account-card .check-row { margin-top: 12px; }
+.account-card .check-row label { margin-top: 0; }
+.account-card input + .note, .account-card select + .note,
+.account-card fieldset + .note { margin: -4px 0 0; }
+.account-card .form-group-break { border-top: 1px solid #e3e5ee; margin-top: 28px; padding-top: 2px; }
+.account-card form button[type=submit] { margin-top: 22px; }
+
+.statgrid { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
+.stat {
+  background: #fff; border-radius: 10px; padding: 12px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); min-width: 130px;
+}
+.stat b {
+  display: block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; color: var(--navy); font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 13px; color: #5a5a6b; text-transform: uppercase;
+              letter-spacing: .06em; }
+.chart { background: #fff; border-radius: 10px; padding: 16px;
+          box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 10px 0 24px; }
+
+.home-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 8px; }
+.btn {
+  display: inline-block; background: var(--navy); color: #fff;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+  letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px;
+}
+.btn:hover { background: #1a2f80; text-decoration: none; }
+.highlight-list { list-style: none; background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); overflow: hidden; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.cmp-controls { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); margin: 18px 0; }
+.cmp-cats { display: flex; gap: 16px; margin-bottom: 12px; border: 0; padding: 0;
+  font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+  letter-spacing: .04em; font-size: 15px; }
+.cmp-cats label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#cmp-filter { font: inherit; font-size: 15px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #d6d9e6; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.cmp-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px; max-height: 260px; overflow-y: auto; }
+.cmp-checklist label { display: flex; align-items: center; gap: 6px; font-size: 14px;
+  padding: 3px 0; cursor: pointer; }
+.cmp-checklist input:disabled + label, .cmp-checklist label:has(input:disabled) { opacity: .4; }
+.cmp-ineligible { opacity: .55; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; min-height: 1px; }
+.cmp-chip { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-chip-remove {
+  background: none; border: none; color: #fff; font-size: 15px; line-height: 1;
+  cursor: pointer; padding: 0 0 0 2px;
+}
+#cmp-baseline { margin: 16px 0; background: #fff; border-radius: 10px;
+  padding: 12px 18px; box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+#cmp-baseline label { margin-right: 14px; cursor: pointer; }
+#cmp-result h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 22px; color: var(--navy); margin: 26px 0 10px; }
+.highlight-list li { padding: 10px 14px; border-top: 1px solid #ececf2; }
+.highlight-list li:first-child { border-top: none; }
+
+.search-wrap { position: relative; margin-left: 18px; }
+#athlete-search {
+  font: inherit; font-size: 15px; padding: 7px 12px; border-radius: 8px;
+  border: none; width: 190px; background: rgba(255,255,255,.14); color: #fff;
+}
+#athlete-search::placeholder { color: #c7cce3; }
+#athlete-search:focus { outline: 2px solid var(--mustard); background: #fff; color: #1c1c28; }
+.search-results {
+  position: absolute; top: calc(100% + 6px); right: 0; width: 260px;
+  background: #fff; border-radius: 8px; list-style: none;
+  box-shadow: 0 4px 16px rgba(16,32,96,.25); z-index: 10; overflow: hidden;
+}
+.search-results li { border-top: 1px solid #ececf2; }
+.search-results li:first-child { border-top: none; }
+.search-results a { display: block; padding: 9px 14px; color: #1c1c28; }
+.search-results a:hover, .search-results a:focus { background: #f2f2f7; text-decoration: none; }
+.search-empty { padding: 9px 14px; color: #5a5a6b; font-size: 14px; }
+@media (max-width: 620px) {
+  .search-wrap { margin-left: 0; width: 100%; }
+  #athlete-search { width: 100%; box-sizing: border-box; }
+  .search-results { width: 100%; }
+}
+
+.splits-toggle {
+  display: none; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin-bottom: 8px;
+}
+@media (max-width: 620px) {
+  .splits-toggle { display: inline-block; }
+  .results-table .col-run1, .results-table .col-bike,
+  .results-table .col-run2, .results-table .col-setat { display: none; }
+  .results-table.show-splits .col-run1, .results-table.show-splits .col-bike,
+  .results-table.show-splits .col-run2, .results-table.show-splits .col-setat { display: table-cell; }
+  /* Revealing splits can make the table wider than the screen again - give
+     .tablewrap (results-table pages only; .tablewrap-x already scrolls)
+     its horizontal scroll back here, contained to the table instead of the
+     whole page. This is also why sticky headers are desktop-only: a sticky
+     ancestor can't have a scrolling ancestor between it and the viewport. */
+  .tablewrap { overflow-x: auto; }
+}
+
+.highlights-toggle {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); background: #fff; border: 1px solid #d6d9e6;
+  border-radius: 8px; padding: 6px 12px; margin: 4px 0 10px;
+}
+
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end;
+  background: #fff; border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); }
+.filter-field { display: flex; flex-direction: column; gap: 4px; }
+.filter-field label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .06em; color: #5a5a6b; }
+.filter-field select, .filter-field input[type="text"] {
+  font: inherit; font-size: 15px; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid #d6d9e6; background: #fff; min-width: 150px; }
+.filter-field input[type="text"] { min-width: 200px; }
+.filter-note { font-size: 13px; color: #5a5a6b; margin: -4px 0 12px; }
+.no-results { background: #fff; border-radius: 10px; padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(16,32,96,.10); color: #5a5a6b; margin: 16px 0; }
+th[data-sort] { cursor: pointer; user-select: none; }
+th[data-sort]:hover, th[data-sort]:focus-visible { background: #1a2f80; }
+th[data-sort] .sort-arrow { font-size: 11px; opacity: .55; margin-left: 4px; }
+th[data-sort][aria-sort] .sort-arrow { opacity: 1; }
+
+footer { background: var(--navy); color: #cfd3ea; }
+.foot-inner { max-width: 960px; margin: 0 auto; padding: 22px 20px;
+               font-size: 14px; }
+.foot-inner b { color: var(--mustard); font-weight: 600; }
+.foot-inner a { color: #8fd8d3; }
+.foot-note { margin-top: 10px; font-size: 13px; color: #9aa0c4; }
+@media (max-width: 620px) {
+  h1 { font-size: 32px; }
+  .head-inner { padding-top: 18px; }
+  nav { width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-main">PPK</span><span class="brand-sub">Pedal PenangKia</span>
+    </a>
+    <nav><a href="index.html">Home</a><a href="rides.html">Group rides</a><a href="sqdtt.html">SQDTT results</a><a href="kit.html" class="on">Kit</a><a href="account.html">Account</a></nav>
+  </div>
+</header>
+<main>
+<div class="kit">
+<p class="kit-kicker">Pedal PenangKia · Kit</p>
+<h1>PPK kit round 1</h1>
+<div class="kit-banner"><b>Pre-order open until Fri 11 Dec 2026, 22:00</b>
+Each item is made only if enough people order it. If not, you get a full refund. The more we order, the lower the price. You pay the full price now; the difference comes back after the cut-off.</div>
+<div class="kit-cards">
+<article class="kit-card" data-item="casual-jersey" data-go="7">
+  <div class="kit-photo kit-photo--none">Photo coming</div>
+  <div class="kit-head"><h2>Casual jersey</h2><b>RM250</b></div>
+  <p class="kit-blurb">Light, body fit, for café rides. Monton ShadowFade, YS8137M. Men&#x27;s · Women&#x27;s.</p>
+  <p class="kit-meta">Sizes: 2XS, XS, S, M, L, XL, 2XL, 3XL, 4XL, 5XL · Size charts: <a href="kit/chart-casual-jersey-mens.png">Men&#x27;s</a> · <a href="kit/chart-casual-jersey-womens.png">Women&#x27;s</a></p>
+  <div class="kit-count" hidden><b class="kit-paid"></b><span class="kit-meter"><span></span></span><span class="kit-chip"></span></div>
+  <p class="kit-help">Made only if 7 are ordered and paid by the cut-off.</p>
+  <p class="kit-label">Price steps<span class="kit-next" hidden></span></p><ul class="kit-steps"><li data-from="1" data-price="25000"><span>1+</span><span>RM250</span></li><li data-from="20" data-price="24000"><span>20+</span><span>RM240</span></li><li data-from="50" data-price="23000"><span>50+</span><span>RM230</span></li></ul><p class="kit-help">Final price set at the lock.</p>
+  <div class="kit-order"></div>
+</article>
+<article class="kit-card" data-item="performance-jersey" data-go="7">
+  <div class="kit-photo kit-photo--none">Photo coming</div>
+  <div class="kit-head"><h2>Performance jersey</h2><b>RM350</b></div>
+  <p class="kit-blurb">Race fit, in the 2025 PPK design. Monton Urban Quartz, YS8007M. Men&#x27;s · Women&#x27;s.</p>
+  <p class="kit-meta">Sizes: 2XS, XS, S, M, L, XL, 2XL, 3XL, 4XL, 5XL · Size charts: <a href="kit/chart-performance-jersey-mens.png">Men&#x27;s</a> · <a href="kit/chart-performance-jersey-womens.png">Women&#x27;s</a></p>
+  <div class="kit-count" hidden><b class="kit-paid"></b><span class="kit-meter"><span></span></span><span class="kit-chip"></span></div>
+  <p class="kit-help">Made only if 7 are ordered and paid by the cut-off.</p>
+  <p class="kit-label">Price steps<span class="kit-next" hidden></span></p><ul class="kit-steps"><li data-from="1" data-price="35000"><span>1+</span><span>RM350</span></li><li data-from="20" data-price="34000"><span>20+</span><span>RM340</span></li><li data-from="50" data-price="33000"><span>50+</span><span>RM330</span></li></ul><p class="kit-help">Final price set at the lock.</p>
+  <div class="kit-order"></div>
+</article>
+<article class="kit-card" data-item="long-sleeve-jersey" data-go="7">
+  <div class="kit-photo kit-photo--none">Photo coming</div>
+  <div class="kit-head"><h2>Long-sleeve performance jersey</h2><b>RM400</b></div>
+  <p class="kit-blurb">Sun cover for long rides. Monton Quartz. Men&#x27;s · Women&#x27;s.</p>
+  <p class="kit-meta">Sizes: 2XS, XS, S, M, L, XL, 2XL, 3XL, 4XL, 5XL · Size chart coming</p>
+  <div class="kit-count" hidden><b class="kit-paid"></b><span class="kit-meter"><span></span></span><span class="kit-chip"></span></div>
+  <p class="kit-help">Made only if 7 are ordered and paid by the cut-off.</p>
+  <p class="kit-label">Price steps<span class="kit-next" hidden></span></p><ul class="kit-steps"><li data-from="1" data-price="40000"><span>1+</span><span>RM400</span></li><li data-from="20" data-price="39000"><span>20+</span><span>RM390</span></li><li data-from="50" data-price="38000"><span>50+</span><span>RM380</span></li></ul><p class="kit-help">Final price set at the lock.</p>
+  <div class="kit-order"></div>
+</article>
+<article class="kit-card" data-item="skinsuit" data-go="9">
+  <div class="kit-photo kit-photo--none">Photo coming</div>
+  <div class="kit-head"><h2>Skinsuit</h2><b>RM450</b></div>
+  <p class="kit-blurb">One-piece suit for time trials. Monton Dark Warrior, YS9251M. Men&#x27;s · Women&#x27;s.</p>
+  <p class="kit-meta">Sizes: 2XS, XS, S, M, L, XL, 2XL, 3XL, 4XL, 5XL · Size charts: <a href="kit/chart-skinsuit-mens.png">Men&#x27;s</a> · <a href="kit/chart-skinsuit-womens.png">Women&#x27;s</a></p>
+  <div class="kit-count" hidden><b class="kit-paid"></b><span class="kit-meter"><span></span></span><span class="kit-chip"></span></div>
+  <p class="kit-help">Made only if 9 are ordered and paid by the cut-off.</p>
+  <p class="kit-label">Price steps<span class="kit-next" hidden></span></p><ul class="kit-steps"><li data-from="1" data-price="45000"><span>1+</span><span>RM450</span></li><li data-from="20" data-price="44000"><span>20+</span><span>RM440</span></li><li data-from="50" data-price="43000"><span>50+</span><span>RM430</span></li></ul><p class="kit-help">Final price set at the lock.</p>
+  <div class="kit-order"></div>
+</article>
+<article class="kit-card" data-item="aero-socks" data-go="22">
+  <div class="kit-photo kit-photo--none">Photo coming</div>
+  <div class="kit-head"><h2>Cycling socks</h2><b>RM34 a pair</b></div>
+  <p class="kit-blurb">PPK pattern, Coolsun sole. Price per pair.</p>
+  <p class="kit-meta">Sizes: S (EU 36-39), M (EU 39-42), L (EU 42-45) · Size chart coming</p>
+  <div class="kit-count" hidden><b class="kit-paid"></b><span class="kit-meter"><span></span></span><span class="kit-chip"></span></div>
+  <p class="kit-help">Made only if 22 pairs are ordered and paid by the cut-off.</p>
+  
+  <div class="kit-order"></div>
+</article>
+</div>
+<p class="kit-help">Add a name to a jersey or skinsuit: +RM10, up to 12 letters.</p>
+<h2 class="kit-section">How it works</h2>
+<ol class="kit-how">
+<li><b>Order and pay</b> by Fri 11 Dec 2026, 22:00. Try sizes at the Saturday rides of 28 Nov and 5 Dec.</li>
+<li><b>Price set at the lock</b>, Wed 16 Dec 2026: each item takes the step its total reached. The difference comes back to you by hand after the lock.</li>
+<li><b>Collect</b> at a PPK Saturday ride, Spedahub or Hubert&#x27;s place (Green Lane). No post.</li>
+</ol>
+<h2 class="kit-section">The small print</h2>
+<ul class="kit-print">
+<li>An item is made only if it reaches its number; if not, you get a full refund for it.</li>
+<li>Cancel for a full refund until the lock, Wed 16 Dec 2026. After that, no refunds except for defects; size swaps only from spares.</li>
+<li>Kit not collected within 8 weeks of arrival gets one last message, then goes to club stock with no refund.</li>
+<li>We use your name, contact and sizes only for this order, and share only sizes and printed names with the maker.</li>
+</ul>
+<p class="kit-help">Sold by BND Global Management Sdn. Bhd. (201401028251 (1104337-H)). Contact: <a href="mailto:hubert@inspectrenovate.com">hubert@inspectrenovate.com</a>.</p>
+<div id="kit-live" hidden data-round="round-1" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW"></div>
+<p id="kit-signin" class="kit-help"><a href="account.html">Sign in</a> to order and see your orders.</p>
+<div id="kit-mine" hidden></div>
+<div id="kit-orders" hidden data-round="round-1" data-supabase-url="https://zwoaickxftqwwlugremy.supabase.co" data-supabase-key="sb_publishable_H-Tv6ZeiOm575FjXnCNhNw_4HHFjtCW" data-round-json="{&quot;collection&quot;: [&quot;a PPK Saturday ride&quot;, &quot;Spedahub&quot;, &quot;Hubert&#x27;s place (Green Lane)&quot;], &quot;cut_off&quot;: &quot;2026-12-11T22:00&quot;, &quot;items&quot;: [{&quot;blurb&quot;: &quot;Light, body fit, for café rides. Monton ShadowFade, YS8137M.&quot;, &quot;code&quot;: &quot;casual-jersey&quot;, &quot;cuts&quot;: [&quot;Men&#x27;s&quot;, &quot;Women&#x27;s&quot;], &quot;go&quot;: 7, &quot;name&quot;: &quot;Casual jersey&quot;, &quot;photo&quot;: null, &quot;price_sen&quot;: 25000, &quot;printed_name&quot;: true, &quot;size_chart&quot;: {&quot;Men&#x27;s&quot;: &quot;kit/chart-casual-jersey-mens.png&quot;, &quot;Women&#x27;s&quot;: &quot;kit/chart-casual-jersey-womens.png&quot;}, &quot;sizes&quot;: [&quot;2XS&quot;, &quot;XS&quot;, &quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;, &quot;2XL&quot;, &quot;3XL&quot;, &quot;4XL&quot;, &quot;5XL&quot;], &quot;steps&quot;: [{&quot;from&quot;: 20, &quot;price_sen&quot;: 24000}, {&quot;from&quot;: 50, &quot;price_sen&quot;: 23000}]}, {&quot;blurb&quot;: &quot;Race fit, in the 2025 PPK design. Monton Urban Quartz, YS8007M.&quot;, &quot;code&quot;: &quot;performance-jersey&quot;, &quot;cuts&quot;: [&quot;Men&#x27;s&quot;, &quot;Women&#x27;s&quot;], &quot;go&quot;: 7, &quot;name&quot;: &quot;Performance jersey&quot;, &quot;photo&quot;: null, &quot;price_sen&quot;: 35000, &quot;printed_name&quot;: true, &quot;size_chart&quot;: {&quot;Men&#x27;s&quot;: &quot;kit/chart-performance-jersey-mens.png&quot;, &quot;Women&#x27;s&quot;: &quot;kit/chart-performance-jersey-womens.png&quot;}, &quot;sizes&quot;: [&quot;2XS&quot;, &quot;XS&quot;, &quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;, &quot;2XL&quot;, &quot;3XL&quot;, &quot;4XL&quot;, &quot;5XL&quot;], &quot;steps&quot;: [{&quot;from&quot;: 20, &quot;price_sen&quot;: 34000}, {&quot;from&quot;: 50, &quot;price_sen&quot;: 33000}]}, {&quot;blurb&quot;: &quot;Sun cover for long rides. Monton Quartz.&quot;, &quot;code&quot;: &quot;long-sleeve-jersey&quot;, &quot;cuts&quot;: [&quot;Men&#x27;s&quot;, &quot;Women&#x27;s&quot;], &quot;go&quot;: 7, &quot;name&quot;: &quot;Long-sleeve performance jersey&quot;, &quot;photo&quot;: null, &quot;price_sen&quot;: 40000, &quot;printed_name&quot;: true, &quot;size_chart&quot;: null, &quot;sizes&quot;: [&quot;2XS&quot;, &quot;XS&quot;, &quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;, &quot;2XL&quot;, &quot;3XL&quot;, &quot;4XL&quot;, &quot;5XL&quot;], &quot;steps&quot;: [{&quot;from&quot;: 20, &quot;price_sen&quot;: 39000}, {&quot;from&quot;: 50, &quot;price_sen&quot;: 38000}]}, {&quot;blurb&quot;: &quot;One-piece suit for time trials. Monton Dark Warrior, YS9251M.&quot;, &quot;code&quot;: &quot;skinsuit&quot;, &quot;cuts&quot;: [&quot;Men&#x27;s&quot;, &quot;Women&#x27;s&quot;], &quot;go&quot;: 9, &quot;name&quot;: &quot;Skinsuit&quot;, &quot;photo&quot;: null, &quot;price_sen&quot;: 45000, &quot;printed_name&quot;: true, &quot;size_chart&quot;: {&quot;Men&#x27;s&quot;: &quot;kit/chart-skinsuit-mens.png&quot;, &quot;Women&#x27;s&quot;: &quot;kit/chart-skinsuit-womens.png&quot;}, &quot;sizes&quot;: [&quot;2XS&quot;, &quot;XS&quot;, &quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;, &quot;2XL&quot;, &quot;3XL&quot;, &quot;4XL&quot;, &quot;5XL&quot;], &quot;steps&quot;: [{&quot;from&quot;: 20, &quot;price_sen&quot;: 44000}, {&quot;from&quot;: 50, &quot;price_sen&quot;: 43000}]}, {&quot;blurb&quot;: &quot;PPK pattern, Coolsun sole. Price per pair.&quot;, &quot;code&quot;: &quot;aero-socks&quot;, &quot;cuts&quot;: [], &quot;go&quot;: 22, &quot;name&quot;: &quot;Cycling socks&quot;, &quot;photo&quot;: null, &quot;price_sen&quot;: 3400, &quot;printed_name&quot;: false, &quot;size_chart&quot;: null, &quot;sizes&quot;: [&quot;S (EU 36-39)&quot;, &quot;M (EU 39-42)&quot;, &quot;L (EU 42-45)&quot;], &quot;steps&quot;: [], &quot;unit&quot;: &quot;pair&quot;}], &quot;lock&quot;: &quot;2026-12-16&quot;, &quot;name&quot;: &quot;PPK kit round 1&quot;, &quot;price_note&quot;: &quot;KIT-D3 option A, confirmed by Hubert on 24 Nov 2026&quot;, &quot;printed_name&quot;: {&quot;max_letters&quot;: 12, &quot;price_sen&quot;: 1000}, &quot;seller&quot;: {&quot;company_no&quot;: &quot;201401028251 (1104337-H)&quot;, &quot;contact&quot;: &quot;hubert@inspectrenovate.com&quot;, &quot;name&quot;: &quot;BND Global Management Sdn. Bhd.&quot;}, &quot;slug&quot;: &quot;round-1&quot;, &quot;status&quot;: &quot;open&quot;, &quot;try_sizes&quot;: &quot;Try sizes at the Saturday rides of 28 Nov and 5 Dec.&quot;}"></div>
+<div id="kit-organize" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"
+        integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"
+        crossorigin="anonymous"></script>
+<script src="assets/kit.js?v=e2800f49c3a9"></script>
+<script src="assets/kit-orders.js?v=401be7bfb603"></script>
+</div>
+<style>
+.kit { max-width: 760px; margin: 0 auto; }
+.kit-kicker { color: #E64D24; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+.kit h1 { margin: 4px 0 14px; }
+.kit-banner { background: #eef1fb; border-left: 4px solid #102060; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+.kit-banner b { display: block; }
+.kit-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.kit-card { background: #fff; border-radius: 10px; padding: 16px; }
+.kit-photo { width: 100%; height: 132px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+.kit-photo--none { background: #e9eaf0; color: #4f5268; display: grid; place-items: center; font-size: 13px; }
+.kit-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.kit-head h2 { margin: 0; font-size: 20px; }
+.kit-blurb, .kit-meta { margin: 4px 0; font-size: 14px; }
+.kit-help { font-size: 13px; color: #4f5268; margin: 6px 0; }
+.kit-label { font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: .04em; margin: 10px 0 2px; }
+.kit-next { text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.kit-steps { list-style: none; padding: 0; margin: 0; }
+.kit-steps li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
+.kit-steps li.now span:last-child { font-weight: 700; }
+.kit-steps li.now span:last-child::after { content: " Now"; color: #102060; font-size: 12px; }
+.kit-count { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.kit-count[hidden] { display: none; }
+.kit-meter { flex: 1; height: 6px; background: #e9eaf0; border-radius: 3px; overflow: hidden; }
+.kit-meter span { display: block; height: 100%; background: #102060; }
+.kit-chip { font-size: 12px; white-space: nowrap; }
+.kit-section { margin-top: 24px; }
+.kit-btn { display: inline-block; margin: 8px 6px 0 0; padding: 8px 14px; border: 0; border-radius: 8px; background: #E64D24; color: #fff; font: inherit; cursor: pointer; text-decoration: none; }
+.kit-btn--secondary { background: #fff; color: #102060; border: 2px solid #102060; }
+.kit-btn--small { padding: 4px 8px; font-size: 13px; }
+.kit-form { display: grid; gap: 8px; margin-top: 10px; }
+.kit-field { display: grid; gap: 4px; font-size: 14px; }
+.kit-field select, .kit-field input, .kit-field textarea { font: inherit; padding: 6px; }
+.kit-error { color: #b00020; font-size: 14px; }
+.kit-pay { white-space: pre-line; background: #fff; border-radius: 8px; padding: 10px; }
+.kit-mine-list { list-style: none; padding: 0; }
+.kit-mine-list li { background: #fff; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+.kit-orders-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; display: block; overflow-x: auto; }
+.kit-orders-table th, .kit-orders-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #ddd; }
+</style>
+</main>
+<script>
+(function() {
+  function visibleBody(table) {
+    return table.querySelector('tbody:not([hidden])') || table.tBodies[0];
+  }
+  function cellVal(td) {
+    var v = td.getAttribute('data-val');
+    return (v === null || v === '') ? null : parseFloat(v);
+  }
+  function sortRows(table, colIndex, ascending) {
+    var tbody = visibleBody(table);
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.rows);
+    rows.sort(function(a, b) {
+      var av = cellVal(a.cells[colIndex]), bv = cellVal(b.cells[colIndex]);
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return ascending ? av - bv : bv - av;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+  document.querySelectorAll('table.sortable').forEach(function(table) {
+    var headRow = table.tHead ? table.tHead.rows[0] : table.rows[0];
+    Array.prototype.forEach.call(headRow.cells, function(th, i) {
+      if (!th.hasAttribute('data-sort')) return;
+      var arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↕';
+      th.appendChild(document.createTextNode(' '));
+      th.appendChild(arrow);
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('role', 'button');
+      function activate() {
+        var ascending = th.getAttribute('aria-sort') !== 'ascending';
+        Array.prototype.forEach.call(headRow.cells, function(other) {
+          other.removeAttribute('aria-sort');
+          var a = other.querySelector('.sort-arrow');
+          if (a) a.textContent = '↕';
+        });
+        th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+        arrow.textContent = ascending ? '↑' : '↓';
+        sortRows(table, i, ascending);
+      }
+      th.addEventListener('click', activate);
+      th.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
+  });
+})();
+</script>
+<footer><div class="foot-inner"><b>Ride with Passion. Ride with Power. Ride to Create Memories.</b><br>
+Pedal Penangkia (PPK) · <a href="https://linktr.ee/rideppk">linktr.ee/rideppk</a>
+</div></footer>
+</body>
+</html>
