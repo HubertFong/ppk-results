@@ -93,36 +93,6 @@
                          .map(function (r) { return r[2]; }), sizes);
   }
 
-  function byCode(items, code) {
-    return (items || []).filter(function (i) { return i.code === code; })[0] || null;
-  }
-
-  // A table named by another item's code is that item's table.
-  function own(item, key, items) {
-    var value = item[key];
-    if (typeof value === "string") {
-      var other = byCode(items, value);
-      return other ? other[key] : null;
-    }
-    return value || null;
-  }
-
-  // The sizes of this item whose chest is nearest the chest of a size of
-  // another item; a tie gives both (Hubert, 25 Nov: the performance jersey is
-  // much tighter than the casual jersey, so a men's casual M is a
-  // performance L).
-  function byChest(theirChest, size, ourChest, sizes) {
-    var c = theirChest[size];
-    if (typeof c !== "number") return [];
-    var best = Infinity, found = [];
-    sizes.forEach(function (s) {
-      if (typeof ourChest[s] !== "number") return;
-      var d = Math.abs(ourChest[s] - c);
-      if (d < best - 1e-9) { best = d; found = [s]; } else if (Math.abs(d - best) < 1e-9) { found.push(s); }
-    });
-    return found;
-  }
-
   // The suggested sizes for one item and cut, smallest first: [] for none.
   function suggest(item, cut, input, items) {
     input = input || {};
@@ -130,19 +100,11 @@
       var fitted = fromFit(item.sizes, input.size2025, input.fit);
       if (fitted) return [fitted];
     }
-    if (item.fit_by_chest) {
-      // Size the casual jersey first, then take the size of this one that
-      // measures nearest across the chest.
-      var base = byCode(items, item.fit_by_chest);
-      var ours = own(item, "chest_cm", items), theirs = base && own(base, "chest_cm", items);
-      var baseSizes = base ? suggest(base, cut, { height: input.height, weight: input.weight }, items) : [];
-      if (ours && theirs && ours[cut] && theirs[cut] && baseSizes.length) {
-        var matched = [];
-        baseSizes.forEach(function (b) { matched = matched.concat(byChest(theirs[cut], b, ours[cut], item.sizes)); });
-        if (matched.length) return settle(matched, item.sizes);
-      }
+    var finder = item.size_finder;
+    if (typeof finder === "string") {
+      var other = (items || []).filter(function (i) { return i.code === finder; })[0];
+      finder = other ? other.size_finder : null;
     }
-    var finder = own(item, "size_finder", items);
     if (!finder) return [];
     if (finder.shoe) return fromShoe(finder.shoe, input.shoe, item.sizes);
     var chart = finder[cut];
@@ -155,7 +117,7 @@
     return found.join(" or ");
   }
 
-  var api = { place: place, settle: settle, raceFit: raceFit, byChest: byChest, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
+  var api = { place: place, settle: settle, raceFit: raceFit, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
               suggest: suggest, words: words, KEY: KEY };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
