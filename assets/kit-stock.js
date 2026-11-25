@@ -144,7 +144,14 @@
     item.sizes.forEach(function (s, i) { which.appendChild(new Option(variant(s.cut, s.size), String(i))); });
     form.appendChild(label("Size", which));
     var qty = el("select");
-    for (var n = 1; n <= (item.one_of_a_kind ? 1 : 5); n++) qty.appendChild(new Option(String(n), String(n)));
+    // Only as many as are on hand for the chosen size (at most 5).
+    function fillQty() {
+      while (qty.firstChild) qty.removeChild(qty.firstChild);
+      var top = Math.min(item.one_of_a_kind ? 1 : 5, item.sizes[parseInt(which.value, 10)].max || 5);
+      for (var n = 1; n <= top; n++) qty.appendChild(new Option(String(n), String(n)));
+    }
+    fillQty();
+    which.addEventListener("change", fillQty);
     form.appendChild(label("Quantity", qty));
     var buy = el("button", "Buy", "kit-btn");
     buy.type = "submit";
