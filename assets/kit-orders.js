@@ -267,6 +267,25 @@
     var size = el("select");
     item.sizes.forEach(function (s) { size.appendChild(new Option(s, s)); });
     form.appendChild(label("Size", size));
+    // The size finder's suggestion (kit-size.js), if the member gave numbers.
+    // It picks the size only while the member hasn't chosen one.
+    var hint = el("p", null, "kit-suggest");
+    hint.hidden = true;
+    form.appendChild(hint);
+    var chosen = false;
+    size.addEventListener("change", function () { chosen = true; });
+    function suggestSize() {
+      if (!form.isConnected) {
+        document.removeEventListener("ppk-size-finder", suggestSize);
+        return;
+      }
+      var finder = window.PPKSizeFinder;
+      var found = finder ? finder.suggestFor(item.code, cut ? cut.value : null) : [];
+      hint.textContent = found.length ? "Suggested: " + found.join(" or ") : "";
+      hint.hidden = !found.length;
+      if (found.length === 1 && !chosen) size.value = found[0];
+    }
+    if (cut) cut.addEventListener("change", suggestSize);
     var qty = el("select");
     for (var n = 1; n <= 5; n++) qty.appendChild(new Option(String(n), String(n)));
     form.appendChild(label("Quantity", qty));
@@ -294,6 +313,8 @@
       showBasket();
     });
     slot.appendChild(form);
+    document.addEventListener("ppk-size-finder", suggestSize);
+    suggestSize();
   }
 
   function showOrderButtons() {
