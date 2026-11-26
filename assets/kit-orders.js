@@ -255,6 +255,9 @@
     return "";
   }
 
+  // The cut the member last picked on this page, for the next form.
+  var lastCut = null;
+
   function addForm(item, slot) {
     clear(slot);
     var form = el("form", null, "kit-form");
@@ -285,7 +288,26 @@
       hint.hidden = !found.length;
       if (found.length === 1 && !chosen) size.value = found[0];
     }
-    if (cut) cut.addEventListener("change", suggestSize);
+    // Open on the cut chosen in the size finder; else the one cut it matched;
+    // else the cut the member picked last. Never over the member's own choice.
+    var cutChosen = false;
+    function pickCut() {
+      if (!cut || cutChosen || !form.isConnected) return;
+      var finder = window.PPKSizeFinder;
+      var mine = finder ? finder.cut() : null;
+      if (mine && item.cuts.indexOf(mine) >= 0) { cut.value = mine; return; }
+      var hits = finder ? item.cuts.filter(function (c) { return finder.suggestFor(item.code, c).length; }) : [];
+      if (hits.length === 1) cut.value = hits[0];
+      else if (lastCut && item.cuts.indexOf(lastCut) >= 0) cut.value = lastCut;
+    }
+    if (cut) {
+      cut.addEventListener("change", function () {
+        cutChosen = true;
+        lastCut = cut.value;
+        suggestSize();
+      });
+      document.addEventListener("ppk-size-finder", pickCut);
+    }
     var qty = el("select");
     for (var n = 1; n <= 5; n++) qty.appendChild(new Option(String(n), String(n)));
     form.appendChild(label("Quantity", qty));
@@ -314,6 +336,7 @@
     });
     slot.appendChild(form);
     document.addEventListener("ppk-size-finder", suggestSize);
+    pickCut();
     suggestSize();
   }
 

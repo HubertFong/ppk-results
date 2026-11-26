@@ -7,7 +7,7 @@
   "use strict";
 
   var KEY = "ppk-kit-size-finder";
-  var FIELDS = ["height", "weight", "size2025", "fit", "shoe"];
+  var FIELDS = ["cut", "height", "weight", "size2025", "fit", "shoe"];
   var SHIFT = { tight: 1, right: 0, loose: -1 };
 
   // How far a body may sit from a filled cell, in rows plus columns, and
@@ -71,14 +71,6 @@
     return best > REACH ? [] : settle(found, sizes);
   }
 
-  // Race-fit items run one size up from the maker's chart, capped at the
-  // largest size.
-  function raceFit(found, sizes) {
-    return inOrder(found.filter(function (s) { return sizes.indexOf(s) >= 0; }).map(function (s) {
-      return sizes[Math.min(sizes.indexOf(s) + 1, sizes.length - 1)];
-    }), sizes);
-  }
-
   // A 2025 jersey that fit right is the size; tight moves one up, loose one down.
   function fromFit(sizes, size2025, fit) {
     var at = sizes.indexOf(size2025);
@@ -109,15 +101,14 @@
     if (finder.shoe) return fromShoe(finder.shoe, input.shoe, item.sizes);
     var chart = finder[cut];
     if (!chart) return [];
-    var found = lookup(chart, input.height, input.weight, item.sizes);
-    return item.race_fit ? raceFit(found, item.sizes) : found;
+    return lookup(chart, input.height, input.weight, item.sizes);
   }
 
   function words(found) {
     return found.join(" or ");
   }
 
-  var api = { place: place, settle: settle, raceFit: raceFit, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
+  var api = { place: place, settle: settle, lookup: lookup, fromFit: fromFit, fromShoe: fromShoe,
               suggest: suggest, words: words, KEY: KEY };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
@@ -172,6 +163,10 @@
     suggestFor: function (code, cut) {
       var item = data.items.filter(function (i) { return i.code === code; })[0];
       return item ? suggest(item, cut, input, data.items) : [];
+    },
+    // The cut the member chose in the finder, or null.
+    cut: function () {
+      return input.cut || null;
     }
   };
 
@@ -182,6 +177,7 @@
       var parts = [];
       if (item.cuts.length) {
         item.cuts.forEach(function (cut) {
+          if (input.cut && item.cuts.indexOf(input.cut) >= 0 && cut !== input.cut) return;
           var found = suggest(item, cut, input, data.items);
           if (found.length) parts.push(cut + " " + words(found));
         });
@@ -191,11 +187,6 @@
       }
       slot.textContent = parts.length ? "Suggested: " + parts.join(" · ") : "";
       slot.hidden = !parts.length;
-      // The race line only beside a size from the chart: a 2025 jersey is
-      // already the race cut, so its size takes no step.
-      var race = document.querySelector('.kit-race[data-item="' + item.code + '"]');
-      var from2025 = item.fit_from_2025 && input.size2025 && input.fit && fromFit(item.sizes, input.size2025, input.fit);
-      if (race) race.hidden = slot.hidden || !!from2025;
     });
     document.dispatchEvent(new Event("ppk-size-finder"));
   }
