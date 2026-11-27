@@ -326,7 +326,7 @@
     form.appendChild(note);
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      if (basket.length >= MAX_LINES) { say(note, "An order has up to " + MAX_LINES + " lines.", true); return; }
+      if (basket.length >= MAX_LINES) { say(note, "An order has up to " + MAX_LINES + " items.", true); return; }
       var line = { item: item.code, cut: cut ? cut.value : null, size: size.value,
                    quantity: parseInt(qty.value, 10) };
       if (name && name.value.trim()) line.printed_name = name.value.trim();
@@ -412,8 +412,8 @@
               clear(slot);
               slot.appendChild(changeForm(Object.assign({ paid: o.status === "paid" }, l), now, refreshAll));
             }));
-            slot.appendChild(button("Remove line", "kit-btn kit-btn--small kit-btn--secondary", function () {
-              if (!window.confirm("Remove this line from the order?")) return;
+            slot.appendChild(button("Remove item", "kit-btn kit-btn--small kit-btn--secondary", function () {
+              if (!window.confirm("Remove this item from the order?")) return;
               client.rpc("cancel_kit_order_line", { p_line: l.id }).then(function (r) {
                 if (r.error) say(note, words(r.error), true); else refreshAll();
               });
@@ -646,7 +646,7 @@
             }));
             if (!locked) {
               lc.appendChild(button("Remove", "kit-btn kit-btn--small kit-btn--secondary", function () {
-                if (!window.confirm("Remove this line for the member?")) return;
+                if (!window.confirm("Remove this item for the member?")) return;
                 client.rpc("cancel_kit_order_line", { p_line: r.line_id }).then(function (x) {
                   if (x.error) say(status, words(x.error), true); else refreshAll();
                 });

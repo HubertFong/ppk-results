@@ -50,11 +50,28 @@
     return !!norm(seller) && norm(seller) !== norm(own);
   }
 
+  // The fields of an item the manager changed: only these are sent, so a
+  // field the form can't show (such as the one-line blurb of an item not for
+  // sale) is never wiped by a save.
+  function changes(before, after) {
+    var out = {};
+    Object.keys(after).forEach(function (k) {
+      if (JSON.stringify(after[k]) !== JSON.stringify(before[k])) out[k] = after[k];
+    });
+    return out;
+  }
+
+  // Price in sen as the manager types it back: 4000 is "40", 4050 "40.50".
+  function ringgit(value) {
+    if (value == null) return "";
+    return String(Math.floor(value / 100)) + (value % 100 ? "." + (value % 100 < 10 ? "0" : "") + value % 100 : "");
+  }
+
   function variant(cut, size) {
     return [cut, size].filter(function (x) { return x; }).join(" · ") || "One size";
   }
 
-  var api = { money: money, sen: sen, details: details, variant: variant, sellerShown: sellerShown, REASONS: REASONS,
+  var api = { money: money, sen: sen, details: details, changes: changes, ringgit: ringgit, variant: variant, sellerShown: sellerShown, REASONS: REASONS,
               MOVE_WORDS: MOVE_WORDS, PICTURE: PICTURE };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
@@ -225,22 +242,30 @@
       manage.hidden = false;
       manage.appendChild(el("h2", "Stock", "kit-section"));
       var rows = res.data || [];
-      manage.appendChild(levelsTable(rows));
+      var formSlot = el("div");
+      // Change opens the item's own form, filled in (Hubert, 27 Nov).
+      manage.appendChild(levelsTable(rows, function (r) {
+        clear(formSlot);
+        formSlot.appendChild(itemForm(r, function () { clear(formSlot); formSlot.appendChild(itemForm(null)); }));
+        formSlot.scrollIntoView({ behavior: "smooth", block: "start" });
+      }));
       var items = [];
       rows.forEach(function (r) { if (items.indexOf(r.code) < 0) items.push(r.code); });
       manage.appendChild(moveForm(items, rows));
-      manage.appendChild(itemForm(rows));
+      formSlot.appendChild(itemForm(null));
+      manage.appendChild(formSlot);
       var sales = el("div");
       manage.appendChild(sales);
       showSales(sales);
     });
   }
 
-  function levelsTable(rows) {
+  function levelsTable(rows, onChange) {
     var table = el("table", null, "kit-orders-table");
     var head = el("tr");
     ["Item", "Size", "On hand", "Held", "Not paid", ""].forEach(function (h) { head.appendChild(el("th", h)); });
     table.appendChild(head);
+    var seen = [];
     rows.forEach(function (r) {
       var tr = el("tr");
       var name = r.name + (r.condition === "used" ? " (used)" : "") + (r.for_sale ? " · " + money(r.price_sen) : " · not for sale");
@@ -248,6 +273,11 @@
         .forEach(function (c) { tr.appendChild(el("td", c)); });
       var td = el("td");
       td.appendChild(button("Moves", "kit-btn kit-btn--small kit-btn--secondary", function () { showMoves(r, tr); }));
+      // One Change per item, on its first row.
+      if (seen.indexOf(r.code) < 0) {
+        seen.push(r.code);
+        td.appendChild(button("Change", "kit-btn kit-btn--small kit-btn--secondary", function () { onChange(r); }));
+      }
       tr.appendChild(td);
       table.appendChild(tr);
     });
@@ -318,10 +348,14 @@
     return form;
   }
 
-  function itemForm(rows) {
+  // With was (a stock_levels row), the form changes that item; without, it
+  // adds one. A kept photo stays unless a new one is picked.
+  function itemForm(was, done) {
     var form = el("form", null, "kit-form kit-basket");
-    form.appendChild(el("b", "Add or change an item"));
-    form.appendChild(el("p", "Same code changes the item. A photo kept stays unless you pick a new one.", "kit-help"));
+    form.appendChild(el("b", was ? "Change " + was.name : "Add an item"));
+    form.appendChild(el("p", was ? (was.has_photo ? "Has a photo; pick one to replace it." : "No photo yet.") +
+                                   " Only what you change is saved." : "Use Change in the table to change an item.",
+                        "kit-help"));
     var fields = {};
     [["code", "Code (lower-case words with hyphens, such as 3-peaks-tee)"], ["name", "Name"],
      ["blurb", "One line about it"], ["seller", "Seller (blank for BND Global Management Sdn. Bhd.)"],
@@ -350,9 +384,28 @@
     photo.type = "file";
     photo.accept = "image/png,image/jpeg,image/webp";
     form.appendChild(label("Photo", photo));
-    var save = el("button", "Save item", "kit-btn");
+    var before = null;
+    if (was) {
+      fields.code.value = was.code;
+      fields.code.readOnly = true;
+      fields.name.value = was.name || "";
+      fields.seller.value = was.seller || "";
+      fields.price.value = ringgit(was.price_sen);
+      category.value = was.category;
+      condition.value = was.condition;
+      forSale.checked = !!was.for_sale;
+      single.checked = !!was.one_of_a_kind;
+      facts.value = Object.keys(was.details || {}).map(function (k) { return k + ": " + was.details[k]; }).join("\n");
+      // stock_levels has no blurb: it is sent only if the manager types one.
+      fields.blurb.placeholder = "Leave blank to keep the current line";
+      before = { code: was.code, name: was.name, blurb: "", seller: was.seller || "", category: was.category,
+                 condition: was.condition, for_sale: !!was.for_sale, one_of_a_kind: !!was.one_of_a_kind,
+                 price_sen: was.price_sen == null ? null : was.price_sen, details: was.details || {} };
+    }
+    var save = el("button", was ? "Save changes" : "Save item", "kit-btn");
     save.type = "submit";
     form.appendChild(save);
+    if (was) form.appendChild(button("Cancel", "kit-btn kit-btn--secondary", done));
     var said = el("p");
     said.hidden = true;
     form.appendChild(said);
@@ -366,7 +419,12 @@
       if (price && item.price_sen == null) { say(said, "The price is a number of ringgit, such as 40 or 40.50.", true); return; }
       item.details = details(facts.value);
       if (!item.details) { say(said, "Write each detail as Name: value.", true); return; }
+      if (before) {
+        item = changes(before, item);
+        item.code = before.code;
+      }
       var send = function () {
+        if (before && Object.keys(item).length === 1) { say(said, "Nothing changed.", true); return; }
         client.rpc("stock_save_item", { p_item: item }).then(function (res) {
           if (res.error) { say(said, problem(res), true); return; }
           showManage();
